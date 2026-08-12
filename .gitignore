@@ -1,0 +1,12 @@
+.run/
+.idea/
+.vscode/
+node_modules/
+dist/
+coverage/
+*.log
+*.exe
+*.test
+.env
+.env.*
+!.env.example

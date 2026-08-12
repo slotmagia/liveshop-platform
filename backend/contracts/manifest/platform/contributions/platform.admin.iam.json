@@ -1,0 +1,69 @@
+{
+  "id": "platform.admin.iam",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/platform/iam",
+  "title": "角色与组织",
+  "description": "管理部门、角色、授权与数据范围。",
+  "sort": 10,
+  "requiredPermissions": [
+    "platform.iam.manage"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "prefix": "/admin/platform/iam",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-iam-admin",
+    "version": "2.0.1",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:dev-platform-iam"
+  },
+  "frontend": {
+    "component": "IAMAdministrationPage",
+    "props": [],
+    "events": [
+      {
+        "name": "platform.iam.authorization.changed",
+        "description": "授权数据写入成功后发布。",
+        "payload": [
+          {
+            "name": "resourceType",
+            "type": "string",
+            "required": true,
+            "description": "变更资源类型"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "save-role-policy",
+        "label": "保存角色策略",
+        "description": "替换角色权限与数据范围。",
+        "invocation": "http",
+        "target": "platform.iam.roles.policy.put",
+        "parameters": [
+          {
+            "name": "roleId",
+            "type": "integer",
+            "required": true,
+            "description": "角色 ID"
+          }
+        ],
+        "requiredPermissions": [
+          "platform.iam.manage"
+        ]
+      }
+    ]
+  }
+}

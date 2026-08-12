@@ -1,0 +1,1 @@
+{"name":"@liveshop/platform-iam-admin","version":"2.0.1","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1 --port 5180 --strictPort","build":"tsc --noEmit && vite build"},"dependencies":{"@liveshop/admin-ui":"0.1.0","@liveshop/host-sdk":"0.1.0"},"devDependencies":{"typescript":"^5.7.3","vite":"^6.1.0"}}

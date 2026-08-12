@@ -1,0 +1,10 @@
+version: 1
+workspace:
+  owner: platform-engineering
+repositories:
+  contracts: {owner: architecture, reviewers: [platform-engineering, domain-leads]}
+  packages/host-sdk: {owner: frontend-platform, reviewers: [frontend-platform]}
+  packages/design-tokens: {owner: frontend-platform, reviewers: [design-system]}
+  module.json: {owner: platform-engineering, reviewers: [platform-runtime]}
+  backend: {owner: platform-engineering, reviewers: [platform-runtime]}
+  frontend-admin: {owner: platform-engineering, reviewers: [frontend-platform]}

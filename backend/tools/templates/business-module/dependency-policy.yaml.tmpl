@@ -1,0 +1,11 @@
+version: 1
+rules:
+  - from: backend/internal/{{MODULE_PACKAGE}}/domain
+    allow: [standard-library]
+    deny: [goframe, grpc, sql, transport, infrastructure, other-module-internal]
+  - from: backend/internal/{{MODULE_PACKAGE}}/application
+    allow: [domain, kernel-go]
+    deny: [controller, postgres-driver, other-module-internal]
+release:
+  immutable_key: metadata.id+metadata.version
+  require_artifact_digest: true

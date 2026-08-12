@@ -1,0 +1,69 @@
+{
+  "id": "platform.admin.accounts",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/platform/accounts",
+  "title": "后台账户",
+  "description": "统一管理平台端与商户端后台登录账户。",
+  "sort": 5,
+  "requiredPermissions": [
+    "platform.identity.manage"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "prefix": "/admin/platform/identity",
+      "requiredPermissions": [
+        "platform.identity.manage"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-iam-admin",
+    "version": "2.0.1",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:dev-platform-iam"
+  },
+  "frontend": {
+    "component": "IdentityAccountsPage",
+    "props": [],
+    "events": [
+      {
+        "name": "platform.identity.account.changed",
+        "description": "账户写入成功后发布。",
+        "payload": [
+          {
+            "name": "subject",
+            "type": "string",
+            "required": true,
+            "description": "账户 Subject"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "save-account",
+        "label": "保存账户",
+        "description": "创建或更新后台账户。",
+        "invocation": "http",
+        "target": "platform.identity.accounts.put",
+        "parameters": [
+          {
+            "name": "subject",
+            "type": "string",
+            "required": true,
+            "description": "账户 Subject"
+          }
+        ],
+        "requiredPermissions": [
+          "platform.identity.manage"
+        ]
+      }
+    ]
+  }
+}

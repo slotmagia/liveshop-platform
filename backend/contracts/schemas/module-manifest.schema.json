@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://liveshop.example/contracts/module-manifest.schema.json",
+  "$defs": {
+    "permissionCode": {"type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*){2,}$"},
+    "field": {
+      "type": "object",
+      "required": ["name", "type", "description"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "location": {"enum": ["path", "query", "header", "body", "context"]},
+        "type": {"enum": ["string", "integer", "number", "boolean", "object", "array", "bytes"]},
+        "format": {"type": "string"},
+        "required": {"type": "boolean"},
+        "description": {"type": "string", "minLength": 1},
+        "example": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "required": ["status", "description", "fields"],
+      "properties": {
+        "status": {"type": "integer", "minimum": 100, "maximum": 599},
+        "description": {"type": "string", "minLength": 1},
+        "fields": {"type": "array", "items": {"$ref": "#/$defs/field"}}
+      },
+      "additionalProperties": false
+    },
+    "httpOperation": {
+      "type": "object",
+      "required": ["id", "method", "path", "summary", "description", "authentication", "idempotency", "requiredPermissions", "requestFields", "responses"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "method": {"enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]},
+        "path": {"type": "string", "pattern": "^/"},
+        "summary": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "authentication": {"enum": ["module-session", "workload-identity", "public"]},
+        "idempotency": {"enum": ["safe", "idempotent", "non-idempotent"]},
+        "requiredPermissions": {"type": "array", "items": {"$ref": "#/$defs/permissionCode"}, "uniqueItems": true},
+        "requestFields": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+        "responses": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/response"}}
+      },
+      "additionalProperties": false
+    },
+    "frontendAction": {
+      "type": "object",
+      "required": ["id", "label", "description", "invocation", "target", "parameters", "requiredPermissions"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "invocation": {"enum": ["http", "host-event", "navigation", "module-export"]},
+        "target": {"type": "string", "minLength": 1},
+        "parameters": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+        "requiredPermissions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/permissionCode"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {"const": "liveshop.io/v1"},
+    "kind": {"const": "ModuleRelease"},
+    "metadata": {
+      "type": "object",
+      "required": ["id", "name", "version"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$"},
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+      },
+      "additionalProperties": false
+    },
+    "spec": {
+      "type": "object",
+      "required": ["backend", "permissions", "contributions"],
+      "properties": {
+        "backend": {
+          "type": "object",
+          "required": ["service", "origin", "httpRoutes"],
+          "properties": {
+            "service": {"type": "string", "minLength": 1},
+            "origin": {"type": "string", "format": "uri"},
+            "httpRoutes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["surface", "prefix", "operations"],
+                "properties": {
+                  "surface": {"enum": ["admin", "merch", "shop", "live", "internal"]},
+                  "prefix": {"type": "string", "pattern": "^/"},
+                  "operations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/httpOperation"}}
+                },
+                "additionalProperties": false
+              }
+            },
+            "grpc": {
+              "type": "object",
+              "required": ["service", "contractVersion", "endpoint", "transportSecurity", "methods"],
+              "properties": {
+                "service": {"type": "string", "minLength": 1},
+                "contractVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+                "endpoint": {"type": "string", "minLength": 1},
+                "transportSecurity": {"type": "string", "minLength": 1},
+                "methods": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "fullMethod", "summary", "description", "invocation", "idempotency", "recommendedDeadlineMs", "requiredPermissions", "requestFields", "responseFields"],
+                    "properties": {
+                      "name": {"type": "string", "minLength": 1},
+                      "fullMethod": {"type": "string", "pattern": "^/"},
+                      "summary": {"type": "string", "minLength": 1},
+                      "description": {"type": "string", "minLength": 1},
+                      "invocation": {"enum": ["unary", "server-stream", "client-stream", "bidi-stream"]},
+                      "idempotency": {"enum": ["safe", "idempotent", "non-idempotent"]},
+                      "recommendedDeadlineMs": {"type": "integer", "minimum": 1},
+                      "requiredPermissions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/permissionCode"}, "uniqueItems": true},
+                      "requestFields": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+                      "responseFields": {"type": "array", "items": {"$ref": "#/$defs/field"}}
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "permissions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["code", "name", "resource", "action"],
+            "properties": {
+              "code": {"$ref": "#/$defs/permissionCode"},
+              "name": {"type": "string", "minLength": 1},
+              "resource": {"type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"},
+              "action": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+              "description": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "contributions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "surface", "kind", "title", "description", "requiredPermissions", "allowedRoutes", "artifact", "frontend"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "surface": {"enum": ["admin", "merch", "shop", "live"]},
+              "kind": {"enum": ["page", "slot", "widget", "action"]},
+              "route": {"type": "string"},
+              "outlet": {"type": "string"},
+              "title": {"type": "string", "minLength": 1},
+              "description": {"type": "string", "minLength": 1},
+              "icon": {"type": "string"},
+              "sort": {"type": "integer"},
+              "requiredPermissions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/permissionCode"}, "uniqueItems": true},
+              "allowedRoutes": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["methods", "prefix", "requiredPermissions"],
+                  "properties": {
+                    "methods": {"type": "array", "minItems": 1, "items": {"enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]}, "uniqueItems": true},
+                    "prefix": {"type": "string", "pattern": "^/"},
+                    "requiredPermissions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/permissionCode"}, "uniqueItems": true}
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "artifact": {
+                "type": "object",
+                "required": ["type", "name", "version", "entry", "integrity"],
+                "properties": {
+                  "type": {"enum": ["iframe", "remote-esm"]},
+                  "name": {"type": "string", "minLength": 1},
+                  "version": {"type": "string"},
+                  "entry": {"type": "string", "format": "uri"},
+                  "exportName": {"type": "string"},
+                  "integrity": {"type": "string"}
+                },
+                "additionalProperties": false
+              },
+              "frontend": {
+                "type": "object",
+                "required": ["component", "props", "events", "actions"],
+                "properties": {
+                  "component": {"type": "string", "minLength": 1},
+                  "props": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+                  "events": {"type": "array", "items": {"type": "object", "required": ["name", "description", "payload"], "properties": {"name": {"type": "string", "minLength": 1}, "description": {"type": "string", "minLength": 1}, "payload": {"type": "array", "items": {"$ref": "#/$defs/field"}}}, "additionalProperties": false}},
+                  "actions": {"type": "array", "items": {"$ref": "#/$defs/frontendAction"}}
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

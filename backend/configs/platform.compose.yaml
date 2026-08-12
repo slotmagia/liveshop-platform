@@ -1,0 +1,46 @@
+# 仅用于 backend/deploy/compose.local.yml 的本地开发配置，禁止用于生产。
+service: platform
+log:
+  level: info
+  format: text
+server:
+  http: ":8082"
+  grpc: ":9082"
+database:
+  url: postgres://liveshop:liveshop-local@registry-db:5432/liveshop_registry?sslmode=disable
+  max_open_connections: 40
+  max_idle_connections: 10
+  connection_max_lifetime: 30m
+  connection_max_idle_time: 5m
+module_session:
+  key_id: module-session-dev-1
+  private_key: nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A
+  public_key: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
+  issuer: liveshop-platform
+access_identity:
+  key_id: access-identity-dev-1
+  private_key: TM0Imyj_ltqdtsNG7BFOD1uKMZ81q6Yk2oz27U-4pvs
+  public_key: PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw
+  issuer: liveshop-identity
+workload_identity:
+  issuer: liveshop-workload-identity
+  gateway:
+    key_id: gateway-workload-dev-1
+    public_key: ky88xYQS66lbhNA-cUpijVuxRWcWAdFRgMIHFKF7PkA
+    spiffe_id: spiffe://liveshop.local/gateway
+    subject: liveshop-gateway
+    permissions: [registry.routes.read, registry.capabilities.read, platform.registry.routes.read, platform.registry.capabilities.read]
+  release:
+    key_id: ci-workload-dev-1
+    public_key: fkfxuRj0sxDYBT3U_qghrTrtjfv4y3djZObZ-EL_Zho
+    spiffe_id: spiffe://liveshop.local/module-release-ci
+    subject: module-release-ci
+    permissions: [registry.release.write, registry.activation.write]
+http:
+  allowed_origins: [http://gateway.internal]
+  cookie_secure: false
+grpc:
+  tls:
+    certificate_file: /run/grpc/server.pem
+    private_key_file: /run/grpc/server-key.pem
+    client_ca_file: /run/grpc/ca.pem

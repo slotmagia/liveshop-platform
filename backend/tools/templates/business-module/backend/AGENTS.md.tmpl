@@ -1,0 +1,6 @@
+# {{MODULE_NAME}} 后端规则
+
+- domain 不依赖框架；application 编排用例；transport 只适配协议；infrastructure 实现端口。
+- 所有 I/O 传递 context，写入校验版本或旧状态。
+- 数据库和关键事件使用同一事务 Outbox，消费者使用 Inbox 去重。
+- Proto 和生成产物不可手改，migration 只追加。

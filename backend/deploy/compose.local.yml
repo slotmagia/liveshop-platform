@@ -1,0 +1,147 @@
+name: liveshop-platform-local
+services:
+  registry-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: liveshop_registry
+      POSTGRES_USER: liveshop
+      POSTGRES_PASSWORD: liveshop-local
+    ports: ["127.0.0.1:54329:5432"]
+    volumes:
+      - registry-db-data:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U liveshop -d liveshop_registry"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+  registry-migrate:
+    image: postgres:17-alpine
+    environment:
+      PGPASSWORD: liveshop-local
+    volumes:
+      - ../migrations:/migrations:ro
+    command: ["sh", "-ec", "for file in /migrations/*.sql; do psql -h registry-db -U liveshop -d liveshop_registry -v ON_ERROR_STOP=1 -f \"$$file\"; done"]
+    depends_on:
+      registry-db: {condition: service_healthy}
+  registry-seed-local:
+    image: postgres:17-alpine
+    environment:
+      PGPASSWORD: liveshop-local
+    volumes:
+      - ../tools/seed-iam-local.sql:/seed.sql:ro
+    command: ["psql", "-h", "registry-db", "-U", "liveshop", "-d", "liveshop_registry", "-v", "ON_ERROR_STOP=1", "-f", "/seed.sql"]
+    depends_on:
+      registry-migrate: {condition: service_completed_successfully}
+  grpc-certs:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      additional_contexts: {kernel: ../../../kernel-go}
+    entrypoint: ["/app/grpccerts"]
+    command: ["-out", "/certs", "-force", "-owner", "65532"]
+    volumes: ["grpc-certs:/certs"]
+    user: "0:0"
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN"]
+  platform:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      additional_contexts: {kernel: ../../../kernel-go}
+    command: ["-config", "/app/configs/platform.compose.yaml"]
+    ports: ["127.0.0.1:8082:8082", "127.0.0.1:9082:9082"]
+    volumes: ["grpc-certs:/run/grpc:ro"]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on:
+      registry-seed-local: {condition: service_completed_successfully}
+      grpc-certs: {condition: service_completed_successfully}
+  gateway:
+    build:
+      context: ../../../liveshop-gateway/backend
+      additional_contexts: {contracts: ../contracts, kernel: ../../../kernel-go}
+    environment:
+      HTTP_ADDR: :8081
+      PLATFORM_REGISTRY_URL: http://platform:8082
+      WORKLOAD_IDENTITY_ISSUER: liveshop-workload-identity
+      WORKLOAD_KEY_ID: gateway-workload-dev-1
+      WORKLOAD_PRIVATE_KEY: k51SIJI3oT-PJGXf2uWjL6jyTiDJ1Nwmk6l1ehqDrqA
+      MODULE_SESSION_KEY_ID: module-session-dev-1
+      MODULE_SESSION_PUBLIC_KEY: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
+      MODULE_SESSION_ISSUER: liveshop-platform
+      CORS_ALLOWED_ORIGINS: http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175,http://127.0.0.1:5176,http://127.0.0.1:5180
+    ports: ["127.0.0.1:8081:8081"]
+    depends_on: [platform]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+  admin-host:
+    build:
+      context: ../../../liveshop-gateway
+      dockerfile: deploy/frontend.Dockerfile
+      additional_contexts: {platform-packages: ../../packages}
+      args: {WORKSPACE: "@liveshop/app-admin", SOURCE_DIR: frontend-admin}
+    ports: ["127.0.0.1:5173:8080"]
+    read_only: true
+    tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on: [gateway]
+  merch-host:
+    build:
+      context: ../../../liveshop-gateway
+      dockerfile: deploy/frontend.Dockerfile
+      additional_contexts: {platform-packages: ../../packages}
+      args: {WORKSPACE: "@liveshop/app-merch", SOURCE_DIR: frontend-merch}
+    ports: ["127.0.0.1:5174:8080"]
+    read_only: true
+    tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on: [gateway]
+  shop-host:
+    build:
+      context: ../../../liveshop-gateway
+      dockerfile: deploy/frontend.Dockerfile
+      additional_contexts: {platform-packages: ../../packages}
+      args: {WORKSPACE: "@liveshop/app-shop", SOURCE_DIR: frontend-shop}
+    ports: ["127.0.0.1:5175:8080"]
+    read_only: true
+    tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on: [gateway]
+  live-host:
+    build:
+      context: ../../../liveshop-gateway
+      dockerfile: deploy/frontend.Dockerfile
+      additional_contexts: {platform-packages: ../../packages}
+      args: {WORKSPACE: "@liveshop/app-live", SOURCE_DIR: frontend-live}
+    ports: ["127.0.0.1:5176:8080"]
+    read_only: true
+    tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on: [gateway]
+  platform-iam-admin:
+    build:
+      context: ../..
+      dockerfile: backend/deploy/frontend.Dockerfile
+      args: {WORKSPACE: "@liveshop/platform-iam-admin", SOURCE_DIR: frontend-admin}
+    ports: ["127.0.0.1:5180:8080"]
+    read_only: true
+    tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on: [gateway]
+volumes:
+  registry-db-data:
+  grpc-certs:
+networks:
+  default:
+    name: liveshop-local
+    external: true

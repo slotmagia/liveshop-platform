@@ -1,0 +1,15 @@
+version: 1
+rules:
+  - from: backend
+    allow: [contracts, kernel-go]
+    deny: [apps/frontend, external-modules]
+  - from: external-module-repositories
+    allow: [published/contracts, published/kernel-go, published/host-sdk, published/design-tokens]
+    deny: [apps, backend/internal, other-module-internal]
+  - from: external-gateway-repository
+    allow: [published/contracts/modulemanifest, published/kernel-go, published/host-sdk, published/design-tokens]
+    deny: [backend/internal, external-module-internal]
+release:
+  immutable_key: metadata.id+metadata.version
+  require_artifact_digest: true
+  require_owner_approval: true

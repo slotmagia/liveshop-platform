@@ -1,0 +1,29 @@
+{
+  "apiVersion": "liveshop.io/v1",
+  "kind": "ModuleRelease",
+  "metadata": {"id": "{{MODULE_ID}}", "name": "{{MODULE_NAME}}", "version": "0.1.0"},
+  "spec": {
+    "backend": {
+      "service": "{{MODULE_ID}}",
+      "origin": "http://127.0.0.1:8090",
+      "httpRoutes": [{
+        "surface": "merch",
+        "prefix": "/merch/{{MODULE_ID}}",
+        "operations": [{
+          "id": "{{MODULE_ID}}.health.get",
+          "method": "GET",
+          "path": "/merch/{{MODULE_ID}}/health",
+          "summary": "Read module health",
+          "description": "Example operation; replace it with a real business capability.",
+          "authentication": "module-session",
+          "idempotency": "safe",
+          "requiredPermissions": ["{{MODULE_ID}}.health.read"],
+          "requestFields": [],
+          "responses": [{"status": 200, "description": "Module is ready", "fields": [{"name": "status", "type": "string", "description": "Health status"}]}]
+        }]
+      }]
+    },
+    "permissions": [{"code": "{{MODULE_ID}}.health.read", "name": "Read module health", "resource": "{{MODULE_ID}}.health", "action": "read", "description": "Example permission"}],
+    "contributions": []
+  }
+}

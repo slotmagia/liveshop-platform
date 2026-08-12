@@ -1,0 +1,341 @@
+{
+  "surface": "admin",
+  "prefix": "/admin/platform/iam",
+  "operations": [
+    {
+      "id": "platform.iam.permissions.list",
+      "method": "GET",
+      "path": "/admin/platform/iam/permissions",
+      "summary": "查询权限目录",
+      "description": "返回所有模块同步到 Platform 的权限定义。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "权限定义列表",
+          "fields": [
+            {
+              "name": "items",
+              "type": "array",
+              "description": "权限数组"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.iam.departments.list",
+      "method": "GET",
+      "path": "/admin/platform/iam/departments",
+      "summary": "查询部门",
+      "description": "返回当前租户部门树。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "部门列表",
+          "fields": [
+            {
+              "name": "items",
+              "type": "array",
+              "description": "部门数组"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.iam.departments.put",
+      "method": "PUT",
+      "path": "/admin/platform/iam/departments/{departmentId}",
+      "summary": "创建或更新部门",
+      "description": "使用 expectedVersion 乐观锁写入部门并校验父级无环。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "departmentId",
+          "location": "path",
+          "type": "integer",
+          "required": true,
+          "description": "部门 ID"
+        },
+        {
+          "name": "expectedVersion",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "期望版本"
+        },
+        {
+          "name": "name",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "部门名称"
+        },
+        {
+          "name": "status",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "ACTIVE 或 DISABLED"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "写入后的部门",
+          "fields": [
+            {
+              "name": "department",
+              "type": "object",
+              "description": "部门数据"
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "description": "版本冲突",
+          "fields": [
+            {
+              "name": "message",
+              "type": "string",
+              "description": "冲突原因"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.iam.roles.list",
+      "method": "GET",
+      "path": "/admin/platform/iam/roles",
+      "summary": "查询角色",
+      "description": "返回当前租户角色。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "角色列表",
+          "fields": [
+            {
+              "name": "items",
+              "type": "array",
+              "description": "角色数组"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.iam.roles.put",
+      "method": "PUT",
+      "path": "/admin/platform/iam/roles/{roleId}",
+      "summary": "创建或更新角色",
+      "description": "使用 expectedVersion 乐观锁写入普通角色。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "roleId",
+          "location": "path",
+          "type": "integer",
+          "required": true,
+          "description": "角色 ID"
+        },
+        {
+          "name": "expectedVersion",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "期望版本"
+        },
+        {
+          "name": "name",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "角色名称"
+        },
+        {
+          "name": "status",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "角色状态"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "写入后的角色",
+          "fields": [
+            {
+              "name": "role",
+              "type": "object",
+              "description": "角色数据"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.iam.roles.policy.put",
+      "method": "PUT",
+      "path": "/admin/platform/iam/roles/{roleId}/policy",
+      "summary": "替换角色策略",
+      "description": "原子替换角色权限和数据范围，并使用 expectedVersion 防止并发覆盖。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "roleId",
+          "location": "path",
+          "type": "integer",
+          "required": true,
+          "description": "角色 ID"
+        },
+        {
+          "name": "expectedVersion",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "期望版本"
+        },
+        {
+          "name": "permissions",
+          "location": "body",
+          "type": "array",
+          "required": true,
+          "description": "权限码数组"
+        },
+        {
+          "name": "scopes",
+          "location": "body",
+          "type": "array",
+          "required": true,
+          "description": "数据范围数组"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "最新角色策略",
+          "fields": [
+            {
+              "name": "policy",
+              "type": "object",
+              "description": "角色策略"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.iam.subjects.assignment.put",
+      "method": "PUT",
+      "path": "/admin/platform/iam/subjects/{subject}/assignment",
+      "summary": "替换用户分配",
+      "description": "替换用户的角色和部门分配。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "subject",
+          "location": "path",
+          "type": "string",
+          "required": true,
+          "description": "用户 Subject"
+        },
+        {
+          "name": "roleIds",
+          "location": "body",
+          "type": "array",
+          "required": true,
+          "description": "角色 ID 数组"
+        },
+        {
+          "name": "departments",
+          "location": "body",
+          "type": "array",
+          "required": true,
+          "description": "部门分配"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "分配完成",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "id": "platform.iam.subjects.access.get",
+      "method": "GET",
+      "path": "/admin/platform/iam/subjects/{subject}/access",
+      "summary": "查询有效授权",
+      "description": "计算并返回指定用户的权限和数据范围。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.iam.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "subject",
+          "location": "path",
+          "type": "string",
+          "required": true,
+          "description": "用户 Subject"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "有效授权",
+          "fields": [
+            {
+              "name": "permissions",
+              "type": "array",
+              "description": "权限码"
+            },
+            {
+              "name": "dataScopes",
+              "type": "array",
+              "description": "数据范围"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

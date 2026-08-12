@@ -1,0 +1,10 @@
+service: {{MODULE_ID}}
+server:
+  http: ":8090"
+  grpc: ":9090"
+database:
+  url: ""
+  max_open_connections: 40
+  max_idle_connections: 10
+  connection_max_lifetime: 30m
+  connection_max_idle_time: 5m

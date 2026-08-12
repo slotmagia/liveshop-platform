@@ -1,0 +1,99 @@
+{
+  "id": "platform.admin.registry",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/platform/modules",
+  "title": "模块管理",
+  "description": "管理不可变模块发布、激活版本并查看完整能力契约。",
+  "sort": 20,
+  "requiredPermissions": [
+    "platform.registry.manage"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "prefix": "/admin/platform/registry",
+      "requiredPermissions": [
+        "platform.registry.manage"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-iam-admin",
+    "version": "2.0.1",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:dev-platform-iam"
+  },
+  "frontend": {
+    "component": "ModuleRegistryPage",
+    "props": [],
+    "events": [
+      {
+        "name": "platform.registry.activation.changed",
+        "description": "模块激活版本变化后发布。",
+        "payload": [
+          {
+            "name": "moduleId",
+            "type": "string",
+            "required": true,
+            "description": "模块 ID"
+          },
+          {
+            "name": "version",
+            "type": "string",
+            "description": "激活版本；停用时为空"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "inspect-capabilities",
+        "label": "查看能力",
+        "description": "展开模块 HTTP、gRPC、权限和前端能力契约。",
+        "invocation": "http",
+        "target": "platform.registry.capabilities.list",
+        "parameters": [
+          {
+            "name": "moduleId",
+            "type": "string",
+            "required": true,
+            "description": "模块 ID"
+          }
+        ],
+        "requiredPermissions": [
+          "platform.registry.manage"
+        ]
+      },
+      {
+        "id": "activate-release",
+        "label": "激活版本",
+        "description": "激活指定不可变发布。",
+        "invocation": "http",
+        "target": "platform.registry.modules.activate",
+        "parameters": [
+          {
+            "name": "moduleId",
+            "type": "string",
+            "required": true,
+            "description": "模块 ID"
+          },
+          {
+            "name": "version",
+            "type": "string",
+            "required": true,
+            "description": "版本"
+          }
+        ],
+        "requiredPermissions": [
+          "platform.registry.manage"
+        ]
+      }
+    ]
+  }
+}

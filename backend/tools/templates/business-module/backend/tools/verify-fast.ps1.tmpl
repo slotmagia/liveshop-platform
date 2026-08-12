@@ -1,0 +1,12 @@
+$ErrorActionPreference = 'Stop'
+$backend = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$env:GOWORK = 'off'
+go -C $backend mod tidy
+if ($LASTEXITCODE -ne 0) { throw 'go mod tidy failed' }
+$unformatted = go -C $backend fmt ./...
+if ($LASTEXITCODE -ne 0) { throw 'go fmt failed' }
+go -C $backend vet ./...
+if ($LASTEXITCODE -ne 0) { throw 'go vet failed' }
+go -C $backend test ./...
+if ($LASTEXITCODE -ne 0) { throw 'go test failed' }
+Write-Output 'Fast verification passed.'

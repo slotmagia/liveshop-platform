@@ -1,0 +1,112 @@
+{
+  "surface": "admin",
+  "prefix": "/admin/platform/identity",
+  "operations": [
+    {
+      "id": "platform.identity.accounts.list",
+      "method": "GET",
+      "path": "/admin/platform/identity/accounts",
+      "summary": "查询后台账户",
+      "description": "返回当前租户的平台端和商户端后台账户。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.identity.manage"
+      ],
+      "requestFields": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "后台账户列表",
+          "fields": [
+            {
+              "name": "items",
+              "type": "array",
+              "description": "账户数组"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.identity.accounts.put",
+      "method": "PUT",
+      "path": "/admin/platform/identity/accounts/{realm}/{subject}",
+      "summary": "创建或更新后台账户",
+      "description": "使用 expectedVersion 更新账户；改密或停用会撤销全部刷新会话。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.identity.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "realm",
+          "location": "path",
+          "type": "string",
+          "required": true,
+          "description": "PLATFORM 或 MERCHANT"
+        },
+        {
+          "name": "subject",
+          "location": "path",
+          "type": "string",
+          "required": true,
+          "description": "稳定 Subject"
+        },
+        {
+          "name": "expectedVersion",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "期望版本"
+        },
+        {
+          "name": "username",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "登录账号"
+        },
+        {
+          "name": "status",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "账户状态"
+        },
+        {
+          "name": "password",
+          "location": "body",
+          "type": "string",
+          "format": "password",
+          "description": "新密码；更新时可留空"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "最新账户",
+          "fields": [
+            {
+              "name": "account",
+              "type": "object",
+              "description": "账户信息"
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "description": "版本冲突",
+          "fields": [
+            {
+              "name": "message",
+              "type": "string",
+              "description": "冲突原因"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
