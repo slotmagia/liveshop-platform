@@ -22,8 +22,8 @@ variables:
   MODULE_NAME: "liveshop-platform"
   MODULE_ID: "platform"
   DEPENDENCY_REPOSITORIES: "kernel-go"
-  BACKEND_PORT: "8082"
-  READINESS_URL: "http://127.0.0.1:8082/readyz"
+  BACKEND_PORT: "18082"
+  READINESS_URL: "http://127.0.0.1:18082/readyz"
   READINESS_MODE: "success"
   REGISTER_MODULE: "true"
   BACKEND_ORIGIN: "http://platform:8082"
@@ -48,4 +48,3 @@ deploy_test:
   script:
     - bash ci/prepare-contexts.sh
     - bash ci/deploy.sh
-
