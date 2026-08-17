@@ -1,0 +1,4 @@
+-- Retired migration marker.
+-- Legacy authorization tables may remain in upgraded databases strictly as
+-- input to cmd/authorizationexport. Normal Platform startup neither creates,
+-- mutates nor drops them.

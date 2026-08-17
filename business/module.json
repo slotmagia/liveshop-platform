@@ -1,0 +1,2888 @@
+{
+  "apiVersion": "liveshop.io/v1",
+  "kind": "ModuleRelease",
+  "metadata": {
+    "id": "platform",
+    "name": "Platform Control Plane",
+    "version": "5.1.0"
+  },
+  "spec": {
+    "backend": {
+      "service": "platform",
+      "origin": "http://127.0.0.1:8082",
+      "httpRoutes": [
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/registry",
+          "operations": [
+            {
+              "id": "platform.admin.registry.modules.list",
+              "method": "GET",
+              "path": "/admin/platform/registry/modules",
+              "summary": "查询模块生命周期",
+              "description": "返回模块、不可变发布、摘要和当前激活版本。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.registry.manage"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "模块发布列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "模块数组"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.registry.capabilities.list",
+              "method": "GET",
+              "path": "/admin/platform/registry/capabilities",
+              "summary": "查询模块能力目录",
+              "description": "返回所有不可变发布的 HTTP、gRPC、权限和前端能力契约。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.registry.manage"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "机器可读能力目录",
+                  "fields": [
+                    {
+                      "name": "revision",
+                      "type": "integer",
+                      "description": "注册中心修订号"
+                    },
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "模块能力数组"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.registry.modules.activate",
+              "method": "POST",
+              "path": "/admin/platform/registry/modules/{moduleId}/activate",
+              "summary": "激活模块版本",
+              "description": "在串行化事务中校验路由冲突和活动导航分组元数据一致性、同步权限目录、更新唯一激活版本并记录审计。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.registry.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "moduleId",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "模块 ID"
+                },
+                {
+                  "name": "version",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "发布版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "激活完成",
+                  "fields": []
+                },
+                {
+                  "status": 409,
+                  "description": "发布不存在、路由冲突或导航分组元数据冲突",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "type": "string",
+                      "description": "冲突原因"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.registry.modules.deactivate",
+              "method": "DELETE",
+              "path": "/admin/platform/registry/modules/{moduleId}/deactivate",
+              "summary": "停用模块",
+              "description": "移除模块当前激活版本并记录审计；Platform 自身不可停用。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.registry.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "moduleId",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "模块 ID"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 204,
+                  "description": "停用完成",
+                  "fields": []
+                },
+                {
+                  "status": 404,
+                  "description": "模块未激活",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "type": "string",
+                      "description": "错误原因"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/settings",
+          "operations": [
+            {
+              "id": "platform.admin.settings.catalog.get",
+              "method": "GET",
+              "path": "/admin/platform/settings/catalog",
+              "summary": "查询配置分类及表单元数据",
+              "description": "返回 Platform 拥有的配置分组、子类和字段 schema。直播/交易/注册等业务配置不进入本目录。Admin 按字段渲染表单，不自行维护 JSON 结构。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.settings.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "分类目录",
+                  "fields": [
+                    {
+                      "name": "groups",
+                      "type": "array",
+                      "description": "大类→子类→字段，不含密钥"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.settings.list",
+              "method": "GET",
+              "path": "/admin/platform/settings",
+              "summary": "查询平台配置",
+              "description": "返回当前租户的平台配置文档。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.settings.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "配置文档列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "配置文档"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.settings.get",
+              "method": "GET",
+              "path": "/admin/platform/settings/{namespace}",
+              "summary": "读取命名空间配置",
+              "description": "读取指定 namespace 的版本化配置文档。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.settings.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "namespace",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "配置命名空间"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "配置文档",
+                  "fields": [
+                    {
+                      "name": "value",
+                      "type": "object",
+                      "description": "配置值"
+                    },
+                    {
+                      "name": "version",
+                      "type": "integer",
+                      "description": "当前版本"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.settings.update",
+              "method": "PUT",
+              "path": "/admin/platform/settings/{namespace}",
+              "summary": "写入命名空间配置",
+              "description": "使用 expectedVersion 乐观锁写入已登记 namespace 的配置值。字段必须属于 catalog，禁止自由 JSON 和密钥键。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.settings.write"
+              ],
+              "requestFields": [
+                {
+                  "name": "namespace",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "配置命名空间"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "期望版本"
+                },
+                {
+                  "name": "value",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "配置值"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新配置文档",
+                  "fields": [
+                    {
+                      "name": "version",
+                      "type": "integer",
+                      "description": "最新版本"
+                    }
+                  ]
+                },
+                {
+                  "status": 409,
+                  "description": "版本冲突",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "type": "string",
+                      "description": "冲突原因"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/audit",
+          "operations": [
+            {
+              "id": "platform.admin.audit.events.list",
+              "method": "GET",
+              "path": "/admin/platform/audit/events",
+              "summary": "查询审计事件",
+              "description": "按当前租户返回最近审计事件。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.audit.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "limit",
+                  "location": "query",
+                  "type": "integer",
+                  "description": "返回数量上限"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "审计事件列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "审计事件"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/live-providers",
+          "operations": [
+            {
+              "id": "platform.admin.live-providers.drivers.list",
+              "method": "GET",
+              "path": "/admin/platform/live-providers/drivers",
+              "summary": "查询流媒体驱动及表单元数据",
+              "description": "返回后端驱动注册表拥有的 kind、推流形态、字段、默认值、枚举、凭据组与校验边界；Admin 不自行维护驱动条件表单。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.live-provider.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "驱动定义列表",
+                  "fields": [
+                    {
+                      "name": "drivers",
+                      "type": "array",
+                      "description": "每个驱动携带 fields 表单元数据，不含任何凭据值"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.live-providers.list",
+              "method": "GET",
+              "path": "/admin/platform/live-providers",
+              "summary": "查询流媒体方式目录",
+              "description": "返回当前 App 范围内的 Provider、版本、非敏感配置、凭据脱敏状态和健康状态。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.live-provider.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "keyword",
+                  "location": "query",
+                  "type": "string",
+                  "description": "编码或名称"
+                },
+                {
+                  "name": "kind",
+                  "location": "query",
+                  "type": "string",
+                  "description": "RTMP 或 RTC"
+                },
+                {
+                  "name": "driver",
+                  "location": "query",
+                  "type": "string",
+                  "description": "驱动"
+                },
+                {
+                  "name": "lifecycle",
+                  "location": "query",
+                  "type": "string",
+                  "description": "ACTIVE 或 RETIRED"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "Provider 列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "不返回任何密钥明文"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.live-providers.update",
+              "method": "PUT",
+              "path": "/admin/platform/live-providers/{code}",
+              "summary": "版本化保存流媒体方式",
+              "description": "新增或按 expectedVersion 修改 Provider；新建默认启用，编辑沿用当前启用状态；配置、不可变快照、默认项变更、幂等回执与 Audit 同事务提交。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.live-provider.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定 Provider 编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "新建为 0"
+                },
+                {
+                  "name": "name",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "展示名称"
+                },
+                {
+                  "name": "driver",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "驱动，kind 由服务端派生"
+                },
+                {
+                  "name": "secret",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "KEEP/REPLACE/CLEAR；值只写"
+                },
+                {
+                  "name": "appCertificate",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "KEEP/REPLACE/CLEAR；值只写"
+                },
+                {
+                  "name": "customerCredential",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "成对 KEEP/REPLACE/CLEAR；值只写"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新 Provider 脱敏视图",
+                  "fields": [
+                    {
+                      "name": "provider",
+                      "type": "object",
+                      "description": "含最新 version"
+                    }
+                  ]
+                },
+                {
+                  "status": 409,
+                  "description": "expectedVersion 或 commandKey 冲突",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.live-providers.retire",
+              "method": "POST",
+              "path": "/admin/platform/live-providers/{code}/retire",
+              "summary": "退役流媒体方式",
+              "description": "将 Provider 进入 RETIRED 终态；历史版本和场次引用不删除。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.live-provider.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "Provider 编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "已退役 Provider",
+                  "fields": [
+                    {
+                      "name": "provider",
+                      "type": "object",
+                      "description": "RETIRED 终态"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.live-providers.assignments.get",
+              "method": "GET",
+              "path": "/admin/platform/live-providers/assignments",
+              "summary": "查询商户流媒体方式授权",
+              "description": "返回指定商户可使用的流媒体 Provider 授权集合、默认项和版本。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.live-provider.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "merchantId",
+                  "location": "query",
+                  "type": "integer",
+                  "required": true,
+                  "description": "商户"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "商户授权集合",
+                  "fields": [
+                    {
+                      "name": "merchantId",
+                      "type": "integer",
+                      "description": "商户"
+                    },
+                    {
+                      "name": "providers",
+                      "type": "array",
+                      "description": "授权项，不含凭据明文"
+                    },
+                    {
+                      "name": "version",
+                      "type": "integer",
+                      "description": "授权文档版本"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.live-providers.assignments.replace",
+              "method": "PUT",
+              "path": "/admin/platform/live-providers/assignments",
+              "summary": "替换商户流媒体方式授权",
+              "description": "按 expectedVersion 整份替换商户的流媒体 Provider 授权集合。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.live-provider.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                },
+                {
+                  "name": "merchantId",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "商户"
+                },
+                {
+                  "name": "providers",
+                  "location": "body",
+                  "type": "array",
+                  "required": true,
+                  "description": "完整授权集合"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新授权集合",
+                  "fields": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/sms",
+          "operations": [
+            {
+              "id": "platform.admin.sms.drivers.list",
+              "method": "GET",
+              "path": "/admin/platform/sms/drivers",
+              "summary": "查询短信驱动及表单元数据",
+              "description": "返回后端驱动注册表拥有的字段、必填、密钥和占位说明；Admin 不自行维护驱动条件表单。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.sms.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "驱动定义列表",
+                  "fields": [
+                    {
+                      "name": "drivers",
+                      "type": "array",
+                      "description": "每个驱动携带 fields 表单元数据，不含任何密钥值"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.channels.list",
+              "method": "GET",
+              "path": "/admin/platform/sms/channels",
+              "summary": "查询短信通道目录",
+              "description": "返回通道、驱动、区域路由、优先级、启停、版本和密钥脱敏状态。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.sms.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "keyword",
+                  "location": "query",
+                  "type": "string",
+                  "description": "编码或名称"
+                },
+                {
+                  "name": "driver",
+                  "location": "query",
+                  "type": "string",
+                  "description": "驱动"
+                },
+                {
+                  "name": "lifecycle",
+                  "location": "query",
+                  "type": "string",
+                  "description": "ACTIVE 或 RETIRED"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "通道列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "不返回任何密钥明文"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.channels.update",
+              "method": "PUT",
+              "path": "/admin/platform/sms/channels/{code}",
+              "summary": "版本化保存短信通道",
+              "description": "新增或按 expectedVersion 修改通道；新建默认启用，编辑沿用当前启用状态；密钥只写，空值保留。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "新建为 0"
+                },
+                {
+                  "name": "driver",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "驱动"
+                },
+                {
+                  "name": "secrets",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "按字段 KEEP/REPLACE/CLEAR；值只写"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道脱敏视图",
+                  "fields": [
+                    {
+                      "name": "channel",
+                      "type": "object",
+                      "description": "含最新 version"
+                    }
+                  ]
+                },
+                {
+                  "status": 409,
+                  "description": "expectedVersion 或 commandKey 冲突",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.channels.enable",
+              "method": "POST",
+              "path": "/admin/platform/sms/channels/{code}/enable",
+              "summary": "启用短信通道",
+              "description": "版本化切换通道启用状态，不改配置。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.channels.disable",
+              "method": "POST",
+              "path": "/admin/platform/sms/channels/{code}/disable",
+              "summary": "停用短信通道",
+              "description": "版本化切换通道启用状态，不改配置。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.channels.retire",
+              "method": "POST",
+              "path": "/admin/platform/sms/channels/{code}/retire",
+              "summary": "退役短信通道",
+              "description": "将通道进入 RETIRED 终态并保留历史版本。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "已退役通道",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.test",
+              "method": "POST",
+              "path": "/admin/platform/sms/test",
+              "summary": "测试发送短信",
+              "description": "指定通道或按号码前缀路由后发送测试短信；Mock 不真发并回填验证码。",
+              "authentication": "module-session",
+              "idempotency": "non-idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "channelCode",
+                  "location": "body",
+                  "type": "string",
+                  "description": "指定通道；空则按路由"
+                },
+                {
+                  "name": "phone",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "E.164 手机号"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "发送结果",
+                  "fields": [
+                    {
+                      "name": "ok",
+                      "type": "boolean",
+                      "description": "是否被网关接受"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.regions.list",
+              "method": "GET",
+              "path": "/admin/platform/sms/regions",
+              "summary": "查询短信区域目录",
+              "description": "返回区号主数据、启停和生命周期。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.sms.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "keyword",
+                  "location": "query",
+                  "type": "string",
+                  "description": "区号、名称或 ISO2"
+                },
+                {
+                  "name": "lifecycle",
+                  "location": "query",
+                  "type": "string",
+                  "description": "ACTIVE 或 RETIRED"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "区域列表",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.regions.update",
+              "method": "PUT",
+              "path": "/admin/platform/sms/regions/{code}",
+              "summary": "版本化保存短信区域",
+              "description": "新增或按 expectedVersion 修改区域；编码由区号数字部分派生且创建后不可改。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "区号数字部分"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "新建为 0"
+                },
+                {
+                  "name": "dialCode",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "E.164 区号"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新区域",
+                  "fields": []
+                },
+                {
+                  "status": 409,
+                  "description": "版本或命令冲突",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.regions.enable",
+              "method": "POST",
+              "path": "/admin/platform/sms/regions/{code}/enable",
+              "summary": "启用短信区域",
+              "description": "版本化切换区域启用状态。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "区域编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新区域",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.regions.disable",
+              "method": "POST",
+              "path": "/admin/platform/sms/regions/{code}/disable",
+              "summary": "停用短信区域",
+              "description": "版本化切换区域启用状态。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "区域编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新区域",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.regions.retire",
+              "method": "POST",
+              "path": "/admin/platform/sms/regions/{code}/retire",
+              "summary": "退役短信区域",
+              "description": "区域进入 RETIRED 终态；仍被活动通道引用时拒绝。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "区域编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "已退役区域",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.merchant-grants.get",
+              "method": "GET",
+              "path": "/admin/platform/sms/merchant-grants",
+              "summary": "查询商户短信区域开通",
+              "description": "按 app_id + commercial_id 返回开通区号；未配置视为不限制。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.sms.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "grantAppId",
+                  "location": "query",
+                  "type": "integer",
+                  "required": true,
+                  "description": "店铺 app_id"
+                },
+                {
+                  "name": "shopId",
+                  "location": "query",
+                  "type": "integer",
+                  "required": true,
+                  "description": "店铺 commercial_id"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "开通范围",
+                  "fields": [
+                    {
+                      "name": "unrestricted",
+                      "type": "boolean",
+                      "description": "空选择表示不限制"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.sms.merchant-grants.replace",
+              "method": "PUT",
+              "path": "/admin/platform/sms/merchant-grants",
+              "summary": "设置商户短信区域开通",
+              "description": "按 app_id + commercial_id 写入开通区号；空数组表示不限制。不把 commercial_id 映射为 merchant_id。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "新建为 0"
+                },
+                {
+                  "name": "grantAppId",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "店铺 app_id"
+                },
+                {
+                  "name": "shopId",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "店铺 commercial_id"
+                },
+                {
+                  "name": "dialCodes",
+                  "location": "body",
+                  "type": "array",
+                  "required": true,
+                  "description": "开通区号；空=不限制"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新开通范围",
+                  "fields": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/email",
+          "operations": [
+            {
+              "id": "platform.admin.email.drivers.list",
+              "method": "GET",
+              "path": "/admin/platform/email/drivers",
+              "summary": "查询邮件驱动及表单元数据",
+              "description": "返回后端驱动注册表拥有的字段、必填、密钥、选项和占位说明；Admin 不自行维护驱动条件表单。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.email.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "驱动定义列表",
+                  "fields": [
+                    {
+                      "name": "drivers",
+                      "type": "array",
+                      "description": "每个驱动携带 fields 表单元数据，不含任何密钥值"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.email.config.get",
+              "method": "GET",
+              "path": "/admin/platform/email/config",
+              "summary": "取当前邮件发信配置",
+              "description": "返回平台级单例发信配置。尚未保存时 version 为 0。不返回任何密钥明文。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.email.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "当前配置脱敏视图",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.email.config.update",
+              "method": "PUT",
+              "path": "/admin/platform/email/config",
+              "summary": "版本化保存邮件发信配置",
+              "description": "新增或按 expectedVersion 修改单例发信配置；新建默认启用，编辑沿用当前启用状态；密钥只写，空值保留。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.email.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "新建为 0"
+                },
+                {
+                  "name": "driver",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "驱动"
+                },
+                {
+                  "name": "secrets",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "按字段 KEEP/REPLACE/CLEAR；值只写"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新配置脱敏视图",
+                  "fields": [
+                    {
+                      "name": "config",
+                      "type": "object",
+                      "description": "含最新 version"
+                    }
+                  ]
+                },
+                {
+                  "status": 409,
+                  "description": "expectedVersion 或 commandKey 冲突",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.email.config.enable",
+              "method": "POST",
+              "path": "/admin/platform/email/config/enable",
+              "summary": "启用邮件发信",
+              "description": "版本化切换发信启用状态，不改 SMTP 配置。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.email.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新配置",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.email.config.disable",
+              "method": "POST",
+              "path": "/admin/platform/email/config/disable",
+              "summary": "停用邮件发信",
+              "description": "版本化切换发信启用状态，不改 SMTP 配置。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.email.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新配置",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.email.config.test",
+              "method": "POST",
+              "path": "/admin/platform/email/config/test",
+              "summary": "发一封测试邮件",
+              "description": "使用已保存的明文配置试发。mock 驱动不连接 SMTP。",
+              "authentication": "module-session",
+              "idempotency": "non-idempotent",
+              "requiredPermissions": [
+                "platform.email.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "to",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "收件人"
+                },
+                {
+                  "name": "subject",
+                  "location": "body",
+                  "type": "string",
+                  "description": "留空使用默认测试主题"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "试发结果",
+                  "fields": [
+                    {
+                      "name": "ok",
+                      "type": "boolean",
+                      "description": "是否发送成功"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/storage",
+          "operations": [
+            {
+              "id": "platform.admin.storage.drivers.list",
+              "method": "GET",
+              "path": "/admin/platform/storage/drivers",
+              "summary": "查询存储驱动及表单元数据",
+              "description": "返回后端驱动注册表拥有的字段、必填、密钥和占位说明；Admin 不自行维护驱动条件表单。local 驱动无表单字段。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.storage.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "驱动定义列表",
+                  "fields": [
+                    {
+                      "name": "drivers",
+                      "type": "array",
+                      "description": "每个驱动携带 fields 表单元数据，不含任何密钥值"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.storage.channels.list",
+              "method": "GET",
+              "path": "/admin/platform/storage/channels",
+              "summary": "查询存储通道目录",
+              "description": "返回通道、驱动、默认标记、启停、版本和密钥脱敏状态。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.storage.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "keyword",
+                  "location": "query",
+                  "type": "string",
+                  "description": "编码或名称"
+                },
+                {
+                  "name": "driver",
+                  "location": "query",
+                  "type": "string",
+                  "description": "驱动"
+                },
+                {
+                  "name": "lifecycle",
+                  "location": "query",
+                  "type": "string",
+                  "description": "ACTIVE 或 RETIRED"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "通道列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "不返回任何密钥明文"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.storage.channels.update",
+              "method": "PUT",
+              "path": "/admin/platform/storage/channels/{code}",
+              "summary": "版本化保存存储通道",
+              "description": "新增或按 expectedVersion 修改通道；新建默认启用且非默认，编辑沿用当前启用与默认状态；密钥只写，空值保留。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "新建为 0"
+                },
+                {
+                  "name": "driver",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "驱动"
+                },
+                {
+                  "name": "secrets",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "按字段 KEEP/REPLACE/CLEAR；值只写"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道脱敏视图",
+                  "fields": [
+                    {
+                      "name": "channel",
+                      "type": "object",
+                      "description": "含最新 version"
+                    }
+                  ]
+                },
+                {
+                  "status": 409,
+                  "description": "expectedVersion 或 commandKey 冲突",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.storage.channels.enable",
+              "method": "POST",
+              "path": "/admin/platform/storage/channels/{code}/enable",
+              "summary": "启用存储通道",
+              "description": "版本化切换通道启用状态。停用会同时取消默认标记。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.storage.channels.disable",
+              "method": "POST",
+              "path": "/admin/platform/storage/channels/{code}/disable",
+              "summary": "停用存储通道",
+              "description": "版本化切换通道启用状态。停用会同时取消默认标记。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.storage.channels.default",
+              "method": "POST",
+              "path": "/admin/platform/storage/channels/{code}/default",
+              "summary": "将存储通道设为默认",
+              "description": "目标必须已启用。事务内取消其它通道的默认标记。新上传立即切换，已有文件不迁移。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.storage.channels.retire",
+              "method": "POST",
+              "path": "/admin/platform/storage/channels/{code}/retire",
+              "summary": "退役存储通道",
+              "description": "将通道进入 RETIRED 终态并保留历史版本；同时取消启用和默认标记。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新通道",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.storage.channels.test",
+              "method": "POST",
+              "path": "/admin/platform/storage/channels/{code}/test",
+              "summary": "测试写入存储通道",
+              "description": "使用已保存明文配置写入探测文件 _storage_test/ping-{ms}.txt。本地通道返回 /uploads/{folder}/{name}，云通道返回公网 URL，浏览器均可直接打开。",
+              "authentication": "module-session",
+              "idempotency": "non-idempotent",
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "通道编码"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "试写结果",
+                  "fields": [
+                    {
+                      "name": "ok",
+                      "type": "boolean",
+                      "description": "是否写入成功"
+                    },
+                    {
+                      "name": "url",
+                      "type": "string",
+                      "description": "可直接打开的访问 URL"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/uploads",
+          "operations": [
+            {
+              "id": "platform.admin.storage.objects.get",
+              "method": "GET",
+              "path": "/uploads/{folder}/{name}",
+              "summary": "读取本地存储对象",
+              "description": "按对象键直出本地磁盘文件字节。测试文件形如 /uploads/_storage_test/ping-1.txt。浏览器可直接打开，无需 Host hash 或模块会话。",
+              "authentication": "public",
+              "idempotency": "safe",
+              "requiredPermissions": [],
+              "requestFields": [
+                {
+                  "name": "folder",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "对象键第一段"
+                },
+                {
+                  "name": "name",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "对象键第二段"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "对象原文",
+                  "fields": []
+                },
+                {
+                  "status": 404,
+                  "description": "对象不存在",
+                  "fields": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "grpc": {
+        "service": "liveshop.platform.v1.PlatformRegistryService",
+        "contractVersion": "1.0.0",
+        "endpoint": "dns:///platform:9082",
+        "transportSecurity": "tls1.3-mtls-spiffe",
+        "methods": [
+          {
+            "name": "GetRouteSnapshot",
+            "fullMethod": "/liveshop.platform.v1.PlatformRegistryService/GetRouteSnapshot",
+            "summary": "读取活动路由快照",
+            "description": "向经过授权的基础设施工作负载发布当前活动模块 HTTP 路由和单调递增修订号。",
+            "invocation": "unary",
+            "idempotency": "safe",
+            "recommendedDeadlineMs": 5000,
+            "requiredPermissions": [
+              "platform.registry.routes.read"
+            ],
+            "requestFields": [],
+            "responseFields": [
+              {
+                "name": "revision",
+                "type": "integer",
+                "required": true,
+                "description": "路由快照修订号"
+              },
+              {
+                "name": "routes",
+                "type": "array",
+                "required": true,
+                "description": "活动路由列表"
+              }
+            ]
+          },
+          {
+            "name": "GetActiveCapabilitySnapshot",
+            "fullMethod": "/liveshop.platform.v1.PlatformRegistryService/GetActiveCapabilitySnapshot",
+            "summary": "读取活动能力快照",
+            "description": "仅向 Identity 工作负载发布由当前活动 Manifest 派生的版本化权限与贡献快照。",
+            "invocation": "unary",
+            "idempotency": "safe",
+            "recommendedDeadlineMs": 5000,
+            "requiredPermissions": [
+              "platform.registry.active-capabilities.read"
+            ],
+            "requestFields": [],
+            "responseFields": [
+              {
+                "name": "registry_revision",
+                "type": "integer",
+                "required": true,
+                "description": "能力目录修订号"
+              },
+              {
+                "name": "modules",
+                "type": "array",
+                "required": true,
+                "description": "活动模块权限、贡献、路由与动作目录"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "permissions": [
+      {
+        "code": "platform.registry.manage",
+        "name": "管理模块生命周期",
+        "resource": "platform.registry",
+        "action": "manage",
+        "description": "查看能力目录并激活或停用模块版本。"
+      },
+      {
+        "code": "platform.registry.routes.read",
+        "name": "读取路由快照",
+        "resource": "platform.registry.routes",
+        "action": "read",
+        "description": "允许 Gateway 工作负载读取活动模块路由快照。"
+      },
+      {
+        "code": "platform.registry.active-capabilities.read",
+        "name": "读取活动能力快照",
+        "resource": "platform.registry.active-capabilities",
+        "action": "read",
+        "description": "只允许 Identity 工作负载读取活动权限与贡献快照。"
+      },
+      {
+        "code": "platform.settings.read",
+        "name": "查看平台配置",
+        "resource": "platform.settings",
+        "action": "read",
+        "description": "读取平台配置文档。"
+      },
+      {
+        "code": "platform.settings.write",
+        "name": "修改平台配置",
+        "resource": "platform.settings",
+        "action": "write",
+        "description": "版本化写入平台配置文档。"
+      },
+      {
+        "code": "platform.audit.read",
+        "name": "查看平台审计",
+        "resource": "platform.audit",
+        "action": "read",
+        "description": "查看控制面审计事件。"
+      },
+      {
+        "code": "platform.live-provider.read",
+        "name": "查看流媒体方式",
+        "resource": "platform.live-provider",
+        "action": "read",
+        "description": "查看 Platform 管理的流媒体 Provider 目录、版本、凭据配置状态和健康状态。"
+      },
+      {
+        "code": "platform.live-provider.manage",
+        "name": "管理流媒体方式",
+        "resource": "platform.live-provider",
+        "action": "manage",
+        "description": "版本化新增、编辑、切换默认项和退役流媒体 Provider。"
+      },
+      {
+        "code": "platform.sms.read",
+        "name": "查看短信配置",
+        "resource": "platform.sms",
+        "action": "read",
+        "description": "查看 Platform 短信驱动、通道、区域和商户开通范围；不返回密钥明文。"
+      },
+      {
+        "code": "platform.sms.manage",
+        "name": "管理短信配置",
+        "resource": "platform.sms",
+        "action": "manage",
+        "description": "版本化新增、编辑、启停和退役短信通道与区域，并设置商户开通范围或测试发送。"
+      },
+      {
+        "code": "platform.email.read",
+        "name": "查看邮件配置",
+        "resource": "platform.email",
+        "action": "read",
+        "description": "查看 Platform 邮件驱动和单例发信配置；不返回密钥明文。"
+      },
+      {
+        "code": "platform.email.manage",
+        "name": "管理邮件配置",
+        "resource": "platform.email",
+        "action": "manage",
+        "description": "版本化保存或启停邮件发信配置，并测试发送。"
+      },
+      {
+        "code": "platform.storage.read",
+        "name": "查看存储配置",
+        "resource": "platform.storage",
+        "action": "read",
+        "description": "查看 Platform 对象存储驱动和通道目录；不返回密钥明文。"
+      },
+      {
+        "code": "platform.storage.manage",
+        "name": "管理存储配置",
+        "resource": "platform.storage",
+        "action": "manage",
+        "description": "版本化新增、编辑、启停、设为默认和退役存储通道，并测试写入。"
+      },
+      {
+        "code": "platform.placeholder.read",
+        "name": "Read migration placeholders",
+        "resource": "platform.placeholder",
+        "action": "read",
+        "description": "Open registered menu placeholders without granting any business API route."
+      }
+    ],
+    "contributions": [
+      {
+        "id": "platform.admin.audit",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/platform/audit",
+        "title": "审计日志",
+        "description": "查询当前租户的安全与控制面审计事件。",
+        "icon": "scroll-text",
+        "sort": 40,
+        "requiredPermissions": [
+          "platform.audit.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/audit",
+            "requiredPermissions": [
+              "platform.audit.read"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "AuditEventsPage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "refresh-audit",
+              "label": "刷新",
+              "description": "重新加载审计事件。",
+              "invocation": "http",
+              "target": "platform.admin.audit.events.list",
+              "parameters": [
+                {
+                  "name": "limit",
+                  "type": "integer",
+                  "description": "返回数量"
+                }
+              ],
+              "requiredPermissions": [
+                "platform.audit.read"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.email",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/email",
+        "title": "邮件管理",
+        "description": "配置 Platform 邮件发信驱动与单例 SMTP 账号。表单由驱动 schema 生成，密钥只写并加密存储。邮件模板属于通知事件，不在本页维护。",
+        "icon": "mail",
+        "sort": 120,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.email.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/email",
+            "requiredPermissions": [
+              "platform.email.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT",
+              "POST"
+            ],
+            "prefix": "/admin/platform/email",
+            "requiredPermissions": [
+              "platform.email.manage"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "EmailPage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "load-email-drivers",
+              "label": "加载驱动",
+              "description": "从后端驱动注册表读取动态表单元数据。",
+              "invocation": "http",
+              "target": "platform.admin.email.drivers.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.email.read"
+              ]
+            },
+            {
+              "id": "load-email-config",
+              "label": "加载配置",
+              "description": "读取当前单例发信配置。",
+              "invocation": "http",
+              "target": "platform.admin.email.config.get",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.email.read"
+              ]
+            },
+            {
+              "id": "save-email-config",
+              "label": "保存配置",
+              "description": "以 expectedVersion 和 commandKey 版本化保存发信配置。",
+              "invocation": "http",
+              "target": "platform.admin.email.config.update",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.email.manage"
+              ]
+            },
+            {
+              "id": "test-email-send",
+              "label": "测试发送",
+              "description": "使用已保存配置发送测试邮件。",
+              "invocation": "http",
+              "target": "platform.admin.email.config.test",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.email.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.live-providers",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/live-providers",
+        "title": "流媒体方式",
+        "description": "管理 Platform 全局流媒体 Provider 目录；表单由驱动元数据生成，并维护不可变版本、加密凭据状态与健康状态。商户授权在商户管理入口维护。",
+        "icon": "wifi",
+        "sort": 170,
+        "navigation": {
+          "groupId": "legacy-admin-mall",
+          "groupTitle": "商城中台",
+          "groupIcon": "store",
+          "groupSort": 300
+        },
+        "requiredPermissions": [
+          "platform.live-provider.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/live-providers",
+            "requiredPermissions": [
+              "platform.live-provider.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT",
+              "POST"
+            ],
+            "prefix": "/admin/platform/live-providers",
+            "requiredPermissions": [
+              "platform.live-provider.manage"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "LiveProvidersPage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "load-live-provider-drivers",
+              "label": "加载驱动",
+              "description": "从后端驱动注册表读取动态表单元数据。",
+              "invocation": "http",
+              "target": "platform.admin.live-providers.drivers.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.live-provider.read"
+              ]
+            },
+            {
+              "id": "refresh-live-providers",
+              "label": "刷新",
+              "description": "重新加载流媒体方式目录。",
+              "invocation": "http",
+              "target": "platform.admin.live-providers.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.live-provider.read"
+              ]
+            },
+            {
+              "id": "save-live-provider",
+              "label": "新增或编辑",
+              "description": "以 expectedVersion 和 commandKey 版本化保存 Provider。",
+              "invocation": "http",
+              "target": "platform.admin.live-providers.update",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.live-provider.manage"
+              ]
+            },
+            {
+              "id": "retire-live-provider",
+              "label": "退役",
+              "description": "退役 Provider 并保留历史版本。",
+              "invocation": "http",
+              "target": "platform.admin.live-providers.retire",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.live-provider.manage"
+              ]
+            },
+            {
+              "id": "load-live-provider-assignments",
+              "label": "加载商户授权",
+              "description": "读取指定商户的流媒体方式授权集合。",
+              "invocation": "http",
+              "target": "platform.admin.live-providers.assignments.get",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.live-provider.read"
+              ]
+            },
+            {
+              "id": "replace-live-provider-assignments",
+              "label": "保存商户授权",
+              "description": "整份替换指定商户的流媒体方式授权集合。",
+              "invocation": "http",
+              "target": "platform.admin.live-providers.assignments.replace",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.live-provider.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.registry",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/menus",
+        "title": "菜单管理",
+        "description": "以活动 Manifest 为唯一事实源管理模块版本，并只读预览四端菜单导航与完整能力契约。",
+        "icon": "panel-left",
+        "sort": 110,
+        "navigation": {
+          "groupId": "legacy-admin-system",
+          "groupTitle": "系统管理",
+          "groupIcon": "shield",
+          "groupSort": 200
+        },
+        "requiredPermissions": [
+          "platform.registry.manage"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET",
+              "POST",
+              "DELETE"
+            ],
+            "prefix": "/admin/platform/registry",
+            "requiredPermissions": [
+              "platform.registry.manage"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "ModuleRegistryPage",
+          "props": [],
+          "events": [
+            {
+              "name": "platform.registry.activation.changed",
+              "description": "模块激活版本变化后发布。",
+              "payload": [
+                {
+                  "name": "moduleId",
+                  "type": "string",
+                  "required": true,
+                  "description": "模块 ID"
+                },
+                {
+                  "name": "version",
+                  "type": "string",
+                  "description": "激活版本；停用时为空"
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "id": "inspect-capabilities",
+              "label": "查看能力",
+              "description": "展开模块 HTTP、gRPC、权限和前端能力契约。",
+              "invocation": "http",
+              "target": "platform.admin.registry.capabilities.list",
+              "parameters": [
+                {
+                  "name": "moduleId",
+                  "type": "string",
+                  "required": true,
+                  "description": "模块 ID"
+                }
+              ],
+              "requiredPermissions": [
+                "platform.registry.manage"
+              ]
+            },
+            {
+              "id": "activate-release",
+              "label": "激活版本",
+              "description": "激活指定不可变发布。",
+              "invocation": "http",
+              "target": "platform.admin.registry.modules.activate",
+              "parameters": [
+                {
+                  "name": "moduleId",
+                  "type": "string",
+                  "required": true,
+                  "description": "模块 ID"
+                },
+                {
+                  "name": "version",
+                  "type": "string",
+                  "required": true,
+                  "description": "版本"
+                }
+              ],
+              "requiredPermissions": [
+                "platform.registry.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.settings",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/configs",
+        "title": "配置管理",
+        "description": "按 Platform 拥有的分类目录维护站点信息和主域名。表单由后端 catalog 生成，写入使用 expectedVersion。直播、交易和注册登录配置不进入本页。",
+        "icon": "settings",
+        "sort": 150,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.settings.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/settings",
+            "requiredPermissions": [
+              "platform.settings.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT"
+            ],
+            "prefix": "/admin/platform/settings",
+            "requiredPermissions": [
+              "platform.settings.write"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "PlatformSettingsPage",
+          "props": [],
+          "events": [
+            {
+              "name": "platform.settings.changed",
+              "description": "配置写入成功后发布。",
+              "payload": [
+                {
+                  "name": "namespace",
+                  "type": "string",
+                  "required": true,
+                  "description": "配置命名空间"
+                },
+                {
+                  "name": "version",
+                  "type": "integer",
+                  "required": true,
+                  "description": "最新版本"
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "id": "load-settings-catalog",
+              "label": "加载分类",
+              "description": "读取 Platform 拥有的配置分组和字段 schema。",
+              "invocation": "http",
+              "target": "platform.admin.settings.catalog.get",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.settings.read"
+              ]
+            },
+            {
+              "id": "save-setting",
+              "label": "保存配置",
+              "description": "使用 expectedVersion 保存已登记分类的配置值。",
+              "invocation": "http",
+              "target": "platform.admin.settings.update",
+              "parameters": [
+                {
+                  "name": "namespace",
+                  "type": "string",
+                  "required": true,
+                  "description": "分类命名空间"
+                }
+              ],
+              "requiredPermissions": [
+                "platform.settings.write"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.sms",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/sms",
+        "title": "短信配置",
+        "description": "管理 Platform 短信驱动元数据、通道、区域路由和按 app_id + commercial_id 的商户开通。表单由驱动 schema 生成，密钥只写并加密存储。短信模板属于通知事件，不在本页维护。",
+        "icon": "message-square",
+        "sort": 110,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.sms.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/sms",
+            "requiredPermissions": [
+              "platform.sms.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT",
+              "POST"
+            ],
+            "prefix": "/admin/platform/sms",
+            "requiredPermissions": [
+              "platform.sms.manage"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "SmsPage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "load-sms-drivers",
+              "label": "加载驱动",
+              "description": "从后端驱动注册表读取动态表单元数据。",
+              "invocation": "http",
+              "target": "platform.admin.sms.drivers.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.sms.read"
+              ]
+            },
+            {
+              "id": "refresh-sms-channels",
+              "label": "刷新通道",
+              "description": "重新加载短信通道目录。",
+              "invocation": "http",
+              "target": "platform.admin.sms.channels.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.sms.read"
+              ]
+            },
+            {
+              "id": "save-sms-channel",
+              "label": "保存通道",
+              "description": "以 expectedVersion 和 commandKey 版本化保存通道。",
+              "invocation": "http",
+              "target": "platform.admin.sms.channels.update",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ]
+            },
+            {
+              "id": "test-sms-send",
+              "label": "测试发送",
+              "description": "指定通道或按路由发送测试短信。",
+              "invocation": "http",
+              "target": "platform.admin.sms.test",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.sms.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.storage",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/storage",
+        "title": "存储管理",
+        "description": "管理 Platform 对象存储驱动元数据、版本化通道和唯一默认项。表单由驱动 schema 生成，密钥只写并加密存储。本地磁盘路径是服务器属性，不经表单改写。",
+        "icon": "hard-drive",
+        "sort": 140,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.storage.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/storage",
+            "requiredPermissions": [
+              "platform.storage.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT",
+              "POST"
+            ],
+            "prefix": "/admin/platform/storage",
+            "requiredPermissions": [
+              "platform.storage.manage"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "StoragePage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "load-storage-drivers",
+              "label": "加载驱动",
+              "description": "从后端驱动注册表读取动态表单元数据。",
+              "invocation": "http",
+              "target": "platform.admin.storage.drivers.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.storage.read"
+              ]
+            },
+            {
+              "id": "refresh-storage-channels",
+              "label": "刷新通道",
+              "description": "重新加载存储通道目录。",
+              "invocation": "http",
+              "target": "platform.admin.storage.channels.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.storage.read"
+              ]
+            },
+            {
+              "id": "save-storage-channel",
+              "label": "保存通道",
+              "description": "以 expectedVersion 和 commandKey 版本化保存通道。",
+              "invocation": "http",
+              "target": "platform.admin.storage.channels.update",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ]
+            },
+            {
+              "id": "test-storage-channel",
+              "label": "测试写入",
+              "description": "使用已保存配置写入探测文件。",
+              "invocation": "http",
+              "target": "platform.admin.storage.channels.test",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.storage.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.placeholder.admin.ad-attribution",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/ad-attribution",
+        "title": "广告归因",
+        "description": "广告归因菜单占位。页面与业务事实归 platform 模块；领域契约、真实接口和数据源完成前不提供业务操作或模拟数据。",
+        "icon": "mouse-pointer-click",
+        "sort": 110,
+        "navigation": {
+          "groupId": "legacy-admin-monitor",
+          "groupTitle": "监控",
+          "groupIcon": "activity",
+          "groupSort": 400
+        },
+        "requiredPermissions": [
+          "platform.placeholder.read"
+        ],
+        "allowedRoutes": [],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "PlaceholderPage",
+          "props": [],
+          "events": [],
+          "actions": []
+        }
+      },
+      {
+        "id": "platform.placeholder.admin.i18n",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/i18n",
+        "title": "翻译工作台",
+        "description": "翻译工作台菜单占位。页面与业务事实归 platform 模块；领域契约、真实接口和数据源完成前不提供业务操作或模拟数据。",
+        "icon": "languages",
+        "sort": 160,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.placeholder.read"
+        ],
+        "allowedRoutes": [],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "PlaceholderPage",
+          "props": [],
+          "events": [],
+          "actions": []
+        }
+      },
+      {
+        "id": "platform.placeholder.admin.notify-events",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/notify-events",
+        "title": "通知事件",
+        "description": "通知事件菜单占位。页面与业务事实归 platform 模块；领域契约、真实接口和数据源完成前不提供业务操作或模拟数据。",
+        "icon": "bell",
+        "sort": 130,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.placeholder.read"
+        ],
+        "allowedRoutes": [],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "PlaceholderPage",
+          "props": [],
+          "events": [],
+          "actions": []
+        }
+      },
+      {
+        "id": "platform.placeholder.admin.track-events",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/track-events",
+        "title": "上报事件",
+        "description": "上报事件菜单占位。页面与业务事实归 platform 模块；领域契约、真实接口和数据源完成前不提供业务操作或模拟数据。",
+        "icon": "radar",
+        "sort": 100,
+        "navigation": {
+          "groupId": "legacy-admin-monitor",
+          "groupTitle": "监控",
+          "groupIcon": "activity",
+          "groupSort": 400
+        },
+        "requiredPermissions": [
+          "platform.placeholder.read"
+        ],
+        "allowedRoutes": [],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "5.1.0",
+          "entry": "http://127.0.0.1:5180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "PlaceholderPage",
+          "props": [],
+          "events": [],
+          "actions": []
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,196 @@
+/**
+ * The Tailwind entry for back-office surfaces. A host imports `console.css`
+ * first (tokens plus the framework-neutral component layer) and this file
+ * second, so utilities win over `.ls-ui-*` while Preflight — which only ever
+ * matches bare elements — still loses to it.
+ *
+ * Colours are read as `var(--ls-*)` rather than through `theme()`, because the
+ * preset hands Tailwind an `<alpha-value>` placeholder that only means
+ * something inside a generated utility.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--ls-border);
+  }
+
+  body {
+    color: var(--ls-ink);
+    background: var(--ls-canvas);
+    font-family: var(--ls-font-sans);
+    font-feature-settings: 'ss01', 'cv01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Number inputs keep the validation and numeric keypad of `type=number`
+     without the spinner, which never survives a dense table layout. */
+  input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+  }
+
+  table {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+}
+
+@layer utilities {
+  /* Identifiers, amounts and timestamps line up only in the mono face. */
+  .mono {
+    font-family: var(--ls-font-mono);
+    font-size: 12.5px;
+    letter-spacing: -0.005em;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ls-border-soft) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: var(--ls-border-soft);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* The dense toolbar buttons. They are a component class rather than a React
+   variant because table toolbars are also built by the framework-neutral
+   factories in `index.js`, and both must render the same control. */
+@layer components {
+  .ghost-btn,
+  .primary-btn,
+  .danger-btn,
+  .ghost-btn-sm,
+  .primary-btn-sm,
+  .danger-btn-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid transparent;
+    border-radius: var(--ls-radius-sm);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
+  }
+
+  .ghost-btn,
+  .primary-btn,
+  .danger-btn {
+    height: 30px;
+    padding: 0 11px;
+    font-size: 13px;
+  }
+
+  .ghost-btn-sm,
+  .primary-btn-sm,
+  .danger-btn-sm {
+    height: 26px;
+    padding: 0 9px;
+    font-size: 12.5px;
+  }
+
+  .ghost-btn:focus-visible,
+  .primary-btn:focus-visible,
+  .danger-btn:focus-visible,
+  .ghost-btn-sm:focus-visible,
+  .primary-btn-sm:focus-visible,
+  .danger-btn-sm:focus-visible {
+    outline: 2px solid var(--ls-primary);
+    outline-offset: 1px;
+  }
+
+  .ghost-btn:disabled,
+  .primary-btn:disabled,
+  .danger-btn:disabled,
+  .ghost-btn-sm:disabled,
+  .primary-btn-sm:disabled,
+  .danger-btn-sm:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+
+  .ghost-btn,
+  .ghost-btn-sm {
+    border-color: var(--ls-border-soft);
+    color: var(--ls-ink);
+    background: var(--ls-surface);
+    box-shadow: 0 1px 1px rgb(0 0 0 / .02);
+  }
+
+  .ghost-btn:hover:not(:disabled),
+  .ghost-btn-sm:hover:not(:disabled) {
+    border-color: var(--ls-border-strong);
+    background: var(--ls-surface-subtle);
+  }
+
+  .ghost-btn svg,
+  .ghost-btn-sm svg { color: var(--ls-muted); }
+  .ghost-btn-sm.icon-only { width: 26px; padding: 0; }
+
+  .primary-btn,
+  .primary-btn-sm {
+    border-color: var(--ls-primary);
+    color: var(--ls-on-primary);
+    background: var(--ls-primary);
+    box-shadow: 0 1px 2px rgb(50 50 93 / .12), inset 0 -1px 0 rgb(0 0 0 / .08);
+  }
+
+  .primary-btn:hover:not(:disabled),
+  .primary-btn-sm:hover:not(:disabled) {
+    border-color: var(--ls-primary-hover);
+    background: var(--ls-primary-hover);
+  }
+
+  .danger-btn,
+  .danger-btn-sm {
+    border-color: var(--ls-danger-border);
+    color: var(--ls-danger);
+    background: var(--ls-surface);
+  }
+
+  .danger-btn:hover:not(:disabled),
+  .danger-btn-sm:hover:not(:disabled) { background: var(--ls-danger-bg); }
+
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+    border: 0;
+    color: var(--ls-primary);
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: color 100ms ease;
+  }
+
+  .link-btn:hover:not(:disabled) { color: var(--ls-primary-active); }
+}

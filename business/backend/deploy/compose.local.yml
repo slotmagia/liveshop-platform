@@ -1,0 +1,85 @@
+name: liveshop-platform-local
+services:
+  registry-db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: liveshop_registry
+      MYSQL_USER: liveshop
+      MYSQL_PASSWORD: liveshop-local
+      MYSQL_ROOT_PASSWORD: liveshop-local-root
+    command:
+      [
+        "--default-time-zone=+00:00",
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_0900_ai_ci",
+      ]
+    ports: ["127.0.0.1:33069:3306"]
+    volumes:
+      - registry-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uliveshop", "-pliveshop-local"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  registry-migrate:
+    image: mysql:8.4
+    environment:
+      MYSQL_PWD: liveshop-local
+      MYSQL_HOST: registry-db
+      MYSQL_USER: liveshop
+      MYSQL_DATABASE: liveshop_registry
+    volumes:
+      - ../migrations:/migrations:ro
+      - ../tools/migrate.sh:/migrate.sh:ro
+    command: ["sh", "/migrate.sh"]
+    depends_on:
+      registry-db: {condition: service_healthy}
+  grpc-certs:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      additional_contexts: {kernel: ../../../../kernel-go, protocol: ../../../protocol}
+    entrypoint: ["/app/grpccerts"]
+    command: ["-out", "/certs", "-owner", "65532"]
+    volumes: ["grpc-certs:/certs"]
+    user: "0:0"
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN"]
+  platform:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      additional_contexts: {kernel: ../../../../kernel-go, protocol: ../../../protocol}
+    command: ["-config", "/app/configs/platform.compose.yaml"]
+    ports: ["127.0.0.1:8082:8082", "127.0.0.1:9082:9082"]
+    volumes: ["grpc-certs:/run/grpc:ro"]
+    read_only: true
+    # GoFrame opens a temp file during logger init; on a read-only root that
+    # panics in a background goroutine after startup has already reported ok.
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on:
+      registry-migrate: {condition: service_completed_successfully}
+      grpc-certs: {condition: service_completed_successfully}
+  platform-control-admin:
+    build:
+      context: ../..
+      dockerfile: backend/deploy/frontend.Dockerfile
+      args: {WORKSPACE: "@liveshop/platform-admin", SOURCE_DIR: frontend-admin}
+    ports: ["127.0.0.1:5180:8080"]
+    read_only: true
+    tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    depends_on: [platform]
+volumes:
+  registry-db-data:
+  grpc-certs:
+    name: liveshop-grpc-certs
+networks:
+  default:
+    name: liveshop-local
+    external: true

@@ -1,0 +1,2 @@
+-- Retired migration marker. Authorization command idempotency is owned by
+-- liveshop-identity.

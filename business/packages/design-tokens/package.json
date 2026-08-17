@@ -1,0 +1,41 @@
+{
+  "name": "@liveshop/design-tokens",
+  "version": "1.5.3",
+  "type": "module",
+  "scripts": {
+    "test": "node --test *-contract.test.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./storefront": {
+      "types": "./storefront.d.ts",
+      "import": "./storefront.js"
+    },
+    "./tailwind-preset": "./tailwind-preset.js",
+    "./tokens.css": "./tokens.css",
+    "./tailwind.css": "./tailwind.css",
+    "./console.css": "./console.css",
+    "./console.components.css": "./console.components.css",
+    "./storefront.css": "./storefront.css",
+    "./storefront.components.css": "./storefront.components.css"
+  },
+  "files": [
+    "tokens.css",
+    "tailwind.css",
+    "tailwind-preset.js",
+    "console.css",
+    "console.components.css",
+    "storefront.css",
+    "storefront.components.css",
+    "index.js",
+    "index.d.ts",
+    "nav-icons.js",
+    "storefront.js",
+    "storefront.d.ts",
+    "README.md",
+    "modal-contract.test.mjs"
+  ]
+}

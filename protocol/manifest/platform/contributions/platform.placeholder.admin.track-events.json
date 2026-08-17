@@ -1,0 +1,33 @@
+{
+  "id": "platform.placeholder.admin.track-events",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/track-events",
+  "title": "上报事件",
+  "icon": "radar",
+  "description": "上报事件菜单占位。页面与业务事实归 platform 模块；领域契约、真实接口和数据源完成前不提供业务操作或模拟数据。",
+  "sort": 100,
+  "navigation": {
+    "groupId": "legacy-admin-monitor",
+    "groupTitle": "监控",
+    "groupIcon": "activity",
+    "groupSort": 400
+  },
+  "requiredPermissions": [
+    "platform.placeholder.read"
+  ],
+  "allowedRoutes": [],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-admin",
+    "version": "5.1.0",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "frontend": {
+    "component": "PlaceholderPage",
+    "props": [],
+    "events": [],
+    "actions": []
+  }
+}

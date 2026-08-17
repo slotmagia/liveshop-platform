@@ -1,0 +1,194 @@
+/**
+ * The single source of visual truth for every LiveShop surface.
+ *
+ * Values are the established back-office baseline (Stripe-style indigo on a
+ * neutral canvas, Inter + JetBrains Mono). Nothing downstream may redeclare a
+ * colour, radius, shadow or font: add a token here and migrate the callers.
+ *
+ * Every colour is declared once, as space-separated sRGB channels. The `--ls-*`
+ * token wraps those channels for plain CSS, and the Tailwind preset consumes
+ * the `*-rgb` companion so `bg-primary/10` can mix an alpha without a second
+ * hard-coded copy of the same colour.
+ */
+:root {
+  color-scheme: light;
+
+  --ls-primary-rgb: 99 91 255;
+  --ls-primary-hover-rgb: 88 81 236;
+  --ls-primary-active-rgb: 79 70 224;
+  --ls-primary-soft-rgb: 239 238 255;
+  --ls-primary-line-rgb: 224 222 255;
+
+  --ls-canvas-rgb: 242 243 245;
+  --ls-surface-rgb: 255 255 255;
+  --ls-surface-subtle-rgb: 246 249 252;
+  --ls-surface-sunken-rgb: 240 244 250;
+  --ls-surface-hover-rgb: 245 247 251;
+
+  --ls-ink-rgb: 26 31 54;
+  --ls-ink-soft-rgb: 66 84 102;
+  --ls-muted-rgb: 104 115 133;
+  --ls-subtle-rgb: 136 152 170;
+
+  --ls-border-rgb: 227 232 238;
+  --ls-border-soft-rgb: 211 221 230;
+  --ls-border-strong-rgb: 193 201 210;
+
+  --ls-success-rgb: 14 98 69;
+  --ls-success-bg-rgb: 230 249 240;
+  --ls-success-border-rgb: 198 239 219;
+  --ls-warning-rgb: 122 75 0;
+  --ls-warning-bg-rgb: 254 240 200;
+  --ls-warning-border-rgb: 249 215 121;
+  --ls-danger-rgb: 152 55 5;
+  --ls-danger-bg-rgb: 253 226 221;
+  --ls-danger-border-rgb: 244 183 173;
+  --ls-info-rgb: 6 114 131;
+  --ls-info-bg-rgb: 216 244 248;
+  --ls-info-border-rgb: 183 229 236;
+  --ls-on-primary-rgb: 255 255 255;
+
+  --ls-primary: rgb(var(--ls-primary-rgb));
+  --ls-primary-hover: rgb(var(--ls-primary-hover-rgb));
+  --ls-primary-active: rgb(var(--ls-primary-active-rgb));
+  --ls-primary-soft: rgb(var(--ls-primary-soft-rgb));
+  --ls-primary-line: rgb(var(--ls-primary-line-rgb));
+
+  --ls-canvas: rgb(var(--ls-canvas-rgb));
+  --ls-surface: rgb(var(--ls-surface-rgb));
+  --ls-surface-subtle: rgb(var(--ls-surface-subtle-rgb));
+  --ls-surface-sunken: rgb(var(--ls-surface-sunken-rgb));
+  --ls-surface-hover: rgb(var(--ls-surface-hover-rgb));
+
+  --ls-ink: rgb(var(--ls-ink-rgb));
+  --ls-ink-soft: rgb(var(--ls-ink-soft-rgb));
+  --ls-muted: rgb(var(--ls-muted-rgb));
+  --ls-subtle: rgb(var(--ls-subtle-rgb));
+
+  --ls-border: rgb(var(--ls-border-rgb));
+  --ls-border-soft: rgb(var(--ls-border-soft-rgb));
+  --ls-border-strong: rgb(var(--ls-border-strong-rgb));
+
+  --ls-success: rgb(var(--ls-success-rgb));
+  --ls-success-bg: rgb(var(--ls-success-bg-rgb));
+  --ls-success-border: rgb(var(--ls-success-border-rgb));
+  --ls-warning: rgb(var(--ls-warning-rgb));
+  --ls-warning-bg: rgb(var(--ls-warning-bg-rgb));
+  --ls-warning-border: rgb(var(--ls-warning-border-rgb));
+  --ls-danger: rgb(var(--ls-danger-rgb));
+  --ls-danger-bg: rgb(var(--ls-danger-bg-rgb));
+  --ls-danger-border: rgb(var(--ls-danger-border-rgb));
+  --ls-info: rgb(var(--ls-info-rgb));
+  --ls-info-bg: rgb(var(--ls-info-bg-rgb));
+  --ls-info-border: rgb(var(--ls-info-border-rgb));
+  --ls-on-primary: rgb(var(--ls-on-primary-rgb));
+
+  --ls-radius-xs: 4px;
+  --ls-radius-sm: 6px;
+  --ls-radius-md: 8px;
+  --ls-radius-lg: 12px;
+  --ls-radius-pill: 999px;
+
+  --ls-shadow-card: 0 1px 1px rgba(0, 0, 0, .02), 0 0 1px rgba(0, 0, 0, .06);
+  --ls-shadow-raised: 0 4px 12px rgba(50, 50, 93, .08), 0 1px 3px rgba(0, 0, 0, .05);
+  --ls-shadow-pop: 0 24px 64px rgba(50, 50, 93, .16), 0 8px 16px rgba(0, 0, 0, .08);
+  --ls-focus-ring: 0 0 0 3px rgb(var(--ls-primary-rgb) / .12);
+
+  --ls-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ls-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* Storefront and live rooms are touch-first and sit on photography, so they
+     need a larger scale and an on-media palette. The brand accent is shared:
+     only the geometry and the commerce semantics differ from the back office. */
+  --ls-radius-xl: 16px;
+  --ls-touch: 44px;
+  --ls-price: #d1332e;
+  --ls-price-soft: #fdeceb;
+  --ls-overlay: rgba(16, 24, 40, .55);
+  --ls-on-media: #ffffff;
+  --ls-on-media-muted: rgba(255, 255, 255, .72);
+  --ls-shadow-media: 0 8px 24px rgba(16, 24, 40, .18);
+  --ls-shop-chrome-rgb: 15 23 42;
+  --ls-shop-chrome: rgb(var(--ls-shop-chrome-rgb));
+  --ls-shop-chrome-muted: rgb(203 213 225);
+  --ls-shop-live-accent: rgb(251 209 128);
+  --ls-shop-header: rgb(255 255 255 / .95);
+  --ls-shop-header-line: rgb(17 24 39 / .08);
+  --ls-shop-search: rgb(243 244 246);
+  --ls-shop-ink-rgb: 17 24 39;
+  --ls-shop-white-rgb: 255 255 255;
+  --ls-shop-ink: rgb(var(--ls-shop-ink-rgb));
+  --ls-shop-muted: rgb(107 114 128);
+  --ls-shop-line: rgb(229 231 235);
+  --ls-shop-card-line: rgb(238 240 243);
+  --ls-shop-gold: rgb(251 209 128);
+  --ls-shop-accent-rgb: 30 94 255;
+  --ls-shop-accent: rgb(var(--ls-shop-accent-rgb));
+  --ls-shop-price: rgb(233 70 70);
+  --ls-shop-tabbar: rgb(67 67 65);
+  --ls-shop-tab-line: rgb(17 17 17);
+  --ls-shop-subpage-header: rgb(34 34 34);
+  --ls-shop-hero: rgb(24 32 50);
+  --ls-shop-hero-copy: rgb(219 228 239);
+  --ls-shop-teal: rgb(15 58 82);
+  --ls-shop-teal-copy: rgb(219 234 254);
+  --ls-shop-on-dark: rgb(255 255 255);
+  --ls-shop-on-dark-soft: rgb(255 255 255 / .1);
+  --ls-shop-page: rgb(244 246 248);
+  --ls-shop-card-shadow: 0 8px 18px rgb(11 18 32 / .08);
+  --ls-shop-soft-shadow: 0 6px 16px rgb(11 18 32 / .05);
+
+  /* Names kept for the storefront and live surfaces, which predate the
+     back-office palette. They resolve to the same values, so no surface can
+     drift onto a second colour system. */
+  --ls-color-bg: var(--ls-canvas);
+  --ls-color-surface: var(--ls-surface);
+  --ls-color-surface-muted: var(--ls-surface-subtle);
+  --ls-color-text: var(--ls-ink);
+  --ls-color-text-muted: var(--ls-muted);
+  --ls-color-primary: var(--ls-primary);
+  --ls-color-primary-hover: var(--ls-primary-hover);
+  --ls-color-border: var(--ls-border);
+  --ls-color-success: var(--ls-success);
+  --ls-color-danger: var(--ls-danger);
+  --ls-shadow-sm: var(--ls-shadow-card);
+  --ls-shadow-md: var(--ls-shadow-pop);
+
+  /* Stacking: page chrome < iframe modal < Host overlay < Host form modal <
+     toasts < portaled select menus. Searchable selects append to the current
+     document body with position:fixed, so --ls-z-popover must stay above
+     html.ls-host--modal-open .ls-ui-modal-backdrop. */
+  --ls-z-modal: 100;
+  --ls-z-host-overlay: 1900;
+  --ls-z-host-modal: 2000;
+  --ls-z-toast: 2050;
+  --ls-z-popover: 2100;
+}
+
+* { box-sizing: border-box; }
+html, body, #app { min-height: 100%; }
+body {
+  margin: 0;
+  color: var(--ls-ink);
+  background: var(--ls-canvas);
+  font: 14px/1.5 var(--ls-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; }
+code, pre { font-family: var(--ls-font-mono); }
+
+.ls-card {
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-radius-md);
+  background: var(--ls-surface);
+  box-shadow: var(--ls-shadow-card);
+}
+.ls-button {
+  border: 0;
+  border-radius: var(--ls-radius-sm);
+  padding: .65rem 1rem;
+  color: #fff;
+  background: var(--ls-primary);
+  cursor: pointer;
+}
+.ls-button:hover { background: var(--ls-primary-hover); }

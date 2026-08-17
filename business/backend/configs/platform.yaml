@@ -1,0 +1,53 @@
+service: platform
+log:
+  level: info
+  format: text
+server:
+  http: ":8082"
+  grpc: ":9082"
+
+# 部署必须提供一份完整配置文件；空值会在启动校验阶段失败。
+database:
+  url: ""
+  max_open_connections: 40
+  max_idle_connections: 10
+  connection_max_lifetime: 30m
+  connection_max_idle_time: 5m
+credential_encryption:
+  key_id: ""
+  master_key: ""
+module_capability:
+  key_id: ""
+  public_key: ""
+  issuer: liveshop-identity
+workload_identity:
+  issuer: liveshop-workload-identity
+  http:
+    gateway:
+      key_id: ""
+      public_key: ""
+      subject: liveshop-gateway
+      permissions: [registry.routes.read]
+    release:
+      key_id: ""
+      public_key: ""
+      subject: module-release-ci
+      permissions: [registry.release.write, registry.activation.write]
+  grpc:
+    gateway:
+      spiffe_id: spiffe://liveshop.local/gateway
+      subject: liveshop-gateway
+      permissions: [platform.registry.routes.read]
+    identity:
+      spiffe_id: spiffe://liveshop.local/identity
+      subject: liveshop-identity
+      permissions: [platform.registry.active-capabilities.read]
+internal_grant:
+  token: ""
+http:
+  allowed_origins: []
+grpc:
+  tls:
+    certificate_file: ""
+    private_key_file: ""
+    client_ca_file: ""

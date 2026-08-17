@@ -1,0 +1,107 @@
+[
+  {
+    "code": "platform.registry.manage",
+    "name": "管理模块生命周期",
+    "resource": "platform.registry",
+    "action": "manage",
+    "description": "查看能力目录并激活或停用模块版本。"
+  },
+  {
+    "code": "platform.registry.routes.read",
+    "name": "读取路由快照",
+    "resource": "platform.registry.routes",
+    "action": "read",
+    "description": "允许 Gateway 工作负载读取活动模块路由快照。"
+  },
+  {
+    "code": "platform.registry.active-capabilities.read",
+    "name": "读取活动能力快照",
+    "resource": "platform.registry.active-capabilities",
+    "action": "read",
+    "description": "只允许 Identity 工作负载读取活动权限与贡献快照。"
+  },
+  {
+    "code": "platform.settings.read",
+    "name": "查看平台配置",
+    "resource": "platform.settings",
+    "action": "read",
+    "description": "读取平台配置文档。"
+  },
+  {
+    "code": "platform.settings.write",
+    "name": "修改平台配置",
+    "resource": "platform.settings",
+    "action": "write",
+    "description": "版本化写入平台配置文档。"
+  },
+  {
+    "code": "platform.audit.read",
+    "name": "查看平台审计",
+    "resource": "platform.audit",
+    "action": "read",
+    "description": "查看控制面审计事件。"
+  },
+  {
+    "code": "platform.live-provider.read",
+    "name": "查看流媒体方式",
+    "resource": "platform.live-provider",
+    "action": "read",
+    "description": "查看 Platform 管理的流媒体 Provider 目录、版本、凭据配置状态和健康状态。"
+  },
+  {
+    "code": "platform.live-provider.manage",
+    "name": "管理流媒体方式",
+    "resource": "platform.live-provider",
+    "action": "manage",
+    "description": "版本化新增、编辑、切换默认项和退役流媒体 Provider。"
+  },
+  {
+    "code": "platform.sms.read",
+    "name": "查看短信配置",
+    "resource": "platform.sms",
+    "action": "read",
+    "description": "查看 Platform 短信驱动、通道、区域和商户开通范围；不返回密钥明文。"
+  },
+  {
+    "code": "platform.sms.manage",
+    "name": "管理短信配置",
+    "resource": "platform.sms",
+    "action": "manage",
+    "description": "版本化新增、编辑、启停和退役短信通道与区域，并设置商户开通范围或测试发送。"
+  },
+  {
+    "code": "platform.email.read",
+    "name": "查看邮件配置",
+    "resource": "platform.email",
+    "action": "read",
+    "description": "查看 Platform 邮件驱动和单例发信配置；不返回密钥明文。"
+  },
+  {
+    "code": "platform.email.manage",
+    "name": "管理邮件配置",
+    "resource": "platform.email",
+    "action": "manage",
+    "description": "版本化保存或启停邮件发信配置，并测试发送。"
+  },
+  {
+    "code": "platform.storage.read",
+    "name": "查看存储配置",
+    "resource": "platform.storage",
+    "action": "read",
+    "description": "查看 Platform 对象存储驱动和通道目录；不返回密钥明文。"
+  },
+  {
+    "code": "platform.storage.manage",
+    "name": "管理存储配置",
+    "resource": "platform.storage",
+    "action": "manage",
+    "description": "版本化新增、编辑、启停、设为默认和退役存储通道，并测试写入。"
+  },
+  {
+    "code": "platform.placeholder.read",
+    "name": "Read migration placeholders",
+    "resource": "platform.placeholder",
+    "action": "read",
+    "description": "Open registered menu placeholders without granting any business API route."
+  }
+]

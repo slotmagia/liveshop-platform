@@ -1,0 +1,98 @@
+{
+  "id": "platform.admin.storage",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/storage",
+  "title": "存储管理",
+  "icon": "hard-drive",
+  "description": "管理 Platform 对象存储驱动元数据、版本化通道和唯一默认项。表单由驱动 schema 生成，密钥只写并加密存储。本地磁盘路径是服务器属性，不经表单改写。",
+  "sort": 140,
+  "navigation": {
+    "groupId": "legacy-admin-config",
+    "groupTitle": "系统配置",
+    "groupIcon": "sliders-horizontal",
+    "groupSort": 500
+  },
+  "requiredPermissions": [
+    "platform.storage.read"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/admin/platform/storage",
+      "requiredPermissions": [
+        "platform.storage.read"
+      ]
+    },
+    {
+      "methods": [
+        "PUT",
+        "POST"
+      ],
+      "prefix": "/admin/platform/storage",
+      "requiredPermissions": [
+        "platform.storage.manage"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-admin",
+    "version": "5.1.0",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "frontend": {
+    "component": "StoragePage",
+    "props": [],
+    "events": [],
+    "actions": [
+      {
+        "id": "load-storage-drivers",
+        "label": "加载驱动",
+        "description": "从后端驱动注册表读取动态表单元数据。",
+        "invocation": "http",
+        "target": "platform.admin.storage.drivers.list",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.storage.read"
+        ]
+      },
+      {
+        "id": "refresh-storage-channels",
+        "label": "刷新通道",
+        "description": "重新加载存储通道目录。",
+        "invocation": "http",
+        "target": "platform.admin.storage.channels.list",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.storage.read"
+        ]
+      },
+      {
+        "id": "save-storage-channel",
+        "label": "保存通道",
+        "description": "以 expectedVersion 和 commandKey 版本化保存通道。",
+        "invocation": "http",
+        "target": "platform.admin.storage.channels.update",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.storage.manage"
+        ]
+      },
+      {
+        "id": "test-storage-channel",
+        "label": "测试写入",
+        "description": "使用已保存配置写入探测文件。",
+        "invocation": "http",
+        "target": "platform.admin.storage.channels.test",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.storage.manage"
+        ]
+      }
+    ]
+  }
+}

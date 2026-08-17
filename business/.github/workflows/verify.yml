@@ -1,0 +1,47 @@
+name: verify
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  workspace:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: platform_verify
+          MYSQL_USER: platform
+          MYSQL_PASSWORD: platform
+          MYSQL_ROOT_PASSWORD: platform-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uplatform -pplatform"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+          --character-set-server=utf8mb4
+          --collation-server=utf8mb4_0900_ai_ci
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: liveshop-platform
+      - uses: actions/checkout@v4
+        with:
+          repository: lvtuopen-ai/kernel-go
+          path: kernel-go
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.25.x'}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: liveshop-platform/package-lock.json
+      - shell: pwsh
+        working-directory: liveshop-platform
+        env:
+          PLATFORM_TEST_DATABASE_URL: platform:platform@tcp(127.0.0.1:3306)/platform_verify?parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci
+        run: |
+          npm ci
+          ./backend/tools/verify-module.ps1

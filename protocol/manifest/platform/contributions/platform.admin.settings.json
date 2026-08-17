@@ -1,0 +1,101 @@
+{
+  "id": "platform.admin.settings",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/configs",
+  "title": "配置管理",
+  "icon": "settings",
+  "description": "按 Platform 拥有的分类目录维护站点信息和主域名。表单由后端 catalog 生成，写入使用 expectedVersion。直播、交易和注册登录配置不进入本页。",
+  "sort": 150,
+  "navigation": {
+    "groupId": "legacy-admin-config",
+    "groupTitle": "系统配置",
+    "groupIcon": "sliders-horizontal",
+    "groupSort": 500
+  },
+  "requiredPermissions": [
+    "platform.settings.read"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/admin/platform/settings",
+      "requiredPermissions": [
+        "platform.settings.read"
+      ]
+    },
+    {
+      "methods": [
+        "PUT"
+      ],
+      "prefix": "/admin/platform/settings",
+      "requiredPermissions": [
+        "platform.settings.write"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-admin",
+    "version": "5.1.0",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "frontend": {
+    "component": "PlatformSettingsPage",
+    "props": [],
+    "events": [
+      {
+        "name": "platform.settings.changed",
+        "description": "配置写入成功后发布。",
+        "payload": [
+          {
+            "name": "namespace",
+            "type": "string",
+            "required": true,
+            "description": "配置命名空间"
+          },
+          {
+            "name": "version",
+            "type": "integer",
+            "required": true,
+            "description": "最新版本"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "load-settings-catalog",
+        "label": "加载分类",
+        "description": "读取 Platform 拥有的配置分组和字段 schema。",
+        "invocation": "http",
+        "target": "platform.admin.settings.catalog.get",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.settings.read"
+        ]
+      },
+      {
+        "id": "save-setting",
+        "label": "保存配置",
+        "description": "使用 expectedVersion 保存已登记分类的配置值。",
+        "invocation": "http",
+        "target": "platform.admin.settings.update",
+        "parameters": [
+          {
+            "name": "namespace",
+            "type": "string",
+            "required": true,
+            "description": "分类命名空间"
+          }
+        ],
+        "requiredPermissions": [
+          "platform.settings.write"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "surface": "admin",
+  "prefix": "/admin/platform/live-providers",
+  "operations": [
+    {
+      "id": "platform.admin.live-providers.drivers.list",
+      "method": "GET",
+      "path": "/admin/platform/live-providers/drivers",
+      "summary": "查询流媒体驱动及表单元数据",
+      "description": "返回后端驱动注册表拥有的 kind、推流形态、字段、默认值、枚举、凭据组与校验边界；Admin 不自行维护驱动条件表单。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.live-provider.read"
+      ],
+      "requestFields": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "驱动定义列表",
+          "fields": [
+            {
+              "name": "drivers",
+              "type": "array",
+              "description": "每个驱动携带 fields 表单元数据，不含任何凭据值"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.admin.live-providers.list",
+      "method": "GET",
+      "path": "/admin/platform/live-providers",
+      "summary": "查询流媒体方式目录",
+      "description": "返回当前 App 范围内的 Provider、版本、非敏感配置、凭据脱敏状态和健康状态。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.live-provider.read"
+      ],
+      "requestFields": [
+        {
+          "name": "keyword",
+          "location": "query",
+          "type": "string",
+          "description": "编码或名称"
+        },
+        {
+          "name": "kind",
+          "location": "query",
+          "type": "string",
+          "description": "RTMP 或 RTC"
+        },
+        {
+          "name": "driver",
+          "location": "query",
+          "type": "string",
+          "description": "驱动"
+        },
+        {
+          "name": "lifecycle",
+          "location": "query",
+          "type": "string",
+          "description": "ACTIVE 或 RETIRED"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Provider 列表",
+          "fields": [
+            {
+              "name": "items",
+              "type": "array",
+              "description": "不返回任何密钥明文"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.admin.live-providers.update",
+      "method": "PUT",
+      "path": "/admin/platform/live-providers/{code}",
+      "summary": "版本化保存流媒体方式",
+      "description": "新增或按 expectedVersion 修改 Provider；新建默认启用，编辑沿用当前启用状态；配置、不可变快照、默认项变更、幂等回执与 Audit 同事务提交。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.live-provider.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "code",
+          "location": "path",
+          "type": "string",
+          "required": true,
+          "description": "稳定 Provider 编码"
+        },
+        {
+          "name": "commandKey",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "稳定幂等键"
+        },
+        {
+          "name": "expectedVersion",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "新建为 0"
+        },
+        {
+          "name": "name",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "展示名称"
+        },
+        {
+          "name": "driver",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "驱动，kind 由服务端派生"
+        },
+        {
+          "name": "secret",
+          "location": "body",
+          "type": "object",
+          "required": true,
+          "description": "KEEP/REPLACE/CLEAR；值只写"
+        },
+        {
+          "name": "appCertificate",
+          "location": "body",
+          "type": "object",
+          "required": true,
+          "description": "KEEP/REPLACE/CLEAR；值只写"
+        },
+        {
+          "name": "customerCredential",
+          "location": "body",
+          "type": "object",
+          "required": true,
+          "description": "成对 KEEP/REPLACE/CLEAR；值只写"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "最新 Provider 脱敏视图",
+          "fields": [
+            {
+              "name": "provider",
+              "type": "object",
+              "description": "含最新 version"
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "description": "expectedVersion 或 commandKey 冲突",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "id": "platform.admin.live-providers.retire",
+      "method": "POST",
+      "path": "/admin/platform/live-providers/{code}/retire",
+      "summary": "退役流媒体方式",
+      "description": "将 Provider 进入 RETIRED 终态；历史版本和场次引用不删除。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.live-provider.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "code",
+          "location": "path",
+          "type": "string",
+          "required": true,
+          "description": "Provider 编码"
+        },
+        {
+          "name": "commandKey",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "稳定幂等键"
+        },
+        {
+          "name": "expectedVersion",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "当前版本"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "已退役 Provider",
+          "fields": [
+            {
+              "name": "provider",
+              "type": "object",
+              "description": "RETIRED 终态"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.admin.live-providers.assignments.get",
+      "method": "GET",
+      "path": "/admin/platform/live-providers/assignments",
+      "summary": "查询商户流媒体方式授权",
+      "description": "返回指定商户可使用的流媒体 Provider 授权集合、默认项和版本。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.live-provider.read"
+      ],
+      "requestFields": [
+        {
+          "name": "merchantId",
+          "location": "query",
+          "type": "integer",
+          "required": true,
+          "description": "商户"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "商户授权集合",
+          "fields": [
+            {
+              "name": "merchantId",
+              "type": "integer",
+              "description": "商户"
+            },
+            {
+              "name": "providers",
+              "type": "array",
+              "description": "授权项，不含凭据明文"
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "description": "授权文档版本"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.admin.live-providers.assignments.replace",
+      "method": "PUT",
+      "path": "/admin/platform/live-providers/assignments",
+      "summary": "替换商户流媒体方式授权",
+      "description": "按 expectedVersion 整份替换商户的流媒体 Provider 授权集合。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.live-provider.manage"
+      ],
+      "requestFields": [
+        {
+          "name": "commandKey",
+          "location": "body",
+          "type": "string",
+          "required": true,
+          "description": "稳定幂等键"
+        },
+        {
+          "name": "expectedVersion",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "当前版本"
+        },
+        {
+          "name": "merchantId",
+          "location": "body",
+          "type": "integer",
+          "required": true,
+          "description": "商户"
+        },
+        {
+          "name": "providers",
+          "location": "body",
+          "type": "array",
+          "required": true,
+          "description": "完整授权集合"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "最新授权集合",
+          "fields": []
+        }
+      ]
+    }
+  ]
+}

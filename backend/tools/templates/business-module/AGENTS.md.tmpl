@@ -1,9 +1,0 @@
-# {{MODULE_NAME}} 工程规则
-
-- 本仓库只拥有 `{{MODULE_ID}}` 领域事实、数据库和公开契约。
-- 开发前读取 `backend/AGENTS.md` 和 `backend/docs/domain/`。
-- 依赖方向固定为 transport → application → domain；infrastructure 实现 domain/application ports。
-- 禁止导入其他模块 `internal`、源码、DAO 或数据库。
-- HTTP 使用 GoFrame，跨模块同步调用使用公开 gRPC，可靠异步流程使用 Outbox/Inbox。
-- 修改共享 Manifest、Proto、migration 或组合根前登记单写者。
-- 一致性敏感变更必须先明确事实源、不变量、状态机和事务失败窗口。

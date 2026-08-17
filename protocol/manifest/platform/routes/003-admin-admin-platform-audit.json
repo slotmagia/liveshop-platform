@@ -1,0 +1,39 @@
+{
+  "surface": "admin",
+  "prefix": "/admin/platform/audit",
+  "operations": [
+    {
+      "id": "platform.admin.audit.events.list",
+      "method": "GET",
+      "path": "/admin/platform/audit/events",
+      "summary": "查询审计事件",
+      "description": "按当前租户返回最近审计事件。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": [
+        "platform.audit.read"
+      ],
+      "requestFields": [
+        {
+          "name": "limit",
+          "location": "query",
+          "type": "integer",
+          "description": "返回数量上限"
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "审计事件列表",
+          "fields": [
+            {
+              "name": "items",
+              "type": "array",
+              "description": "审计事件"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

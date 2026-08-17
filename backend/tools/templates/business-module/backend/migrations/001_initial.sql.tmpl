@@ -1,5 +1,0 @@
--- Replace this placeholder with the first append-only {{MODULE_ID}} schema migration.
-CREATE TABLE IF NOT EXISTS {{MODULE_PACKAGE}}_schema_revision (
-    revision BIGINT PRIMARY KEY CHECK (revision > 0),
-    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);

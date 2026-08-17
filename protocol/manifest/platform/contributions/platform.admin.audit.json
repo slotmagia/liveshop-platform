@@ -1,0 +1,55 @@
+{
+  "id": "platform.admin.audit",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/platform/audit",
+  "title": "审计日志",
+  "icon": "scroll-text",
+  "description": "查询当前租户的安全与控制面审计事件。",
+  "sort": 40,
+  "requiredPermissions": [
+    "platform.audit.read"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/admin/platform/audit",
+      "requiredPermissions": [
+        "platform.audit.read"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-admin",
+    "version": "5.1.0",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "frontend": {
+    "component": "AuditEventsPage",
+    "props": [],
+    "events": [],
+    "actions": [
+      {
+        "id": "refresh-audit",
+        "label": "刷新",
+        "description": "重新加载审计事件。",
+        "invocation": "http",
+        "target": "platform.admin.audit.events.list",
+        "parameters": [
+          {
+            "name": "limit",
+            "type": "integer",
+            "description": "返回数量"
+          }
+        ],
+        "requiredPermissions": [
+          "platform.audit.read"
+        ]
+      }
+    ]
+  }
+}

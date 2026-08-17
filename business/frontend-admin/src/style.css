@@ -1,0 +1,334 @@
+@import '@liveshop/design-tokens/console.css';
+
+.registry-catalog {
+  padding: 16px;
+}
+
+.registry-catalog__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.registry-catalog__description {
+  margin: 0;
+  color: var(--ls-muted);
+  font-size: 13px;
+}
+
+.registry-catalog__actions {
+  flex: 0 0 auto;
+}
+
+.registry-tree {
+  margin-top: 14px;
+  display: grid;
+  gap: 16px;
+}
+
+.registry-tree__group {
+  overflow: hidden;
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-radius-md);
+  background: var(--ls-surface);
+}
+
+.registry-tree__group-header,
+.registry-tree__menu-row,
+.registry-tree__operation-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.registry-tree__group-header {
+  min-height: 50px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ls-border);
+  background: var(--ls-surface-subtle);
+}
+
+.registry-tree__folder,
+.registry-tree__nav-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  color: var(--ls-muted);
+}
+
+.registry-tree__menu-row .registry-tree__nav-icon {
+  color: var(--ls-ink-soft);
+}
+
+.registry-tree__identity,
+.registry-tree__operation-identity {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+}
+
+.registry-tree__identity strong,
+.registry-tree__operation-identity strong {
+  overflow: hidden;
+  color: var(--ls-ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registry-tree__group-header .registry-tree__identity strong {
+  font-weight: 650;
+}
+
+.registry-tree__meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.registry-tree__code {
+  overflow: hidden;
+  color: var(--ls-ink-soft);
+  font-family: var(--ls-font-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registry-tree__code--subtle {
+  max-width: 240px;
+  color: var(--ls-subtle);
+  font-size: 11px;
+}
+
+.registry-tree__menu + .registry-tree__menu {
+  border-top: 1px solid var(--ls-border);
+}
+
+.registry-tree__menu-row {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.registry-tree__branch {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  color: var(--ls-subtle);
+}
+
+.registry-tree__operations {
+  display: grid;
+  gap: 4px;
+  padding: 0 12px 8px 28px;
+}
+
+.registry-tree__operation {
+  border-radius: var(--ls-radius-sm);
+  background: rgb(var(--ls-surface-subtle-rgb) / .72);
+}
+
+.registry-tree__operation-line {
+  min-height: 38px;
+  padding: 6px 0 6px 8px;
+}
+
+.registry-tree__operation--empty,
+.registry-tree__empty {
+  color: var(--ls-subtle);
+  font-size: 12px;
+}
+
+.registry-tree__empty {
+  padding: 28px;
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-radius-md);
+  background: var(--ls-surface);
+  text-align: center;
+}
+
+.registry-tree__compact-action,
+.registry-tree__icon-action,
+.registry-tree__enabled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--ls-radius-sm);
+  cursor: pointer;
+  transition: color 100ms ease, background 100ms ease, border-color 100ms ease;
+}
+
+.registry-tree__compact-action {
+  min-height: 28px;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--ls-border);
+  color: var(--ls-ink);
+  background: var(--ls-surface);
+  font-size: 12px;
+  font-weight: 550;
+  box-shadow: var(--ls-shadow-card);
+}
+
+.registry-tree__compact-action:hover {
+  border-color: var(--ls-border-strong);
+  background: var(--ls-surface-hover);
+}
+
+.registry-tree__compact-action svg,
+.registry-tree__icon-action svg {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.registry-tree__icon-action {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: var(--ls-ink);
+  background: transparent;
+}
+
+.registry-tree__icon-action:hover {
+  color: var(--ls-primary);
+  background: var(--ls-primary-soft);
+}
+
+.registry-tree__enabled {
+  min-width: 47px;
+  height: 26px;
+  padding: 0 9px;
+  color: var(--ls-on-primary);
+  background: var(--ls-primary);
+  font-size: 12px;
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgb(var(--ls-primary-rgb) / .24);
+}
+
+.registry-tree__enabled:hover {
+  background: var(--ls-primary-hover);
+}
+
+.registry-tree__expand {
+  width: 20px;
+  height: 20px;
+  color: var(--ls-muted);
+}
+
+.registry-tree__expand svg {
+  width: 14px;
+  height: 14px;
+}
+
+.registry-tree__operation-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 8px 8px 42px;
+  padding: 12px;
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-radius-sm);
+  background: var(--ls-surface);
+}
+
+.registry-tree__operation-detail[hidden] {
+  display: none;
+}
+
+.registry-tree__field-title,
+.registry-tree__field-empty {
+  margin: 0 0 6px;
+  color: var(--ls-muted);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.registry-tree__field-empty {
+  color: var(--ls-subtle);
+  font-weight: 400;
+}
+
+.registry-tree__field-table {
+  font-size: 12px;
+}
+
+.registry-tree__field-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(90px, 1fr) 72px;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  border-top: 1px solid var(--ls-border);
+}
+
+.registry-tree__field-row--head {
+  min-height: 26px;
+  border-top: 0;
+  color: var(--ls-muted);
+}
+
+.registry-tree__field-row code,
+.registry-tree__field-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registry-tree__compact-action:focus-visible,
+.registry-tree__icon-action:focus-visible,
+.registry-tree__enabled:focus-visible {
+  outline: 2px solid var(--ls-primary);
+  outline-offset: 1px;
+}
+
+@media (max-width: 760px) {
+  .registry-catalog__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .registry-tree__group-header,
+  .registry-tree__menu-row,
+  .registry-tree__operation-line {
+    align-items: flex-start;
+  }
+
+  .registry-tree__group-header,
+  .registry-tree__menu-row {
+    flex-wrap: wrap;
+  }
+
+  .registry-tree__identity,
+  .registry-tree__operation-identity {
+    flex-wrap: wrap;
+  }
+
+  .registry-tree__meta {
+    width: 100%;
+    padding-left: 38px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .registry-tree__operations {
+    padding-left: 12px;
+  }
+
+  .registry-tree__operation-line {
+    flex-direction: column;
+  }
+
+  .registry-tree__operation-detail {
+    grid-template-columns: 1fr;
+    margin-left: 8px;
+  }
+}
+

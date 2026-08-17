@@ -1,0 +1,98 @@
+{
+  "id": "platform.admin.sms",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/sms",
+  "title": "短信配置",
+  "icon": "message-square",
+  "description": "管理 Platform 短信驱动元数据、通道、区域路由和按 app_id + commercial_id 的商户开通。表单由驱动 schema 生成，密钥只写并加密存储。短信模板属于通知事件，不在本页维护。",
+  "sort": 110,
+  "navigation": {
+    "groupId": "legacy-admin-config",
+    "groupTitle": "系统配置",
+    "groupIcon": "sliders-horizontal",
+    "groupSort": 500
+  },
+  "requiredPermissions": [
+    "platform.sms.read"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/admin/platform/sms",
+      "requiredPermissions": [
+        "platform.sms.read"
+      ]
+    },
+    {
+      "methods": [
+        "PUT",
+        "POST"
+      ],
+      "prefix": "/admin/platform/sms",
+      "requiredPermissions": [
+        "platform.sms.manage"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-admin",
+    "version": "5.1.0",
+    "entry": "http://127.0.0.1:5180",
+    "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "frontend": {
+    "component": "SmsPage",
+    "props": [],
+    "events": [],
+    "actions": [
+      {
+        "id": "load-sms-drivers",
+        "label": "加载驱动",
+        "description": "从后端驱动注册表读取动态表单元数据。",
+        "invocation": "http",
+        "target": "platform.admin.sms.drivers.list",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.sms.read"
+        ]
+      },
+      {
+        "id": "refresh-sms-channels",
+        "label": "刷新通道",
+        "description": "重新加载短信通道目录。",
+        "invocation": "http",
+        "target": "platform.admin.sms.channels.list",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.sms.read"
+        ]
+      },
+      {
+        "id": "save-sms-channel",
+        "label": "保存通道",
+        "description": "以 expectedVersion 和 commandKey 版本化保存通道。",
+        "invocation": "http",
+        "target": "platform.admin.sms.channels.update",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.sms.manage"
+        ]
+      },
+      {
+        "id": "test-sms-send",
+        "label": "测试发送",
+        "description": "指定通道或按路由发送测试短信。",
+        "invocation": "http",
+        "target": "platform.admin.sms.test",
+        "parameters": [],
+        "requiredPermissions": [
+          "platform.sms.manage"
+        ]
+      }
+    ]
+  }
+}
