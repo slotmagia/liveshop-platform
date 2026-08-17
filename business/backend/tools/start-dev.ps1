@@ -1,7 +1,7 @@
 param(
-  [int]$PlatformPort = 8082,
-  [int]$PlatformGRPCPort = 9082,
-  [int]$GatewayPort = 8081,
+  [int]$PlatformPort = 18082,
+  [int]$PlatformGRPCPort = 19082,
+  [int]$GatewayPort = 18081,
   [int]$FrontendPortOffset = 0
 )
 $ErrorActionPreference = 'Stop'
@@ -26,15 +26,15 @@ if (-not (Test-Path -LiteralPath $vite -PathType Leaf)) {
 $registryUrl = "http://127.0.0.1:$PlatformPort"
 $gatewayUrl = "http://127.0.0.1:$GatewayPort"
 $corsOrigins = @(
-  "http://127.0.0.1:$(5173+$FrontendPortOffset)",
-  "http://127.0.0.1:$(5175+$FrontendPortOffset)", "http://127.0.0.1:$(5176+$FrontendPortOffset)",
-  "http://127.0.0.1:$(5180+$FrontendPortOffset)",
-  "http://127.0.0.1:5191", "http://127.0.0.1:5290", "http://127.0.0.1:5291"
+  "http://127.0.0.1:$(15173+$FrontendPortOffset)",
+  "http://127.0.0.1:$(15175+$FrontendPortOffset)", "http://127.0.0.1:$(15176+$FrontendPortOffset)",
+  "http://127.0.0.1:$(15180+$FrontendPortOffset)",
+  "http://127.0.0.1:15191", "http://127.0.0.1:15290", "http://127.0.0.1:15291"
 ) -join ','
 $requestedPorts = @(
   $PlatformPort, $PlatformGRPCPort, $GatewayPort,
-  (5173+$FrontendPortOffset),
-  (5175+$FrontendPortOffset), (5176+$FrontendPortOffset), (5180+$FrontendPortOffset)
+  (15173+$FrontendPortOffset),
+  (15175+$FrontendPortOffset), (15176+$FrontendPortOffset), (15180+$FrontendPortOffset)
 )
 $busyPorts = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners().Port
 foreach ($port in $requestedPorts) {
@@ -146,10 +146,10 @@ foreach ($build in $builds) {
 $processes = @(
   @{Name='platform'; File=(Join-Path $bin 'platform.exe'); Args=@('-config',$platformConfigFile); Root=(Join-Path $root 'backend')},
   @{Name='gateway'; File=(Join-Path $bin 'gateway.exe'); Args=@('-config',$gatewayConfigFile); Root=$gatewayRepositoryRoot},
-  @{Name='app-admin'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(5173+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $gatewayRepositoryRoot 'frontend-admin'); Env=@{VITE_GATEWAY_URL=$gatewayUrl}},
-  @{Name='app-shop'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(5175+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $gatewayRepositoryRoot 'frontend-shop'); Env=@{VITE_GATEWAY_URL=$gatewayUrl}},
-  @{Name='app-live'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(5176+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $gatewayRepositoryRoot 'frontend-live'); Env=@{VITE_GATEWAY_URL=$gatewayUrl}},
-  @{Name='platform-control'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(5180+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $root 'frontend-admin'); Env=@{}}
+  @{Name='app-admin'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(15173+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $gatewayRepositoryRoot 'frontend-admin'); Env=@{VITE_GATEWAY_URL=$gatewayUrl}},
+  @{Name='app-shop'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(15175+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $gatewayRepositoryRoot 'frontend-shop'); Env=@{VITE_GATEWAY_URL=$gatewayUrl}},
+  @{Name='app-live'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(15176+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $gatewayRepositoryRoot 'frontend-live'); Env=@{VITE_GATEWAY_URL=$gatewayUrl}},
+  @{Name='platform-control'; File=$node; Args=@($vite,'--host','127.0.0.1','--port',(15180+$FrontendPortOffset),'--strictPort'); Root=(Join-Path $root 'frontend-admin'); Env=@{}}
 )
 $started = @()
 try {

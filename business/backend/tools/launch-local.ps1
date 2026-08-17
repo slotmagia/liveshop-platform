@@ -8,7 +8,7 @@ if (Get-ChildItem $run -Filter *.pid -ErrorAction SilentlyContinue) {
 }
 
 $profiles = @(
-  [pscustomobject]@{Name='standard'; Platform=8082; PlatformGRPC=9082; Gateway=8081; FrontendOffset=0},
+  [pscustomobject]@{Name='standard'; Platform=18082; PlatformGRPC=19082; Gateway=18081; FrontendOffset=0},
   [pscustomobject]@{Name='isolated-38'; Platform=38182; PlatformGRPC=39182; Gateway=38181; FrontendOffset=30000},
   [pscustomobject]@{Name='isolated-48'; Platform=48182; PlatformGRPC=49182; Gateway=48181; FrontendOffset=40000},
   [pscustomobject]@{Name='isolated-58'; Platform=58182; PlatformGRPC=59182; Gateway=58181; FrontendOffset=50000}
@@ -30,8 +30,8 @@ $profile = $null
 foreach ($candidate in $profiles) {
   $ports = @(
     $candidate.Platform, $candidate.PlatformGRPC, $candidate.Gateway,
-    (5173+$candidate.FrontendOffset),
-    (5175+$candidate.FrontendOffset), (5176+$candidate.FrontendOffset), (5180+$candidate.FrontendOffset)
+    (15173+$candidate.FrontendOffset),
+    (15175+$candidate.FrontendOffset), (15176+$candidate.FrontendOffset), (15180+$candidate.FrontendOffset)
   )
   if (-not ($ports | Where-Object { $busyPorts -contains $_ }) -and (Test-PortsAvailable $ports)) { $profile = $candidate; break }
 }
@@ -39,10 +39,10 @@ if (-not $profile) { throw 'No complete local platform port profile is available
 
 $platformUrl = "http://127.0.0.1:$($profile.Platform)"
 $gatewayUrl = "http://127.0.0.1:$($profile.Gateway)"
-$adminUrl = "http://127.0.0.1:$(5173+$profile.FrontendOffset)"
-$shopUrl = "http://127.0.0.1:$(5175+$profile.FrontendOffset)"
-$liveUrl = "http://127.0.0.1:$(5176+$profile.FrontendOffset)"
-$controlArtifactUrl = "http://127.0.0.1:$(5180+$profile.FrontendOffset)"
+$adminUrl = "http://127.0.0.1:$(15173+$profile.FrontendOffset)"
+$shopUrl = "http://127.0.0.1:$(15175+$profile.FrontendOffset)"
+$liveUrl = "http://127.0.0.1:$(15176+$profile.FrontendOffset)"
+$controlArtifactUrl = "http://127.0.0.1:$(15180+$profile.FrontendOffset)"
 
 function Wait-LocalUrl([string]$Url) {
   $deadline = [DateTime]::UtcNow.AddSeconds(30)

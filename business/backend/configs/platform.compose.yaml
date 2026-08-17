@@ -4,8 +4,8 @@ log:
   level: info
   format: text
 server:
-  http: ":8082"
-  grpc: ":9082"
+  http: ":18082"
+  grpc: ":19082"
 database:
   url: liveshop:liveshop-local@tcp(registry-db:3306)/liveshop_registry?parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci
   max_open_connections: 40

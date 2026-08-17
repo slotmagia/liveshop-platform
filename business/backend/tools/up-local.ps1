@@ -63,17 +63,17 @@ if (@($certState).Count -ne 1 -or "$certState" -ne 'grpc-certs|exited|0') {
 }
 
 Invoke-Native { docker compose -f $compose up -d --build --remove-orphans } 'Local Platform container deployment failed.'
-Wait-Ready 'http://127.0.0.1:8082/readyz'
-Wait-Http 'http://127.0.0.1:5180'
+Wait-Ready 'http://127.0.0.1:18082/readyz'
+Wait-Http 'http://127.0.0.1:15180'
 
 if ($Register) {
   & (Join-Path $tools 'register-platform-module.ps1') `
-    -PlatformUrl 'http://127.0.0.1:8082' `
-    -BackendOrigin 'http://platform:8082' `
-    -GRPCEndpoint 'dns:///platform:9082' `
-    -ArtifactUrl 'http://127.0.0.1:5180'
+    -PlatformUrl 'http://127.0.0.1:18082' `
+    -BackendOrigin 'http://platform:18082' `
+    -GRPCEndpoint 'dns:///platform:19082' `
+    -ArtifactUrl 'http://127.0.0.1:15180'
 }
 
 Invoke-Native { docker compose -f $compose ps }
-Write-Host 'Platform local containers are running: http://127.0.0.1:8082  artifact http://127.0.0.1:5180'
+Write-Host 'Platform local containers are running: http://127.0.0.1:18082  artifact http://127.0.0.1:15180'
 Write-Host 'Gateway and Hosts are owned by liveshop-gateway. Start them after Identity.'

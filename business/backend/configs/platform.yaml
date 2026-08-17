@@ -3,8 +3,8 @@ log:
   level: info
   format: text
 server:
-  http: ":8082"
-  grpc: ":9082"
+  http: ":18082"
+  grpc: ":19082"
 
 # 部署必须提供一份完整配置文件；空值会在启动校验阶段失败。
 database:

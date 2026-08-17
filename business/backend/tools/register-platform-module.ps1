@@ -1,8 +1,8 @@
 param(
-  [string]$PlatformUrl = 'http://127.0.0.1:8082',
+  [string]$PlatformUrl = 'http://127.0.0.1:18082',
   [string]$BackendOrigin = '',
-  [string]$GRPCEndpoint = 'dns:///platform:9082',
-  [string]$ArtifactUrl = 'http://127.0.0.1:5180'
+  [string]$GRPCEndpoint = 'dns:///platform:19082',
+  [string]$ArtifactUrl = 'http://127.0.0.1:15180'
 )
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
@@ -12,7 +12,7 @@ $resolvedBackendOrigin = if ($BackendOrigin) { $BackendOrigin } else { $Platform
 # MySQL — force UTF-8 on the way in and on the way out.
 $manifestPath = Join-Path $root 'module.json'
 $manifest = [IO.File]::ReadAllText($manifestPath, [Text.Encoding]::UTF8)
-$manifest = $manifest.Replace('http://127.0.0.1:8082', $resolvedBackendOrigin).Replace('dns:///platform:9082', $GRPCEndpoint).Replace('http://127.0.0.1:5180', $ArtifactUrl)
+$manifest = $manifest.Replace('http://127.0.0.1:18082', $resolvedBackendOrigin).Replace('dns:///platform:19082', $GRPCEndpoint).Replace('http://127.0.0.1:15180', $ArtifactUrl)
 $artifact = Invoke-WebRequest -Uri $ArtifactUrl -TimeoutSec 10
 $bytes = [Text.Encoding]::UTF8.GetBytes([string]$artifact.Content)
 # SHA256.HashData and Convert.ToHexString need PowerShell 7; every other script

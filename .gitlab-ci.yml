@@ -27,9 +27,9 @@ variables:
   READINESS_URL: "http://127.0.0.1:18082/readyz"
   READINESS_MODE: "success"
   REGISTER_MODULE: "true"
-  BACKEND_ORIGIN: "http://platform:8082"
-  GRPC_ENDPOINT: "dns:///platform:9082"
-  ARTIFACT_URLS: '{"admin":"http://192.168.5.140:5180"}'
+  BACKEND_ORIGIN: "http://platform:18082"
+  GRPC_ENDPOINT: "dns:///platform:19082"
+  ARTIFACT_URLS: '{"admin":"http://192.168.5.140:15180"}'
 
 build_images:
   stage: build

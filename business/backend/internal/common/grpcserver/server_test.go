@@ -164,7 +164,7 @@ func grpcManifest() modulemanifest.Manifest {
 		Spec: modulemanifest.Spec{
 			Backend: modulemanifest.Backend{
 				Service: "catalog",
-				Origin:  "http://catalog:8090",
+				Origin:  "http://catalog:18090",
 				HTTPRoutes: []modulemanifest.HTTPRoute{
 					{
 						Surface: "admin",
@@ -192,7 +192,7 @@ func grpcManifest() modulemanifest.Manifest {
 					},
 				},
 				GRPC: &modulemanifest.GRPC{
-					Service: "liveshop.catalog.v1.CatalogService", ContractVersion: "1.0.0", Endpoint: "dns:///catalog:9090", TransportSecurity: "tls1.3-mtls-spiffe",
+					Service: "liveshop.catalog.v1.CatalogService", ContractVersion: "1.0.0", Endpoint: "dns:///catalog:19090", TransportSecurity: "tls1.3-mtls-spiffe",
 					Methods: []modulemanifest.GRPCMethod{{Name: "GetItem", FullMethod: "/liveshop.catalog.v1.CatalogService/GetItem", Summary: "Get item", Description: "Gets one item.", Invocation: "unary", Idempotency: "safe", RecommendedDeadlineMS: 1000, RequiredPermissions: []string{permission}, RequestFields: []modulemanifest.CapabilityField{{Name: "id", Type: "string", Required: true, Description: "Item ID"}}, ResponseFields: []modulemanifest.CapabilityField{{Name: "name", Type: "string", Description: "Item name"}}}},
 				},
 			},

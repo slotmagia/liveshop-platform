@@ -9,7 +9,7 @@
   "spec": {
     "backend": {
       "service": "platform",
-      "origin": "http://127.0.0.1:8082",
+      "origin": "http://127.0.0.1:18082",
       "httpRoutes": [
         {
           "surface": "admin",
@@ -1907,7 +1907,7 @@
       "grpc": {
         "service": "liveshop.platform.v1.PlatformRegistryService",
         "contractVersion": "1.0.0",
-        "endpoint": "dns:///platform:9082",
+        "endpoint": "dns:///platform:19082",
         "transportSecurity": "tls1.3-mtls-spiffe",
         "methods": [
           {
@@ -2102,7 +2102,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2173,7 +2173,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2271,7 +2271,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2383,7 +2383,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2496,7 +2496,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2598,7 +2598,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2696,7 +2696,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2774,7 +2774,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2807,7 +2807,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2840,7 +2840,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {
@@ -2873,7 +2873,7 @@
           "type": "iframe",
           "name": "@liveshop/platform-admin",
           "version": "5.1.0",
-          "entry": "http://127.0.0.1:5180",
+          "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
         "frontend": {

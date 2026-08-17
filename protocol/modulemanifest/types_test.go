@@ -12,7 +12,7 @@ func validManifest() Manifest {
 		Kind:       "ModuleRelease",
 		Metadata:   Metadata{ID: "example", Name: "Example", Version: "1.0.0"},
 		Spec: Spec{
-			Backend: Backend{Service: "example", Origin: "http://example:8090", HTTPRoutes: []HTTPRoute{{
+			Backend: Backend{Service: "example", Origin: "http://example:18090", HTTPRoutes: []HTTPRoute{{
 				Surface: "admin", Prefix: "/admin/example", Operations: []HTTPOperation{{
 					ID: "example.page.get", Method: "GET", Path: "/admin/example", Summary: "Read example", Description: "Returns the example page data.", Authentication: "module-session", Idempotency: "safe", RequiredPermissions: []string{permission},
 					Responses: []CapabilityResponse{{Status: 200, Description: "Example data", Fields: []CapabilityField{{Name: "name", Type: "string", Description: "Example name"}}}},
@@ -158,7 +158,7 @@ func TestManifestValidatesPageNavigation(t *testing.T) {
 func TestManifestValidatesMachineReadableGRPCAndFrontendCapabilities(t *testing.T) {
 	m := validManifest()
 	m.Spec.Backend.GRPC = &GRPC{
-		Service: "liveshop.example.v1.ExampleService", ContractVersion: "1.0.0", Endpoint: "example:9090", TransportSecurity: "mtls-spiffe",
+		Service: "liveshop.example.v1.ExampleService", ContractVersion: "1.0.0", Endpoint: "example:19090", TransportSecurity: "mtls-spiffe",
 		Methods: []GRPCMethod{{Name: "GetExample", FullMethod: "/liveshop.example.v1.ExampleService/GetExample", Summary: "Get example", Description: "Reads one example.", Invocation: "unary", Idempotency: "safe", RecommendedDeadlineMS: 1000, RequiredPermissions: []string{"example.page.read"}, RequestFields: []CapabilityField{{Name: "id", Type: "integer", Required: true, Description: "Example ID"}}, ResponseFields: []CapabilityField{{Name: "name", Type: "string", Description: "Example name"}}}},
 	}
 	m.Spec.Contributions[0].Frontend.Actions = []FrontendAction{{ID: "refresh", Label: "Refresh", Description: "Reload example data.", Invocation: "http", Target: "example.page.get", RequiredPermissions: []string{"example.page.read"}}}

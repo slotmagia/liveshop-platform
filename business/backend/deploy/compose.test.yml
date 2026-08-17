@@ -6,8 +6,8 @@ services:
   platform:
     image: ${LIVESHOP_IMAGE_PREFIX}/backend:${LIVESHOP_IMAGE_TAG}
     build: !reset null
-    ports: !override ["127.0.0.1:18082:8082", "127.0.0.1:9082:9082"]
+    ports: !override ["127.0.0.1:18082:18082", "127.0.0.1:19082:19082"]
   platform-control-admin:
     image: ${LIVESHOP_IMAGE_PREFIX}/frontend-admin:${LIVESHOP_IMAGE_TAG}
     build: !reset null
-    ports: !override ["192.168.5.140:5180:8080"]
+    ports: !override ["192.168.5.140:15180:18080"]
