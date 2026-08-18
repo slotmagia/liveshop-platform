@@ -1,0 +1,61 @@
+{
+  "id": "platform.admin.notify-templates",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/notify-templates",
+  "title": "通知模板",
+  "icon": "file-text",
+  "description": "维护可复用的短信、邮件和站内信模板。接口事件在菜单目录或通知事件页选择模板，本页不发明 eventKey。",
+  "sort": 120,
+  "navigation": {
+    "groupId": "legacy-admin-config",
+    "groupTitle": "系统配置",
+    "groupIcon": "sliders-horizontal",
+    "groupSort": 500
+  },
+  "requiredPermissions": ["platform.notify-template.read"],
+  "allowedRoutes": [
+    {
+      "methods": ["GET"],
+      "prefix": "/admin/platform/notify-templates",
+      "requiredPermissions": ["platform.notify-template.read"]
+    },
+    {
+      "methods": ["PUT", "POST"],
+      "prefix": "/admin/platform/notify-templates",
+      "requiredPermissions": ["platform.notify-template.manage"]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-admin",
+    "version": "6.0.0",
+    "entry": "http://127.0.0.1:15180",
+    "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "frontend": {
+    "component": "NotifyTemplatesPage",
+    "props": [],
+    "events": [],
+    "actions": [
+      {
+        "id": "refresh-notify-templates",
+        "label": "刷新模板",
+        "description": "重新加载模板库。",
+        "invocation": "http",
+        "target": "platform.admin.notify-templates.list",
+        "parameters": [],
+        "requiredPermissions": ["platform.notify-template.read"]
+      },
+      {
+        "id": "save-notify-template",
+        "label": "保存模板",
+        "description": "以 expectedVersion 和 commandKey 版本化保存模板。",
+        "invocation": "http",
+        "target": "platform.admin.notify-templates.update",
+        "parameters": [],
+        "requiredPermissions": ["platform.notify-template.manage"]
+      }
+    ]
+  }
+}

@@ -28,6 +28,9 @@ type Application interface {
 	service.SMS
 	service.Email
 	service.Storage
+	service.NotifyEvents
+	service.NotifyTemplates
+	service.NotifyChannels
 }
 
 type Deps struct {
@@ -59,6 +62,12 @@ func RegisterHTTP(root *ghttp.RouterGroup, deps Deps) {
 	bind(Prefix, "platform.email.manage", adminhttp.NewEmailWriter(deps.Application))
 	bind(Prefix, "platform.storage.read", adminhttp.NewStorageReader(deps.Application))
 	bind(Prefix, "platform.storage.manage", adminhttp.NewStorageWriter(deps.Application))
+	bind(Prefix, "platform.notify-event.read", adminhttp.NewNotifyEventsReader(deps.Application))
+	bind(Prefix, "platform.notify-event.manage", adminhttp.NewNotifyEventsWriter(deps.Application))
+	bind(Prefix, "platform.notify-template.read", adminhttp.NewNotifyTemplatesReader(deps.Application))
+	bind(Prefix, "platform.notify-template.manage", adminhttp.NewNotifyTemplatesWriter(deps.Application))
+	bind(Prefix, "platform.notify-channel.read", adminhttp.NewNotifyChannelsReader(deps.Application))
+	bind(Prefix, "platform.notify-channel.manage", adminhttp.NewNotifyChannelsWriter(deps.Application))
 	root.Group("/uploads", func(group *ghttp.RouterGroup) {
 		group.GET("/:folder/:name", servePublicUpload(deps.Application))
 	})

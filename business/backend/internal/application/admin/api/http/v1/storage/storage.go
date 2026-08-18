@@ -112,3 +112,9 @@ type TestChannelRes struct {
 	URL    string `json:"url,omitempty"`
 	Driver string `json:"driver"`
 }
+
+type GetObjectReq struct {
+	g.Meta `path:"/uploads/{folder}/{name}" method:"get" tags:"Platform-存储" summary:"读取本地存储对象"`
+	Folder string `json:"folder" in:"path"`
+	Name   string `json:"name" in:"path"`
+}

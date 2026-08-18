@@ -68,6 +68,7 @@ func SettingCatalog() []SettingGroup {
 					{Key: "rts_domain", Label: "推流端域名", Type: SettingFieldText, Help: "主播推流端访问域名", Placeholder: "rts.wopays.com"},
 					{Key: "admin_domain", Label: "总后台域名", Type: SettingFieldText, Help: "平台运营后台访问域名", Placeholder: "adminer.wopays.com"},
 					{Key: "merchant_domain", Label: "商户后台域名", Type: SettingFieldText, Help: "商户运营后台访问域名", Placeholder: "merchant.wopays.com"},
+					{Key: "custom_domain_cname_target", Label: "自定义域名 CNAME 目标", Type: SettingFieldText, Help: "商户把自有域名 CNAME 到此主机；也是保留主机，不能再绑成店铺站点", Placeholder: "edge.wopays.com"},
 					{Key: "force_https", Label: "强制 HTTPS", Type: SettingFieldBool, Help: "C 端是否强制跳转 HTTPS", Placeholder: "true"},
 				},
 			}},

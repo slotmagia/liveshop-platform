@@ -98,6 +98,55 @@
     "description": "版本化新增、编辑、启停、设为默认和退役存储通道，并测试写入。"
   },
   {
+    "code": "platform.notify-event.read",
+    "name": "查看通知事件",
+    "resource": "platform.notify-event",
+    "action": "read",
+    "description": "查看已激活模块声明的通知事件、渠道策略、所选模板和投递记录；不返回密钥明文。"
+  },
+  {
+    "code": "platform.notify-event.manage",
+    "name": "管理通知事件",
+    "resource": "platform.notify-event",
+    "action": "manage",
+    "description": "版本化保存通知事件的渠道开关、投递模式和所选模板。"
+  },
+  {
+    "code": "platform.notify-template.read",
+    "name": "查看通知模板",
+    "resource": "platform.notify-template",
+    "action": "read",
+    "description": "查看可复用的短信、邮件和站内信模板。"
+  },
+  {
+    "code": "platform.notify-template.manage",
+    "name": "管理通知模板",
+    "resource": "platform.notify-template",
+    "action": "manage",
+    "description": "版本化新增、编辑和退役通知模板。"
+  },
+  {
+    "code": "platform.notify-channel.read",
+    "name": "查看通知方式",
+    "resource": "platform.notify-channel",
+    "action": "read",
+    "description": "查看站内信 inbox 驱动配置；短信与邮件通道仍用各自权限。"
+  },
+  {
+    "code": "platform.notify-channel.manage",
+    "name": "管理通知方式",
+    "resource": "platform.notify-channel",
+    "action": "manage",
+    "description": "版本化启停站内信 inbox 驱动。"
+  },
+  {
+    "code": "platform.notify-event.dispatch",
+    "name": "投递通知事件",
+    "resource": "platform.notify-event",
+    "action": "dispatch",
+    "description": "仅业务模块工作负载在本模块事务提交后调用统一 Dispatch；浏览器不得持有。"
+  },
+  {
     "code": "platform.placeholder.read",
     "name": "Read migration placeholders",
     "resource": "platform.placeholder",

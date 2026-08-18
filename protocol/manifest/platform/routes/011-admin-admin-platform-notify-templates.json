@@ -1,0 +1,85 @@
+{
+  "surface": "admin",
+  "prefix": "/admin/platform/notify-templates",
+  "operations": [
+    {
+      "id": "platform.admin.notify-templates.list",
+      "method": "GET",
+      "path": "/admin/platform/notify-templates",
+      "summary": "查询可复用通知模板",
+      "description": "返回模板库。可按渠道与关键字过滤。退役模板仍列出，策略不得再选择。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.notify-template.read"],
+      "requestFields": [
+        { "name": "channel", "location": "query", "type": "string", "description": "SMS、EMAIL 或 IN_APP" },
+        { "name": "keyword", "location": "query", "type": "string", "description": "code / title / subject" }
+      ],
+      "responses": [
+        { "status": 200, "description": "模板列表", "fields": [{ "name": "items", "type": "array", "description": "按渠道与 code 排序" }] }
+      ]
+    },
+    {
+      "id": "platform.admin.notify-templates.get",
+      "method": "GET",
+      "path": "/admin/platform/notify-templates/{code}",
+      "summary": "读取一份通知模板",
+      "description": "按模板 code 字面匹配，含点号。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.notify-template.read"],
+      "requestFields": [
+        { "name": "code", "location": "path", "type": "string", "required": true, "description": "模板编码" }
+      ],
+      "responses": [
+        { "status": 200, "description": "模板", "fields": [] },
+        { "status": 404, "description": "不存在", "fields": [] }
+      ]
+    },
+    {
+      "id": "platform.admin.notify-templates.update",
+      "method": "PUT",
+      "path": "/admin/platform/notify-templates/{code}",
+      "summary": "版本化保存通知模板",
+      "description": "create-or-replace。commandKey + expectedVersion。新建 expectedVersion=0。占位符必须合法变量名。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": ["platform.notify-template.manage"],
+      "requestFields": [
+        { "name": "code", "location": "path", "type": "string", "required": true, "description": "模板编码" },
+        { "name": "commandKey", "location": "body", "type": "string", "required": true, "description": "稳定幂等键" },
+        { "name": "expectedVersion", "location": "body", "type": "integer", "required": true, "description": "新建为 0" },
+        { "name": "channel", "location": "body", "type": "string", "required": true, "description": "SMS、EMAIL 或 IN_APP" },
+        { "name": "textTemplate", "location": "body", "type": "string", "description": "SMS 正文" },
+        { "name": "subject", "location": "body", "type": "string", "description": "EMAIL 主题" },
+        { "name": "bodyHtml", "location": "body", "type": "string", "description": "EMAIL HTML" },
+        { "name": "title", "location": "body", "type": "string", "description": "IN_APP 标题" },
+        { "name": "body", "location": "body", "type": "string", "description": "IN_APP 正文" },
+        { "name": "variables", "location": "body", "type": "array", "description": "模板声明使用的变量；空则从正文提取" }
+      ],
+      "responses": [
+        { "status": 200, "description": "最新模板", "fields": [] },
+        { "status": 409, "description": "版本或命令冲突", "fields": [] }
+      ]
+    },
+    {
+      "id": "platform.admin.notify-templates.retire",
+      "method": "POST",
+      "path": "/admin/platform/notify-templates/{code}/retire",
+      "summary": "退役通知模板",
+      "description": "退役后不可再被策略选中。Dispatch 已引用的历史投递不受影响。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": ["platform.notify-template.manage"],
+      "requestFields": [
+        { "name": "code", "location": "path", "type": "string", "required": true, "description": "模板编码" },
+        { "name": "commandKey", "location": "body", "type": "string", "required": true, "description": "稳定幂等键" },
+        { "name": "expectedVersion", "location": "body", "type": "integer", "required": true, "description": "当前版本" }
+      ],
+      "responses": [
+        { "status": 200, "description": "已退役模板", "fields": [] },
+        { "status": 409, "description": "版本或命令冲突", "fields": [] }
+      ]
+    }
+  ]
+}

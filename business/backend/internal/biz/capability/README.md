@@ -9,5 +9,6 @@
 | `telemetry` | 全局埋点接收、去重、水位及广告归因投影 |
 | `liveprovider` | 直播 Provider、商户/店铺分配、凭据引用与健康状态 |
 | `localization` | 语言、翻译版本、发布工作流和机器翻译 Provider |
+| `edge` | 平台入口主机、CNAME 目标、Caddy on-demand TLS 准入、按 Host 选上游、可选 Caddyfile 热加载 |
 
 Identity 拥有验证码挑战/核验、游客风险、客服账号和商户治理；Catalog 拥有素材资产；Live 拥有房间、场次及直播专属指标。

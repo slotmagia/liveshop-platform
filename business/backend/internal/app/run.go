@@ -27,6 +27,9 @@ func Run(ctx context.Context) error {
 	go func() {
 		grpcErrors <- current.grpcServer.Serve()
 	}()
+	if current.deps.Notification != nil {
+		go current.deps.Notification.RunWorker(ctx)
+	}
 	logctx.FromContext(ctx).Info("platform registry listening", "address", current.httpAddress)
 	logctx.FromContext(ctx).Info("platform gRPC registry listening", "address", current.grpcServer.Address())
 

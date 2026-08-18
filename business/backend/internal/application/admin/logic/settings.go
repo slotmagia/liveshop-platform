@@ -40,7 +40,16 @@ func (l *Logic) PutSetting(ctx context.Context, input appmodel.PutSetting) (mode
 	if l.deps.Settings == nil {
 		return model.SettingDocument{}, model.ErrUnavailable
 	}
-	return l.deps.Settings.Put(ctx, settingScope(ctx), input.Namespace, input.ExpectedVersion, input.Value)
+	document, err := l.deps.Settings.Put(ctx, settingScope(ctx), input.Namespace, input.ExpectedVersion, input.Value)
+	if err != nil {
+		return model.SettingDocument{}, err
+	}
+	if model.NormalizeNamespace(input.Namespace) == "domain-base" && l.deps.Edge != nil {
+		if applyErr := l.deps.Edge.Apply(ctx); applyErr != nil {
+			return model.SettingDocument{}, applyErr
+		}
+	}
+	return document, nil
 }
 
 func (l *Logic) ListAudit(ctx context.Context, limit int) ([]model.AuditEvent, error) {

@@ -166,3 +166,43 @@ func TestManifestValidatesMachineReadableGRPCAndFrontendCapabilities(t *testing.
 		t.Fatal(err)
 	}
 }
+
+func TestManifestAcceptsNotificationDeclaration(t *testing.T) {
+	m := validManifest()
+	m.Spec.Backend.HTTPRoutes[0].Operations[0].Notifications = []NotificationDeclaration{{
+		EventKey: "example.auth.otp.requested", Title: "登录验证码", Variables: []string{"code", "ttlSeconds"},
+		AllowedChannels: []string{"SMS", "EMAIL"}, DefaultDispatch: "SYNC",
+	}}
+	if err := m.Validate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestManifestRejectsNotificationFromAnotherModule(t *testing.T) {
+	m := validManifest()
+	m.Spec.Backend.HTTPRoutes[0].Operations[0].Notifications = []NotificationDeclaration{{
+		EventKey: "identity.auth.otp.requested", Title: "登录验证码", Variables: []string{"code"},
+		AllowedChannels: []string{"SMS"}, DefaultDispatch: "SYNC",
+	}}
+	if err := m.Validate(); err == nil {
+		t.Fatal("expected foreign eventKey prefix to be rejected")
+	}
+}
+
+func TestManifestRejectsDuplicateNotificationEventKey(t *testing.T) {
+	m := validManifest()
+	declaration := NotificationDeclaration{
+		EventKey: "example.order.paid", Title: "订单支付成功", Variables: []string{"orderNo"},
+		AllowedChannels: []string{"IN_APP"}, DefaultDispatch: "ASYNC",
+	}
+	first := m.Spec.Backend.HTTPRoutes[0].Operations[0]
+	second := first
+	second.ID = "example.page.list"
+	second.Path = "/admin/example/list"
+	first.Notifications = []NotificationDeclaration{declaration}
+	second.Notifications = []NotificationDeclaration{declaration}
+	m.Spec.Backend.HTTPRoutes[0].Operations = []HTTPOperation{first, second}
+	if err := m.Validate(); err == nil {
+		t.Fatal("expected duplicate eventKey to be rejected")
+	}
+}

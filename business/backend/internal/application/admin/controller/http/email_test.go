@@ -32,7 +32,7 @@ func TestEmailPutKeepsSecretsWriteOnly(t *testing.T) {
 	service := &emailServiceStub{}
 	controller := NewEmailWriter(service)
 	response, err := controller.PutConfig(context.Background(), &apiemail.PutConfigReq{
-		Driver: "mock",
+		Driver:  "mock",
 		Secrets: map[string]apiemail.CredentialChange{},
 	})
 	if err != nil {

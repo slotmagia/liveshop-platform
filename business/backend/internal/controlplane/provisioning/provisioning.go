@@ -6,6 +6,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	platformv1 "github.com/liveshop-platform/contracts/gen/go/platform/v1"
 	"github.com/liveshop-platform/module-platform/internal/biz"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/controlplane/provisioning/logic"
 	"github.com/liveshop-platform/module-platform/internal/controlplane/provisioning/router"
 	"github.com/lvtuopen-ai/kernel-go/workloadidentity"
@@ -13,15 +14,16 @@ import (
 )
 
 type Config struct {
-	Release   *biz.Release
-	Workloads *workloadidentity.Verifier
+	Release      *biz.Release
+	Notification *notification.UseCase
+	Workloads    *workloadidentity.Verifier
 }
 
 type Surface struct{ deps router.Deps }
 
 func New(config Config) Surface {
 	return Surface{deps: router.Deps{
-		Application: logic.New(config.Release),
+		Application: logic.New(config.Release, config.Notification),
 		Workloads:   config.Workloads,
 	}}
 }

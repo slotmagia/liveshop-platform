@@ -20,6 +20,17 @@ func Capability(ctx context.Context) modulesession.Claims {
 	return value
 }
 
+type workloadKey struct{}
+
+func WithWorkloadSubject(ctx context.Context, subject string) context.Context {
+	return context.WithValue(ctx, workloadKey{}, subject)
+}
+
+func WorkloadSubject(ctx context.Context) string {
+	value, _ := ctx.Value(workloadKey{}).(string)
+	return value
+}
+
 // RegistryActor is the verified operator recorded on module Registry changes.
 func RegistryActor(ctx context.Context) model.RegistryAuditActor {
 	capability := Capability(ctx)

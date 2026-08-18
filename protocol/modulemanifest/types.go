@@ -39,6 +39,10 @@ var moduleIDPattern = regexp.MustCompile(`^[a-z][a-z0-9-]{1,63}$`)
 var semverPattern = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
 var permissionPattern = regexp.MustCompile(`^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*){2,}$`)
 var digestPattern = regexp.MustCompile(`^sha256:[a-f0-9]{64}$`)
+var eventKeyPattern = regexp.MustCompile(`^[a-z][a-z0-9-]*(\.[a-z][a-zA-Z0-9]*){2,}$`)
+var notifyVariablePattern = regexp.MustCompile(`^[a-z][a-zA-Z0-9]{0,31}$`)
+var validNotifyChannels = map[string]bool{"SMS": true, "EMAIL": true, "IN_APP": true}
+var validNotifyDispatch = map[string]bool{"SYNC": true, "ASYNC": true, "SCHEDULED": true}
 
 type Manifest struct {
 	APIVersion string   `json:"apiVersion"`
@@ -103,16 +107,27 @@ type CapabilityField struct {
 }
 
 type HTTPOperation struct {
-	ID                  string               `json:"id"`
-	Method              string               `json:"method"`
-	Path                string               `json:"path"`
-	Summary             string               `json:"summary"`
-	Description         string               `json:"description"`
-	Authentication      string               `json:"authentication"`
-	Idempotency         string               `json:"idempotency"`
-	RequiredPermissions []string             `json:"requiredPermissions"`
-	RequestFields       []CapabilityField    `json:"requestFields"`
-	Responses           []CapabilityResponse `json:"responses"`
+	ID                  string                    `json:"id"`
+	Method              string                    `json:"method"`
+	Path                string                    `json:"path"`
+	Summary             string                    `json:"summary"`
+	Description         string                    `json:"description"`
+	Authentication      string                    `json:"authentication"`
+	Idempotency         string                    `json:"idempotency"`
+	RequiredPermissions []string                  `json:"requiredPermissions"`
+	RequestFields       []CapabilityField         `json:"requestFields"`
+	Responses           []CapabilityResponse      `json:"responses"`
+	Notifications       []NotificationDeclaration `json:"notifications,omitempty"`
+}
+
+// NotificationDeclaration is a business event a module may Dispatch after its
+// own transaction commits. Platform projects the active set; Admin never invents events.
+type NotificationDeclaration struct {
+	EventKey        string   `json:"eventKey"`
+	Title           string   `json:"title"`
+	Variables       []string `json:"variables"`
+	AllowedChannels []string `json:"allowedChannels"`
+	DefaultDispatch string   `json:"defaultDispatch"`
 }
 
 type CapabilityResponse struct {
@@ -297,6 +312,9 @@ func (m Manifest) Validate() error {
 			if len(operation.Responses) == 0 {
 				return fmt.Errorf("HTTP operation %s must declare responses", operation.ID)
 			}
+			if err := validateOperationNotifications(m.Metadata.ID, operation.ID, operation.Notifications); err != nil {
+				return err
+			}
 			seenStatuses := map[int]bool{}
 			for _, response := range operation.Responses {
 				if response.Status < 100 || response.Status > 599 || response.Description == "" || seenStatuses[response.Status] {
@@ -308,6 +326,9 @@ func (m Manifest) Validate() error {
 				}
 			}
 		}
+	}
+	if err := validateManifestNotificationUniqueness(m); err != nil {
+		return err
 	}
 	if len(m.Spec.Permissions) == 0 {
 		return errors.New("module must declare at least one permission")
@@ -440,6 +461,58 @@ func (m Manifest) Validate() error {
 			}
 			if !routeBelongsToSurface(m.Spec.Backend.HTTPRoutes, contribution.Surface, allowed.Prefix) {
 				return fmt.Errorf("contribution %s allowed route is outside its registered surface", contribution.ID)
+			}
+		}
+	}
+	return nil
+}
+
+func validateOperationNotifications(moduleID, operationID string, notifications []NotificationDeclaration) error {
+	seen := map[string]bool{}
+	for _, item := range notifications {
+		if !eventKeyPattern.MatchString(item.EventKey) || !strings.HasPrefix(item.EventKey, moduleID+".") {
+			return fmt.Errorf("HTTP operation %s has invalid notification eventKey %q", operationID, item.EventKey)
+		}
+		if seen[item.EventKey] {
+			return fmt.Errorf("HTTP operation %s declares duplicate notification %q", operationID, item.EventKey)
+		}
+		seen[item.EventKey] = true
+		if strings.TrimSpace(item.Title) == "" {
+			return fmt.Errorf("HTTP operation %s notification %s is missing a title", operationID, item.EventKey)
+		}
+		if !validNotifyDispatch[item.DefaultDispatch] {
+			return fmt.Errorf("HTTP operation %s notification %s has invalid defaultDispatch", operationID, item.EventKey)
+		}
+		if len(item.AllowedChannels) == 0 {
+			return fmt.Errorf("HTTP operation %s notification %s must declare allowedChannels", operationID, item.EventKey)
+		}
+		seenChannel := map[string]bool{}
+		for _, channel := range item.AllowedChannels {
+			if !validNotifyChannels[channel] || seenChannel[channel] {
+				return fmt.Errorf("HTTP operation %s notification %s has invalid allowedChannels", operationID, item.EventKey)
+			}
+			seenChannel[channel] = true
+		}
+		seenVariable := map[string]bool{}
+		for _, variable := range item.Variables {
+			if !notifyVariablePattern.MatchString(variable) || seenVariable[variable] {
+				return fmt.Errorf("HTTP operation %s notification %s has invalid variables", operationID, item.EventKey)
+			}
+			seenVariable[variable] = true
+		}
+	}
+	return nil
+}
+
+func validateManifestNotificationUniqueness(m Manifest) error {
+	seen := map[string]string{}
+	for _, route := range m.Spec.Backend.HTTPRoutes {
+		for _, operation := range route.Operations {
+			for _, item := range operation.Notifications {
+				if previous, exists := seen[item.EventKey]; exists {
+					return fmt.Errorf("duplicate notification eventKey %q on %s and %s", item.EventKey, previous, operation.ID)
+				}
+				seen[item.EventKey] = operation.ID
 			}
 		}
 	}

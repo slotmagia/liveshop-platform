@@ -178,3 +178,56 @@ message Backend {
   string service = 1;
   string origin = 2;
 }
+
+// PlatformNotificationService is the unified Dispatch contract. It is not part
+// of PlatformRegistryService: snapshots stay read-only, notifications are writes
+// after a business transaction commits.
+service PlatformNotificationService {
+  rpc Dispatch(DispatchRequest) returns (DispatchResponse);
+  rpc GetDelivery(GetDeliveryRequest) returns (GetDeliveryResponse);
+}
+
+message DispatchRequest {
+  string event_key = 1;
+  string delivery_key = 2;
+  int64 merchant_id = 3;
+  int64 shop_id = 4;
+  NotificationRecipients recipients = 5;
+  map<string, string> variables = 6;
+  int64 not_before_unix_ms = 7;
+  string locale = 8;
+}
+
+message NotificationRecipients {
+  string phone = 1;
+  string email = 2;
+  string subject = 3;
+}
+
+message DispatchResponse {
+  repeated NotificationDeliveryResult deliveries = 1;
+}
+
+message NotificationDeliveryResult {
+  string delivery_id = 1;
+  string channel = 2;
+  string status = 3;
+  bool deduped = 4;
+}
+
+message GetDeliveryRequest {
+  string delivery_id = 1;
+}
+
+message GetDeliveryResponse {
+  string delivery_id = 1;
+  string delivery_key = 2;
+  string event_key = 3;
+  string channel = 4;
+  string status = 5;
+  int64 merchant_id = 6;
+  int64 shop_id = 7;
+  int64 not_before_unix_ms = 8;
+  string last_error = 9;
+  int32 attempt_count = 10;
+}

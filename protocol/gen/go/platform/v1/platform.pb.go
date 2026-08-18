@@ -1625,6 +1625,438 @@ func (x *Backend) GetOrigin() string {
 	return ""
 }
 
+type DispatchRequest struct {
+	state           protoimpl.MessageState  `protogen:"open.v1"`
+	EventKey        string                  `protobuf:"bytes,1,opt,name=event_key,json=eventKey,proto3" json:"event_key,omitempty"`
+	DeliveryKey     string                  `protobuf:"bytes,2,opt,name=delivery_key,json=deliveryKey,proto3" json:"delivery_key,omitempty"`
+	MerchantId      int64                   `protobuf:"varint,3,opt,name=merchant_id,json=merchantId,proto3" json:"merchant_id,omitempty"`
+	ShopId          int64                   `protobuf:"varint,4,opt,name=shop_id,json=shopId,proto3" json:"shop_id,omitempty"`
+	Recipients      *NotificationRecipients `protobuf:"bytes,5,opt,name=recipients,proto3" json:"recipients,omitempty"`
+	Variables       map[string]string       `protobuf:"bytes,6,rep,name=variables,proto3" json:"variables,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	NotBeforeUnixMs int64                   `protobuf:"varint,7,opt,name=not_before_unix_ms,json=notBeforeUnixMs,proto3" json:"not_before_unix_ms,omitempty"`
+	Locale          string                  `protobuf:"bytes,8,opt,name=locale,proto3" json:"locale,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DispatchRequest) Reset() {
+	*x = DispatchRequest{}
+	mi := &file_platform_v1_platform_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DispatchRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DispatchRequest) ProtoMessage() {}
+
+func (x *DispatchRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_platform_v1_platform_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DispatchRequest.ProtoReflect.Descriptor instead.
+func (*DispatchRequest) Descriptor() ([]byte, []int) {
+	return file_platform_v1_platform_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *DispatchRequest) GetEventKey() string {
+	if x != nil {
+		return x.EventKey
+	}
+	return ""
+}
+
+func (x *DispatchRequest) GetDeliveryKey() string {
+	if x != nil {
+		return x.DeliveryKey
+	}
+	return ""
+}
+
+func (x *DispatchRequest) GetMerchantId() int64 {
+	if x != nil {
+		return x.MerchantId
+	}
+	return 0
+}
+
+func (x *DispatchRequest) GetShopId() int64 {
+	if x != nil {
+		return x.ShopId
+	}
+	return 0
+}
+
+func (x *DispatchRequest) GetRecipients() *NotificationRecipients {
+	if x != nil {
+		return x.Recipients
+	}
+	return nil
+}
+
+func (x *DispatchRequest) GetVariables() map[string]string {
+	if x != nil {
+		return x.Variables
+	}
+	return nil
+}
+
+func (x *DispatchRequest) GetNotBeforeUnixMs() int64 {
+	if x != nil {
+		return x.NotBeforeUnixMs
+	}
+	return 0
+}
+
+func (x *DispatchRequest) GetLocale() string {
+	if x != nil {
+		return x.Locale
+	}
+	return ""
+}
+
+type NotificationRecipients struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Phone         string                 `protobuf:"bytes,1,opt,name=phone,proto3" json:"phone,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Subject       string                 `protobuf:"bytes,3,opt,name=subject,proto3" json:"subject,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotificationRecipients) Reset() {
+	*x = NotificationRecipients{}
+	mi := &file_platform_v1_platform_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotificationRecipients) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotificationRecipients) ProtoMessage() {}
+
+func (x *NotificationRecipients) ProtoReflect() protoreflect.Message {
+	mi := &file_platform_v1_platform_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotificationRecipients.ProtoReflect.Descriptor instead.
+func (*NotificationRecipients) Descriptor() ([]byte, []int) {
+	return file_platform_v1_platform_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *NotificationRecipients) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *NotificationRecipients) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *NotificationRecipients) GetSubject() string {
+	if x != nil {
+		return x.Subject
+	}
+	return ""
+}
+
+type DispatchResponse struct {
+	state         protoimpl.MessageState        `protogen:"open.v1"`
+	Deliveries    []*NotificationDeliveryResult `protobuf:"bytes,1,rep,name=deliveries,proto3" json:"deliveries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DispatchResponse) Reset() {
+	*x = DispatchResponse{}
+	mi := &file_platform_v1_platform_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DispatchResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DispatchResponse) ProtoMessage() {}
+
+func (x *DispatchResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_platform_v1_platform_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DispatchResponse.ProtoReflect.Descriptor instead.
+func (*DispatchResponse) Descriptor() ([]byte, []int) {
+	return file_platform_v1_platform_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *DispatchResponse) GetDeliveries() []*NotificationDeliveryResult {
+	if x != nil {
+		return x.Deliveries
+	}
+	return nil
+}
+
+type NotificationDeliveryResult struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeliveryId    string                 `protobuf:"bytes,1,opt,name=delivery_id,json=deliveryId,proto3" json:"delivery_id,omitempty"`
+	Channel       string                 `protobuf:"bytes,2,opt,name=channel,proto3" json:"channel,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	Deduped       bool                   `protobuf:"varint,4,opt,name=deduped,proto3" json:"deduped,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotificationDeliveryResult) Reset() {
+	*x = NotificationDeliveryResult{}
+	mi := &file_platform_v1_platform_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotificationDeliveryResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotificationDeliveryResult) ProtoMessage() {}
+
+func (x *NotificationDeliveryResult) ProtoReflect() protoreflect.Message {
+	mi := &file_platform_v1_platform_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotificationDeliveryResult.ProtoReflect.Descriptor instead.
+func (*NotificationDeliveryResult) Descriptor() ([]byte, []int) {
+	return file_platform_v1_platform_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *NotificationDeliveryResult) GetDeliveryId() string {
+	if x != nil {
+		return x.DeliveryId
+	}
+	return ""
+}
+
+func (x *NotificationDeliveryResult) GetChannel() string {
+	if x != nil {
+		return x.Channel
+	}
+	return ""
+}
+
+func (x *NotificationDeliveryResult) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *NotificationDeliveryResult) GetDeduped() bool {
+	if x != nil {
+		return x.Deduped
+	}
+	return false
+}
+
+type GetDeliveryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeliveryId    string                 `protobuf:"bytes,1,opt,name=delivery_id,json=deliveryId,proto3" json:"delivery_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDeliveryRequest) Reset() {
+	*x = GetDeliveryRequest{}
+	mi := &file_platform_v1_platform_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDeliveryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDeliveryRequest) ProtoMessage() {}
+
+func (x *GetDeliveryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_platform_v1_platform_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDeliveryRequest.ProtoReflect.Descriptor instead.
+func (*GetDeliveryRequest) Descriptor() ([]byte, []int) {
+	return file_platform_v1_platform_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *GetDeliveryRequest) GetDeliveryId() string {
+	if x != nil {
+		return x.DeliveryId
+	}
+	return ""
+}
+
+type GetDeliveryResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	DeliveryId      string                 `protobuf:"bytes,1,opt,name=delivery_id,json=deliveryId,proto3" json:"delivery_id,omitempty"`
+	DeliveryKey     string                 `protobuf:"bytes,2,opt,name=delivery_key,json=deliveryKey,proto3" json:"delivery_key,omitempty"`
+	EventKey        string                 `protobuf:"bytes,3,opt,name=event_key,json=eventKey,proto3" json:"event_key,omitempty"`
+	Channel         string                 `protobuf:"bytes,4,opt,name=channel,proto3" json:"channel,omitempty"`
+	Status          string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	MerchantId      int64                  `protobuf:"varint,6,opt,name=merchant_id,json=merchantId,proto3" json:"merchant_id,omitempty"`
+	ShopId          int64                  `protobuf:"varint,7,opt,name=shop_id,json=shopId,proto3" json:"shop_id,omitempty"`
+	NotBeforeUnixMs int64                  `protobuf:"varint,8,opt,name=not_before_unix_ms,json=notBeforeUnixMs,proto3" json:"not_before_unix_ms,omitempty"`
+	LastError       string                 `protobuf:"bytes,9,opt,name=last_error,json=lastError,proto3" json:"last_error,omitempty"`
+	AttemptCount    int32                  `protobuf:"varint,10,opt,name=attempt_count,json=attemptCount,proto3" json:"attempt_count,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetDeliveryResponse) Reset() {
+	*x = GetDeliveryResponse{}
+	mi := &file_platform_v1_platform_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDeliveryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDeliveryResponse) ProtoMessage() {}
+
+func (x *GetDeliveryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_platform_v1_platform_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDeliveryResponse.ProtoReflect.Descriptor instead.
+func (*GetDeliveryResponse) Descriptor() ([]byte, []int) {
+	return file_platform_v1_platform_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *GetDeliveryResponse) GetDeliveryId() string {
+	if x != nil {
+		return x.DeliveryId
+	}
+	return ""
+}
+
+func (x *GetDeliveryResponse) GetDeliveryKey() string {
+	if x != nil {
+		return x.DeliveryKey
+	}
+	return ""
+}
+
+func (x *GetDeliveryResponse) GetEventKey() string {
+	if x != nil {
+		return x.EventKey
+	}
+	return ""
+}
+
+func (x *GetDeliveryResponse) GetChannel() string {
+	if x != nil {
+		return x.Channel
+	}
+	return ""
+}
+
+func (x *GetDeliveryResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *GetDeliveryResponse) GetMerchantId() int64 {
+	if x != nil {
+		return x.MerchantId
+	}
+	return 0
+}
+
+func (x *GetDeliveryResponse) GetShopId() int64 {
+	if x != nil {
+		return x.ShopId
+	}
+	return 0
+}
+
+func (x *GetDeliveryResponse) GetNotBeforeUnixMs() int64 {
+	if x != nil {
+		return x.NotBeforeUnixMs
+	}
+	return 0
+}
+
+func (x *GetDeliveryResponse) GetLastError() string {
+	if x != nil {
+		return x.LastError
+	}
+	return ""
+}
+
+func (x *GetDeliveryResponse) GetAttemptCount() int32 {
+	if x != nil {
+		return x.AttemptCount
+	}
+	return 0
+}
+
 var File_platform_v1_platform_proto protoreflect.FileDescriptor
 
 const file_platform_v1_platform_proto_rawDesc = "" +
@@ -1776,10 +2208,60 @@ const file_platform_v1_platform_proto_rawDesc = "" +
 	" \x03(\v2%.liveshop.platform.v1.CapabilityFieldR\x0eresponseFields\";\n" +
 	"\aBackend\x12\x18\n" +
 	"\aservice\x18\x01 \x01(\tR\aservice\x12\x16\n" +
-	"\x06origin\x18\x02 \x01(\tR\x06origin2\xa1\x02\n" +
+	"\x06origin\x18\x02 \x01(\tR\x06origin\"\xb0\x03\n" +
+	"\x0fDispatchRequest\x12\x1b\n" +
+	"\tevent_key\x18\x01 \x01(\tR\beventKey\x12!\n" +
+	"\fdelivery_key\x18\x02 \x01(\tR\vdeliveryKey\x12\x1f\n" +
+	"\vmerchant_id\x18\x03 \x01(\x03R\n" +
+	"merchantId\x12\x17\n" +
+	"\ashop_id\x18\x04 \x01(\x03R\x06shopId\x12L\n" +
+	"\n" +
+	"recipients\x18\x05 \x01(\v2,.liveshop.platform.v1.NotificationRecipientsR\n" +
+	"recipients\x12R\n" +
+	"\tvariables\x18\x06 \x03(\v24.liveshop.platform.v1.DispatchRequest.VariablesEntryR\tvariables\x12+\n" +
+	"\x12not_before_unix_ms\x18\a \x01(\x03R\x0fnotBeforeUnixMs\x12\x16\n" +
+	"\x06locale\x18\b \x01(\tR\x06locale\x1a<\n" +
+	"\x0eVariablesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"^\n" +
+	"\x16NotificationRecipients\x12\x14\n" +
+	"\x05phone\x18\x01 \x01(\tR\x05phone\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x18\n" +
+	"\asubject\x18\x03 \x01(\tR\asubject\"d\n" +
+	"\x10DispatchResponse\x12P\n" +
+	"\n" +
+	"deliveries\x18\x01 \x03(\v20.liveshop.platform.v1.NotificationDeliveryResultR\n" +
+	"deliveries\"\x89\x01\n" +
+	"\x1aNotificationDeliveryResult\x12\x1f\n" +
+	"\vdelivery_id\x18\x01 \x01(\tR\n" +
+	"deliveryId\x12\x18\n" +
+	"\achannel\x18\x02 \x01(\tR\achannel\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\x12\x18\n" +
+	"\adeduped\x18\x04 \x01(\bR\adeduped\"5\n" +
+	"\x12GetDeliveryRequest\x12\x1f\n" +
+	"\vdelivery_id\x18\x01 \x01(\tR\n" +
+	"deliveryId\"\xd3\x02\n" +
+	"\x13GetDeliveryResponse\x12\x1f\n" +
+	"\vdelivery_id\x18\x01 \x01(\tR\n" +
+	"deliveryId\x12!\n" +
+	"\fdelivery_key\x18\x02 \x01(\tR\vdeliveryKey\x12\x1b\n" +
+	"\tevent_key\x18\x03 \x01(\tR\beventKey\x12\x18\n" +
+	"\achannel\x18\x04 \x01(\tR\achannel\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1f\n" +
+	"\vmerchant_id\x18\x06 \x01(\x03R\n" +
+	"merchantId\x12\x17\n" +
+	"\ashop_id\x18\a \x01(\x03R\x06shopId\x12+\n" +
+	"\x12not_before_unix_ms\x18\b \x01(\x03R\x0fnotBeforeUnixMs\x12\x1d\n" +
+	"\n" +
+	"last_error\x18\t \x01(\tR\tlastError\x12#\n" +
+	"\rattempt_count\x18\n" +
+	" \x01(\x05R\fattemptCount2\xa1\x02\n" +
 	"\x17PlatformRegistryService\x12q\n" +
 	"\x10GetRouteSnapshot\x12-.liveshop.platform.v1.GetRouteSnapshotRequest\x1a..liveshop.platform.v1.GetRouteSnapshotResponse\x12\x92\x01\n" +
-	"\x1bGetActiveCapabilitySnapshot\x128.liveshop.platform.v1.GetActiveCapabilitySnapshotRequest\x1a9.liveshop.platform.v1.GetActiveCapabilitySnapshotResponseBFZDgithub.com/liveshop-platform/contracts/gen/go/platform/v1;platformv1b\x06proto3"
+	"\x1bGetActiveCapabilitySnapshot\x128.liveshop.platform.v1.GetActiveCapabilitySnapshotRequest\x1a9.liveshop.platform.v1.GetActiveCapabilitySnapshotResponse2\xdc\x01\n" +
+	"\x1bPlatformNotificationService\x12Y\n" +
+	"\bDispatch\x12%.liveshop.platform.v1.DispatchRequest\x1a&.liveshop.platform.v1.DispatchResponse\x12b\n" +
+	"\vGetDelivery\x12(.liveshop.platform.v1.GetDeliveryRequest\x1a).liveshop.platform.v1.GetDeliveryResponseBFZDgithub.com/liveshop-platform/contracts/gen/go/platform/v1;platformv1b\x06proto3"
 
 var (
 	file_platform_v1_platform_proto_rawDescOnce sync.Once
@@ -1793,7 +2275,7 @@ func file_platform_v1_platform_proto_rawDescGZIP() []byte {
 	return file_platform_v1_platform_proto_rawDescData
 }
 
-var file_platform_v1_platform_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_platform_v1_platform_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_platform_v1_platform_proto_goTypes = []any{
 	(*GetRouteSnapshotRequest)(nil),             // 0: liveshop.platform.v1.GetRouteSnapshotRequest
 	(*GetRouteSnapshotResponse)(nil),            // 1: liveshop.platform.v1.GetRouteSnapshotResponse
@@ -1816,6 +2298,13 @@ var file_platform_v1_platform_proto_goTypes = []any{
 	(*GrpcContract)(nil),                        // 18: liveshop.platform.v1.GrpcContract
 	(*GrpcMethod)(nil),                          // 19: liveshop.platform.v1.GrpcMethod
 	(*Backend)(nil),                             // 20: liveshop.platform.v1.Backend
+	(*DispatchRequest)(nil),                     // 21: liveshop.platform.v1.DispatchRequest
+	(*NotificationRecipients)(nil),              // 22: liveshop.platform.v1.NotificationRecipients
+	(*DispatchResponse)(nil),                    // 23: liveshop.platform.v1.DispatchResponse
+	(*NotificationDeliveryResult)(nil),          // 24: liveshop.platform.v1.NotificationDeliveryResult
+	(*GetDeliveryRequest)(nil),                  // 25: liveshop.platform.v1.GetDeliveryRequest
+	(*GetDeliveryResponse)(nil),                 // 26: liveshop.platform.v1.GetDeliveryResponse
+	nil,                                         // 27: liveshop.platform.v1.DispatchRequest.VariablesEntry
 }
 var file_platform_v1_platform_proto_depIdxs = []int32{
 	2,  // 0: liveshop.platform.v1.GetRouteSnapshotResponse.routes:type_name -> liveshop.platform.v1.ActiveRoute
@@ -1842,15 +2331,22 @@ var file_platform_v1_platform_proto_depIdxs = []int32{
 	19, // 21: liveshop.platform.v1.GrpcContract.methods:type_name -> liveshop.platform.v1.GrpcMethod
 	16, // 22: liveshop.platform.v1.GrpcMethod.request_fields:type_name -> liveshop.platform.v1.CapabilityField
 	16, // 23: liveshop.platform.v1.GrpcMethod.response_fields:type_name -> liveshop.platform.v1.CapabilityField
-	0,  // 24: liveshop.platform.v1.PlatformRegistryService.GetRouteSnapshot:input_type -> liveshop.platform.v1.GetRouteSnapshotRequest
-	4,  // 25: liveshop.platform.v1.PlatformRegistryService.GetActiveCapabilitySnapshot:input_type -> liveshop.platform.v1.GetActiveCapabilitySnapshotRequest
-	1,  // 26: liveshop.platform.v1.PlatformRegistryService.GetRouteSnapshot:output_type -> liveshop.platform.v1.GetRouteSnapshotResponse
-	5,  // 27: liveshop.platform.v1.PlatformRegistryService.GetActiveCapabilitySnapshot:output_type -> liveshop.platform.v1.GetActiveCapabilitySnapshotResponse
-	26, // [26:28] is the sub-list for method output_type
-	24, // [24:26] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	22, // 24: liveshop.platform.v1.DispatchRequest.recipients:type_name -> liveshop.platform.v1.NotificationRecipients
+	27, // 25: liveshop.platform.v1.DispatchRequest.variables:type_name -> liveshop.platform.v1.DispatchRequest.VariablesEntry
+	24, // 26: liveshop.platform.v1.DispatchResponse.deliveries:type_name -> liveshop.platform.v1.NotificationDeliveryResult
+	0,  // 27: liveshop.platform.v1.PlatformRegistryService.GetRouteSnapshot:input_type -> liveshop.platform.v1.GetRouteSnapshotRequest
+	4,  // 28: liveshop.platform.v1.PlatformRegistryService.GetActiveCapabilitySnapshot:input_type -> liveshop.platform.v1.GetActiveCapabilitySnapshotRequest
+	21, // 29: liveshop.platform.v1.PlatformNotificationService.Dispatch:input_type -> liveshop.platform.v1.DispatchRequest
+	25, // 30: liveshop.platform.v1.PlatformNotificationService.GetDelivery:input_type -> liveshop.platform.v1.GetDeliveryRequest
+	1,  // 31: liveshop.platform.v1.PlatformRegistryService.GetRouteSnapshot:output_type -> liveshop.platform.v1.GetRouteSnapshotResponse
+	5,  // 32: liveshop.platform.v1.PlatformRegistryService.GetActiveCapabilitySnapshot:output_type -> liveshop.platform.v1.GetActiveCapabilitySnapshotResponse
+	23, // 33: liveshop.platform.v1.PlatformNotificationService.Dispatch:output_type -> liveshop.platform.v1.DispatchResponse
+	26, // 34: liveshop.platform.v1.PlatformNotificationService.GetDelivery:output_type -> liveshop.platform.v1.GetDeliveryResponse
+	31, // [31:35] is the sub-list for method output_type
+	27, // [27:31] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_platform_v1_platform_proto_init() }
@@ -1864,9 +2360,9 @@ func file_platform_v1_platform_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_platform_v1_platform_proto_rawDesc), len(file_platform_v1_platform_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   21,
+			NumMessages:   28,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_platform_v1_platform_proto_goTypes,
 		DependencyIndexes: file_platform_v1_platform_proto_depIdxs,

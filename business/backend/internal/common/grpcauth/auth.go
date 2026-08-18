@@ -60,42 +60,62 @@ func New(workloads []Workload, requirements map[string]string) (*Authorizer, err
 
 func (a *Authorizer) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, request any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if err := a.authorize(ctx, info.FullMethod); err != nil {
+		subject, err := a.authorize(ctx, info.FullMethod)
+		if err != nil {
 			return nil, err
 		}
-		return handler(ctx, request)
+		return handler(withSubject(ctx, subject), request)
 	}
 }
 
 func (a *Authorizer) StreamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(service any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if err := a.authorize(stream.Context(), info.FullMethod); err != nil {
+		subject, err := a.authorize(stream.Context(), info.FullMethod)
+		if err != nil {
 			return err
 		}
-		return handler(service, stream)
+		return handler(service, &subjectStream{ServerStream: stream, ctx: withSubject(stream.Context(), subject)})
 	}
 }
 
-func (a *Authorizer) authorize(ctx context.Context, method string) error {
+type subjectKey struct{}
+
+func withSubject(ctx context.Context, subject string) context.Context {
+	return context.WithValue(ctx, subjectKey{}, subject)
+}
+
+func Subject(ctx context.Context) string {
+	value, _ := ctx.Value(subjectKey{}).(string)
+	return value
+}
+
+type subjectStream struct {
+	grpc.ServerStream
+	ctx context.Context
+}
+
+func (s *subjectStream) Context() context.Context { return s.ctx }
+
+func (a *Authorizer) authorize(ctx context.Context, method string) (string, error) {
 	spiffeID, err := verifiedSPIFFEID(ctx)
 	if err != nil {
-		return status.Error(codes.Unauthenticated, err.Error())
+		return "", status.Error(codes.Unauthenticated, err.Error())
 	}
 	current, trusted := a.identities[spiffeID]
 	if !trusted {
-		return status.Error(codes.PermissionDenied, "workload SPIFFE identity is not trusted")
+		return "", status.Error(codes.PermissionDenied, "workload SPIFFE identity is not trusted")
 	}
 	if strings.HasPrefix(method, "/grpc.health.v1.Health/") {
-		return nil
+		return current.subject, nil
 	}
 	required, declared := a.requirements[method]
 	if !declared || required == "" {
-		return status.Error(codes.PermissionDenied, "gRPC method is not authorized")
+		return "", status.Error(codes.PermissionDenied, "gRPC method is not authorized")
 	}
 	if _, granted := current.permissions[required]; !granted {
-		return status.Error(codes.PermissionDenied, "workload permission is not granted")
+		return "", status.Error(codes.PermissionDenied, "workload permission is not granted")
 	}
-	return nil
+	return current.subject, nil
 }
 
 func verifiedSPIFFEID(ctx context.Context) (string, error) {

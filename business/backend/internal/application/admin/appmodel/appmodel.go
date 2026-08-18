@@ -167,3 +167,42 @@ type RetireStorage struct {
 type TestStorageChannel struct {
 	Code string
 }
+
+type ReplaceNotifyPolicy struct {
+	EventKey        string
+	CommandKey      string
+	ExpectedVersion int64
+	DispatchMode    string
+	DelaySeconds    int
+	Channels        map[string]NotifyChannelPolicy
+}
+
+type NotifyChannelPolicy struct {
+	Enabled      bool
+	TemplateCode string
+}
+
+type UpsertNotifyTemplate struct {
+	Code            string
+	CommandKey      string
+	ExpectedVersion int64
+	Channel         string
+	TextTemplate    string
+	Subject         string
+	BodyHTML        string
+	Title           string
+	Body            string
+	Variables       []string
+}
+
+type RetireNotifyTemplate struct {
+	Code            string
+	CommandKey      string
+	ExpectedVersion int64
+}
+
+type ReplaceNotifyInApp struct {
+	CommandKey      string
+	ExpectedVersion int64
+	Enabled         bool
+}

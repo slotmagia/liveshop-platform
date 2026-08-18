@@ -9,6 +9,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/application/admin/appmodel"
 	emailmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/email/model"
 	providermodel "github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider/model"
+	notifymodel "github.com/liveshop-platform/module-platform/internal/biz/capability/notification/model"
 	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
 	storagemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/storage/model"
 	"github.com/liveshop-platform/module-platform/internal/biz/model"
@@ -73,4 +74,23 @@ type Storage interface {
 	RetireStorageChannel(context.Context, appmodel.RetireStorage) (storagemodel.Channel, error)
 	TestStorageChannel(context.Context, appmodel.TestStorageChannel) (storagemodel.TestResult, error)
 	GetStorageObject(context.Context, string) (storagemodel.Object, error)
+}
+
+type NotifyEvents interface {
+	ListNotifyEvents(context.Context, notifymodel.EventFilter) ([]notifymodel.Event, error)
+	GetNotifyEvent(context.Context, string) (notifymodel.Event, error)
+	ReplaceNotifyPolicy(context.Context, appmodel.ReplaceNotifyPolicy) (notifymodel.Event, error)
+	ListNotifyDeliveries(context.Context, string) ([]notifymodel.Delivery, error)
+}
+
+type NotifyTemplates interface {
+	ListNotifyTemplates(context.Context, notifymodel.TemplateFilter) ([]notifymodel.LibraryTemplate, error)
+	GetNotifyLibraryTemplate(context.Context, string) (notifymodel.LibraryTemplate, error)
+	UpsertNotifyTemplate(context.Context, appmodel.UpsertNotifyTemplate) (notifymodel.LibraryTemplate, error)
+	RetireNotifyTemplate(context.Context, appmodel.RetireNotifyTemplate) (notifymodel.LibraryTemplate, error)
+}
+
+type NotifyChannels interface {
+	GetNotifyInApp(context.Context) (notifymodel.InAppConfig, error)
+	ReplaceNotifyInApp(context.Context, appmodel.ReplaceNotifyInApp) (notifymodel.InAppConfig, error)
 }

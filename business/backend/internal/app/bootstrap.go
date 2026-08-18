@@ -47,7 +47,7 @@ func bootstrap(ctx context.Context) (*instance, error) {
 			workload(cfg.WorkloadIdentity.GRPC.Gateway),
 			workload(cfg.WorkloadIdentity.GRPC.Identity),
 		},
-	}, applications.Provisioning)
+	}, applications.Provisioning, applications.Notification)
 	if err != nil {
 		_ = deps.Close()
 		return nil, err

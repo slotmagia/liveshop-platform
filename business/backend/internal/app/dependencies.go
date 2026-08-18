@@ -5,16 +5,22 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/liveshop-platform/module-platform/internal/biz"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/edge"
+	edgemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/edge/model"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/email"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
+	"github.com/liveshop-platform/module-platform/internal/common/edgehttp"
 	"github.com/liveshop-platform/module-platform/internal/common/emailsender"
+	"github.com/liveshop-platform/module-platform/internal/common/notifysender"
 	"github.com/liveshop-platform/module-platform/internal/common/smssender"
 	"github.com/liveshop-platform/module-platform/internal/common/storagesender"
 	"github.com/liveshop-platform/module-platform/internal/config"
@@ -38,6 +44,8 @@ type Dependencies struct {
 	SMS          *sms.UseCase
 	Email        *email.UseCase
 	Storage      *storage.UseCase
+	Notification *notification.UseCase
+	Edge         *edge.UseCase
 
 	Workloads      *workloadidentity.Verifier
 	ModuleVerifier *modulesession.Verifier
@@ -82,9 +90,25 @@ func NewDependencies(cfg *config.Config) (Dependencies, error) {
 		return Dependencies{}, err
 	}
 
+	smsUse := sms.New(adapters.sms, smssender.New())
+	emailUse := email.New(adapters.email, emailsender.New())
+	notifyUse := notification.New(adapters.notification, notifysender.Adapter{SMS: smsUse, Email: emailUse})
 	release := biz.NewRelease(adapters.release)
+	if revision, items, err := release.ActiveCapabilities(ctx); err == nil {
+		_ = notifyUse.ProjectCapabilities(ctx, revision, items)
+	}
+	settings := biz.NewSettings(adapters.settings)
+	edgeUse := edge.New(settings, edgehttp.NewIdentityHTTP(cfg.Edge.IdentityOrigin, cfg.InternalGrant.Token), edgehttp.NewCaddyReloader(cfg.Edge.CaddyAdmin, cfg.Edge.Caddyfile, writeCaddyfile), edge.Config{
+		Enabled: cfg.Edge.Enabled, GrantToken: cfg.InternalGrant.Token, AskOrigin: cfg.Edge.AskOrigin,
+		ACMEEmail: cfg.Edge.ACMEEmail, CaddyfilePath: cfg.Edge.Caddyfile,
+		Upstreams: map[string]string{
+			edgemodel.TargetShop: cfg.Edge.Upstreams.Shop, edgemodel.TargetLive: cfg.Edge.Upstreams.Live,
+			edgemodel.TargetMerch: cfg.Edge.Upstreams.Merch, edgemodel.TargetAdmin: cfg.Edge.Upstreams.Admin,
+			edgemodel.TargetRTS: cfg.Edge.Upstreams.RTS, edgemodel.TargetGateway: cfg.Edge.Upstreams.Gateway,
+		},
+	})
 	return Dependencies{
-		Release: release, Settings: biz.NewSettings(adapters.settings), Audit: biz.NewAudit(adapters.audit), LiveProvider: liveprovider.New(adapters.liveProvider), SMS: sms.New(adapters.sms, smssender.New()), Email: email.New(adapters.email, emailsender.New()), Storage: storage.New(adapters.storage, storagesender.New()),
+		Release: release, Settings: settings, Audit: biz.NewAudit(adapters.audit), LiveProvider: liveprovider.New(adapters.liveProvider), SMS: smsUse, Email: emailUse, Storage: storage.New(adapters.storage, storagesender.New()), Notification: notifyUse, Edge: edgeUse,
 		Workloads: tokens.workloads, ModuleVerifier: tokens.moduleVerifier,
 		Ready: database.PingContext, shutdown: database.Close,
 	}, nil
@@ -119,7 +143,7 @@ const (
 // composition root installs separately.
 func trustedWorkloads(cfg *config.Config) map[string]workloadidentity.TrustedWorkload {
 	peers := map[string]workloadidentity.TrustedWorkload{}
-	for _, peer := range []config.BearerWorkload{cfg.WorkloadIdentity.HTTP.Gateway, cfg.WorkloadIdentity.HTTP.Release} {
+	for _, peer := range []config.BearerWorkload{cfg.WorkloadIdentity.HTTP.Gateway, cfg.WorkloadIdentity.HTTP.Release, cfg.WorkloadIdentity.HTTP.Identity} {
 		peers[peer.KeyID] = workloadidentity.TrustedWorkload{
 			PublicKey:   peer.PublicKey,
 			Subject:     peer.Subject,
@@ -138,6 +162,7 @@ type stores struct {
 	sms          *mysql.SMSRepository
 	email        *mysql.EmailRepository
 	storage      *mysql.StorageRepository
+	notification *mysql.NotificationRepository
 }
 
 // newStores gates every adapter behind one reachability check and one schema
@@ -158,7 +183,12 @@ func newStores(ctx context.Context, database *sql.DB, box *secretbox.Box) (store
 		sms:          mysql.NewSMSRepository(database, box),
 		email:        mysql.NewEmailRepository(database, box),
 		storage:      mysql.NewStorageRepository(database, box),
+		notification: mysql.NewNotificationRepository(database),
 	}, nil
+}
+
+func writeCaddyfile(path string, data []byte) error {
+	return os.WriteFile(path, data, 0o600)
 }
 
 func openDatabase(cfg *config.Config) (*sql.DB, error) {

@@ -35,6 +35,8 @@ export const ui = Object.freeze({
   cardTitle: 'ls-ui-card-title',
   cardBody: 'ls-ui-card-body',
   searchCard: 'ls-ui-search-card',
+  tabs: 'ls-ui-tabs',
+  tab: 'ls-ui-tab',
   dataCard: 'ls-ui-data-card',
   tableToolbar: 'ls-ui-table-toolbar',
   tableToolbarTitle: 'ls-ui-table-toolbar__title',
@@ -280,6 +282,46 @@ export function searchCard(body) {
   root.classList.add(ui.searchCard)
   root.setAttribute('data-page-search', '')
   return root
+}
+
+/**
+ * Stripe-style chip tabs from the legacy console. They sit between the search
+ * card and the data card when one page has several collections.
+ */
+export function tabs({ items = [], value = '', ariaLabel, onChange } = {}) {
+  const root = create('div', ui.tabs)
+  root.setAttribute('role', 'tablist')
+  if (ariaLabel) root.setAttribute('aria-label', ariaLabel)
+  const buttons = new Map()
+  let current = String(value ?? '')
+
+  function paint(next) {
+    current = String(next ?? '')
+    for (const [key, node] of buttons) {
+      node.setAttribute('aria-selected', String(key === current))
+    }
+  }
+
+  for (const item of items) {
+    const key = String(item.value)
+    const node = create('button', ui.tab, item.label)
+    node.type = 'button'
+    node.setAttribute('role', 'tab')
+    node.addEventListener('click', () => {
+      if (key === current) return
+      paint(key)
+      onChange?.(key)
+    })
+    buttons.set(key, node)
+    root.append(node)
+  }
+  paint(current)
+
+  return {
+    element: root,
+    set(next) { paint(next) },
+    value() { return current },
+  }
 }
 
 /**

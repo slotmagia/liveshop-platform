@@ -23,6 +23,7 @@ func Validate(cfg *Config) error {
 		validateWorkloadIdentity,
 		validateHTTP,
 		validateGRPC,
+		validateEdge,
 	}
 	for _, validate := range validators {
 		if err := validate(cfg); err != nil {
@@ -112,6 +113,9 @@ func validateWorkloadIdentity(cfg *Config) error {
 		{name: "workload_identity.http.release.key_id", value: cfg.WorkloadIdentity.HTTP.Release.KeyID},
 		{name: "workload_identity.http.release.public_key", value: cfg.WorkloadIdentity.HTTP.Release.PublicKey},
 		{name: "workload_identity.http.release.subject", value: cfg.WorkloadIdentity.HTTP.Release.Subject},
+		{name: "workload_identity.http.identity.key_id", value: cfg.WorkloadIdentity.HTTP.Identity.KeyID},
+		{name: "workload_identity.http.identity.public_key", value: cfg.WorkloadIdentity.HTTP.Identity.PublicKey},
+		{name: "workload_identity.http.identity.subject", value: cfg.WorkloadIdentity.HTTP.Identity.Subject},
 		{name: "workload_identity.grpc.gateway.spiffe_id", value: cfg.WorkloadIdentity.GRPC.Gateway.SPIFFEID},
 		{name: "workload_identity.grpc.gateway.subject", value: cfg.WorkloadIdentity.GRPC.Gateway.Subject},
 		{name: "workload_identity.grpc.identity.spiffe_id", value: cfg.WorkloadIdentity.GRPC.Identity.SPIFFEID},
@@ -132,11 +136,14 @@ func validateWorkloadIdentity(cfg *Config) error {
 	if !contains(cfg.WorkloadIdentity.HTTP.Release.Permissions, "registry.release.write") || !contains(cfg.WorkloadIdentity.HTTP.Release.Permissions, "registry.activation.write") {
 		return fmt.Errorf("platform: config workload_identity.http.release.permissions must include registry.release.write and registry.activation.write")
 	}
+	if !exactPermissions(cfg.WorkloadIdentity.HTTP.Identity.Permissions, "platform.notify-event.dispatch") {
+		return fmt.Errorf("platform: config workload_identity.http.identity.permissions must contain only platform.notify-event.dispatch")
+	}
 	if !exactPermissions(cfg.WorkloadIdentity.GRPC.Gateway.Permissions, "platform.registry.routes.read") {
 		return fmt.Errorf("platform: config workload_identity.grpc.gateway.permissions must contain only platform.registry.routes.read")
 	}
-	if !exactPermissions(cfg.WorkloadIdentity.GRPC.Identity.Permissions, "platform.registry.active-capabilities.read") {
-		return fmt.Errorf("platform: config workload_identity.grpc.identity.permissions must contain only platform.registry.active-capabilities.read")
+	if !exactPermissions(cfg.WorkloadIdentity.GRPC.Identity.Permissions, "platform.registry.active-capabilities.read", "platform.notify-event.dispatch") {
+		return fmt.Errorf("platform: config workload_identity.grpc.identity.permissions must contain platform.registry.active-capabilities.read and platform.notify-event.dispatch")
 	}
 	return nil
 }
@@ -154,6 +161,54 @@ func validateGRPC(cfg *Config) error {
 		{name: "grpc.tls.certificate_file", value: cfg.GRPC.TLS.CertificateFile},
 		{name: "grpc.tls.private_key_file", value: cfg.GRPC.TLS.PrivateKeyFile},
 		{name: "grpc.tls.client_ca_file", value: cfg.GRPC.TLS.ClientCAFile},
+	})
+}
+
+func validateEdge(cfg *Config) error {
+	originChecks := []field{
+		{name: "edge.identity_origin", value: cfg.Edge.IdentityOrigin},
+		{name: "edge.ask_origin", value: cfg.Edge.AskOrigin},
+	}
+	for _, item := range originChecks {
+		if strings.TrimSpace(item.value) == "" {
+			if cfg.Edge.Enabled {
+				return require(item.name, item.value)
+			}
+			continue
+		}
+		parsed, err := url.Parse(item.value)
+		if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+			return fmt.Errorf("platform: config %s must be an absolute URL", item.name)
+		}
+	}
+	upstreams := []field{
+		{name: "edge.upstreams.shop", value: cfg.Edge.Upstreams.Shop},
+		{name: "edge.upstreams.live", value: cfg.Edge.Upstreams.Live},
+		{name: "edge.upstreams.merch", value: cfg.Edge.Upstreams.Merch},
+		{name: "edge.upstreams.admin", value: cfg.Edge.Upstreams.Admin},
+		{name: "edge.upstreams.rts", value: cfg.Edge.Upstreams.RTS},
+		{name: "edge.upstreams.gateway", value: cfg.Edge.Upstreams.Gateway},
+	}
+	anyUpstream := false
+	for _, item := range upstreams {
+		if strings.TrimSpace(item.value) != "" {
+			anyUpstream = true
+			break
+		}
+	}
+	if cfg.Edge.Enabled || anyUpstream {
+		if err := requireFields(upstreams); err != nil {
+			return err
+		}
+	}
+	if !cfg.Edge.Enabled {
+		return nil
+	}
+	return requireFields([]field{
+		{name: "internal_grant.token", value: cfg.InternalGrant.Token},
+		{name: "edge.caddy_admin", value: cfg.Edge.CaddyAdmin},
+		{name: "edge.caddyfile", value: cfg.Edge.Caddyfile},
+		{name: "edge.acme_email", value: cfg.Edge.ACMEEmail},
 	})
 }
 

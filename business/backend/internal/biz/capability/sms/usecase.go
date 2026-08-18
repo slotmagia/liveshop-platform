@@ -124,14 +124,22 @@ func (u *UseCase) PutMerchantGrant(ctx context.Context, scope smsmodel.Scope, in
 }
 
 func (u *UseCase) TestSend(ctx context.Context, scope smsmodel.Scope, input smsmodel.TestSend) (smsmodel.TestSendResult, error) {
-	if !scope.Valid() || !smsmodel.ValidatePhone(input.Phone) {
+	return u.send(ctx, scope, input.ChannelCode, input.Phone, "")
+}
+
+func (u *UseCase) SendMessage(ctx context.Context, scope smsmodel.Scope, phone, text string) (smsmodel.TestSendResult, error) {
+	return u.send(ctx, scope, "", phone, text)
+}
+
+func (u *UseCase) send(ctx context.Context, scope smsmodel.Scope, channelCode, phone, text string) (smsmodel.TestSendResult, error) {
+	if !scope.Valid() || !smsmodel.ValidatePhone(phone) {
 		return smsmodel.TestSendResult{}, smsmodel.ErrInvalid
 	}
-	input.ChannelCode = strings.ToLower(strings.TrimSpace(input.ChannelCode))
-	input.Phone = strings.TrimSpace(input.Phone)
+	channelCode = strings.ToLower(strings.TrimSpace(channelCode))
+	phone = strings.TrimSpace(phone)
 	var selected smsmodel.ChannelSecrets
-	if input.ChannelCode != "" {
-		item, err := u.repository.LoadChannelSecrets(ctx, scope, input.ChannelCode)
+	if channelCode != "" {
+		item, err := u.repository.LoadChannelSecrets(ctx, scope, channelCode)
 		if err != nil {
 			return smsmodel.TestSendResult{}, err
 		}
@@ -144,7 +152,7 @@ func (u *UseCase) TestSend(ctx context.Context, scope smsmodel.Scope, input smsm
 		if err != nil {
 			return smsmodel.TestSendResult{}, err
 		}
-		routed := smsmodel.RouteChannels(input.Phone, channels)
+		routed := smsmodel.RouteChannels(phone, channels)
 		if len(routed) == 0 {
 			return smsmodel.TestSendResult{}, smsmodel.ErrNoChannel
 		}
@@ -154,8 +162,11 @@ func (u *UseCase) TestSend(ctx context.Context, scope smsmodel.Scope, input smsm
 		}
 		selected = item
 	}
-	code := generateCode(6)
-	detail, err := u.sender.Send(ctx, selected.Channel.Driver, selected.Config, input.Phone, code)
+	code := strings.TrimSpace(text)
+	if code == "" {
+		code = generateCode(6)
+	}
+	detail, err := u.sender.Send(ctx, selected.Channel.Driver, selected.Config, phone, code)
 	result := smsmodel.TestSendResult{OK: err == nil, Detail: detail, ChannelCode: selected.Channel.Code, Driver: selected.Channel.Driver, Mock: selected.Channel.Driver == smsmodel.DriverMock}
 	if err != nil {
 		if result.Detail == "" {

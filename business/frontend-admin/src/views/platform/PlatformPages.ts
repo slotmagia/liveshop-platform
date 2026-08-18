@@ -1,4 +1,4 @@
-﻿import type { HostHttpClient } from '@liveshop/host-sdk'
+﻿import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
 import { hostFormModal } from '@liveshop/host-sdk'
 import { badge, button, card, create, dataCard, field, grid, navIcon, page, resolveGroupIconName, resolvePageIconName, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
 
@@ -9,6 +9,13 @@ interface PermissionDefinition { code: string; name: string; resource: string; a
 interface AllowedRoute { methods: string[]; prefix: string; requiredPermissions: string[] }
 interface ManifestField { name: string; label?: string; type: string; required?: boolean; description?: string }
 interface HTTPResponse { status: number; description: string; fields: ManifestField[] }
+interface NotificationDeclaration {
+  eventKey: string
+  title: string
+  variables: string[]
+  allowedChannels: string[]
+  defaultDispatch: string
+}
 interface HTTPOperation {
   id: string
   method: string
@@ -20,6 +27,7 @@ interface HTTPOperation {
   requiredPermissions: string[]
   requestFields?: ManifestField[]
   responses?: HTTPResponse[]
+  notifications?: NotificationDeclaration[]
 }
 interface HTTPRoute { surface: Surface | 'internal'; prefix: string; operations: HTTPOperation[] }
 interface FrontendAction { id: string; label: string; description: string; invocation: string; target: string; requiredPermissions: string[] }
@@ -118,6 +126,21 @@ function activeNavigationGroups(items: ActivePage[]): ActiveNavigationGroup[] {
   ))
 }
 
+interface NotifyChannelPolicy { enabled: boolean; templateCode?: string }
+interface NotifyEventRow {
+  eventKey: string
+  title: string
+  variables: string[]
+  allowedChannels: string[]
+  defaultDispatch: string
+  dispatchMode: string
+  delaySeconds: number
+  channels: Record<string, NotifyChannelPolicy>
+  policyVersion: number
+}
+interface NotifyTemplateOption { code: string; channel: string; lifecycle: string }
+
+type RegistryNotify = { client: HostHttpClient; canManage: boolean; fail: (error: unknown) => void }
 type RegistryActionIcon = 'plus' | 'refresh-cw' | 'pencil' | 'trash-2' | 'chevron-down' | 'chevron-right' | 'corner-down-right'
 
 function registryIcon(name: string, className = '', fallback = 'layout-grid'): SVGElement {
@@ -188,6 +211,7 @@ function navigationTree(
   items: ActivePage[],
   showDetail: (item: ActivePage) => void,
   showManifestAction: (action: string, target: string) => void,
+  notify?: RegistryNotify,
 ): HTMLElement {
   const tree = create('div', 'registry-tree')
   const groups = activeNavigationGroups(items)
@@ -272,6 +296,28 @@ function navigationTree(
           )
           operationLine.append(operationIdentity, operationMeta)
           operationRow.append(operationLine, detail)
+          const declarations = operation.notifications || []
+          if (declarations.length) {
+            for (const declaration of declarations) {
+              const eventRow = create('div', 'registry-tree__operation registry-tree__operation--event')
+              const eventLine = create('div', 'registry-tree__operation-line')
+              const eventIdentity = create('div', 'registry-tree__operation-identity')
+              eventIdentity.append(
+                registryIcon('corner-down-right', 'registry-tree__branch'),
+                create('strong', undefined, declaration.title || declaration.eventKey),
+                badge({ label: '事件', tone: 'warning' }),
+                create('code', 'registry-tree__code', declaration.eventKey),
+              )
+              const eventMeta = create('div', 'registry-tree__meta')
+              eventMeta.append(create('code', 'registry-tree__code registry-tree__code--subtle', `${declaration.defaultDispatch} · ${(declaration.allowedChannels || []).join('/')}`))
+              if (notify?.canManage) {
+                eventMeta.append(compactAction('配置规则', 'pencil', () => void openCatalogEventPolicy(notify, declaration)))
+              }
+              eventLine.append(eventIdentity, eventMeta)
+              eventRow.append(eventLine)
+              operationRow.append(eventRow)
+            }
+          }
           operationList.append(operationRow)
         }
       }
@@ -305,7 +351,76 @@ function includesText(haystack: string, needle: string): boolean {
   return haystack.toLowerCase().includes(needle.trim().toLowerCase())
 }
 
-export async function startRegistry(root: HTMLElement, client: HostHttpClient) {
+async function openCatalogEventPolicy(notify: RegistryNotify, declaration: NotificationDeclaration): Promise<void> {
+  const modes = [
+    { value: 'SYNC', label: '同步' },
+    { value: 'ASYNC', label: '异步' },
+    { value: 'SCHEDULED', label: '定时' },
+  ]
+  let item: NotifyEventRow
+  let templates: NotifyTemplateOption[] = []
+  try {
+    item = await notify.client.request<NotifyEventRow>(`/admin/platform/notify-events/${encodeURIComponent(declaration.eventKey)}`)
+    templates = await notify.client.request<NotifyTemplateOption[]>('/admin/platform/notify-templates')
+  } catch (error) {
+    notify.fail(error)
+    return
+  }
+  const fields = [
+    { name: 'dispatchMode', label: '投递模式', kind: 'select' as const, required: true, options: modes },
+    { name: 'delaySeconds', label: '定时延迟（秒）', type: 'number', placeholder: '仅 SCHEDULED' },
+    ...declaration.allowedChannels.flatMap(channel => ([
+      { name: `channel_${channel}`, label: `${channel} 渠道`, kind: 'select' as const, required: true, options: [{ value: 'true', label: '开启' }, { value: 'false', label: '关闭' }] },
+      {
+        name: `template_${channel}`,
+        label: `${channel} 模板`,
+        kind: 'select' as const,
+        options: [
+          { value: '', label: '不选择模板' },
+          ...templates.filter(template => template.channel === channel && template.lifecycle !== 'RETIRED').map(template => ({ value: template.code, label: template.code })),
+        ],
+      },
+    ])),
+  ]
+  const values: Record<string, string> = {
+    dispatchMode: item.dispatchMode || declaration.defaultDispatch,
+    delaySeconds: String(item.delaySeconds || 0),
+  }
+  for (const channel of declaration.allowedChannels) {
+    values[`channel_${channel}`] = String(Boolean(item.channels?.[channel]?.enabled))
+    values[`template_${channel}`] = item.channels?.[channel]?.templateCode || ''
+  }
+  const editor = hostFormModal({
+    title: `通知规则 · ${declaration.title}`,
+    fields,
+    submitLabel: '保存',
+    onSubmit: (form, modal) => {
+      const dispatchMode = form.dispatchMode
+      const delaySeconds = Number(form.delaySeconds || 0)
+      if (dispatchMode === 'SCHEDULED' && (!Number.isInteger(delaySeconds) || delaySeconds < 0 || delaySeconds > 2592000)) {
+        modal.setError('定时延迟须为 0 到 2592000 的整数秒。'); return
+      }
+      const channels: Record<string, NotifyChannelPolicy> = {}
+      for (const channel of declaration.allowedChannels) {
+        const enabled = form[`channel_${channel}`] === 'true'
+        const templateCode = (form[`template_${channel}`] || '').trim()
+        if (enabled && !templateCode) { modal.setError(`${channel} 开启时必须选择模板。`); return }
+        channels[channel] = { enabled, templateCode }
+      }
+      modal.setBusy(true)
+      notify.client.request(`/admin/platform/notify-events/${encodeURIComponent(declaration.eventKey)}/policy`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          commandKey: crypto.randomUUID(), expectedVersion: item.policyVersion, dispatchMode,
+          delaySeconds: dispatchMode === 'SCHEDULED' ? delaySeconds : 0, channels,
+        }),
+      }).then(() => modal.close()).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
+    },
+  })
+  editor.open(values)
+}
+
+export async function startRegistry(root: HTMLElement, client: HostHttpClient, context?: HostContext) {
   const status = statusLine()
   const fail = (error: unknown) => status.set(error instanceof Error ? error.message : String(error), 'danger')
   let modules: ModuleInfo[] = []
@@ -432,7 +547,11 @@ export async function startRegistry(root: HTMLElement, client: HostHttpClient) {
     const items = visibleModules()
     moduleList.replaceChildren(...items.map((item) => moduleCard(item)))
     const pages = activePages(catalog, surface)
-    navigation.replaceChildren(navigationTree(pages, showDetail, showManifestAction))
+    navigation.replaceChildren(navigationTree(pages, showDetail, showManifestAction, {
+      client,
+      canManage: Boolean(context?.permissions?.includes('platform.notify-event.manage')),
+      fail,
+    }))
     const surfaceLabel = surfaces.find((item) => item.value === surface)?.label || surface
     status.set(`Registry revision ${catalog.revision}；${surfaceLabel}活动页面 ${pages.length} 个；显示模块 ${items.length} / ${modules.length} 个`)
   }
@@ -465,7 +584,7 @@ export async function startRegistry(root: HTMLElement, client: HostHttpClient) {
 
   const catalogPanel = create('div', 'registry-catalog')
   catalogPanel.append(
-    create('p', 'registry-catalog__description', '三级管理：目录 → 菜单 → 接口。接口可展开查看请求参数和返回值字段。'),
+    create('p', 'registry-catalog__description', '四级管理：目录 → 菜单 → 接口 → 事件。事件来自模块 Manifest 声明，不能在此新建。有权限时可配置投递规则并选择模板。'),
     navigation,
   )
   const moduleBody = create('div', ui.cardBody)

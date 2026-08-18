@@ -21,9 +21,9 @@ const (
 )
 
 var (
-	ErrInvalid    = apperror.New("platform.email.invalid", "email input is invalid")
-	ErrNotFound   = apperror.New("platform.email.not_found", "email config was not found")
-	ErrConflict   = apperror.New("platform.email.conflict", "email version or command conflicts")
+	ErrInvalid       = apperror.New("platform.email.invalid", "email input is invalid")
+	ErrNotFound      = apperror.New("platform.email.not_found", "email config was not found")
+	ErrConflict      = apperror.New("platform.email.conflict", "email version or command conflicts")
 	ErrNotConfigured = apperror.New("platform.email.not_configured", "email is not configured yet")
 )
 
@@ -78,8 +78,9 @@ type SetEnabled struct {
 }
 
 type TestSend struct {
-	To     string
-	Subject string
+	To       string
+	Subject  string
+	BodyHTML string
 }
 
 type TestSendResult struct {

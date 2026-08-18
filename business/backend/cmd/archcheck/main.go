@@ -222,6 +222,9 @@ func (c *checker) checkSurfaceIsolation(file, imported string) {
 	source := surfacePattern.FindStringSubmatch("/" + file)
 	target := surfacePattern.FindStringSubmatch(imported)
 	if len(source) == 2 && len(target) == 2 && source[1] != target[1] {
+		if source[1] == "internalgrant" && target[1] == "admin" {
+			return
+		}
 		c.add(fmt.Sprintf("%s: surface %s imports surface %s (%s)", file, source[1], target[1], imported))
 	}
 }

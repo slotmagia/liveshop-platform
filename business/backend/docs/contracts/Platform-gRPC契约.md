@@ -7,12 +7,19 @@ protocol/proto/platform/v1/platform.proto
 protocol/gen/go/platform/v1/
 ```
 
-当前公开两个只读、安全且可重试的 RPC：
+当前公开 `PlatformRegistryService` 的两个只读、安全且可重试的 RPC：
 
 - `GetRouteSnapshot`：读取活动 HTTP 路由及其单调递增 revision；要求 `platform.registry.routes.read`。
-- `GetCapabilityCatalog`：读取由不可变发布 Manifest 派生的能力目录；要求 `platform.registry.capabilities.read`。
+- `GetActiveCapabilitySnapshot`：读取由不可变发布 Manifest 派生的能力目录；要求 `platform.registry.active-capabilities.read`。
 
-两者属于 `controlplane/provisioning` 边界，与该边界的 HTTP 接口复用同一个 `service.Provisioning → logic → biz.Release → data/mysql` 实例，不建立第二份路由或能力事实源。gRPC 与 HTTP 各自拥有请求/响应契约和错误映射：状态码由领域错误直接推导，不从 HTTP 状态码转换。服务名与「方法 → 工作负载权限」映射由该边界的门面声明，`common/grpcserver` 只负责安装。
+两者属于 `controlplane/provisioning` 边界，与该边界的 HTTP 接口复用同一个 `service.Provisioning → logic → biz.Release → data/mysql` 实例，不建立第二份路由或能力事实源。
+
+同一 gRPC 端口另挂 `liveshop.platform.v1.PlatformNotificationService`（`controlplane/notification`），不并入 Registry 服务：
+
+- `Dispatch`：业务事务提交后按 `eventKey` 投递；要求 `platform.notify-event.dispatch`。
+- `GetDelivery`：读取一次渠道投递证据；同一权限。
+
+gRPC 与 HTTP 各自拥有请求/响应契约和错误映射：状态码由领域错误直接推导，不从 HTTP 状态码转换。服务名与「方法 → 工作负载权限」映射由各边界门面声明，`common/grpcserver` 只负责安装。
 
 ## 传输与身份
 

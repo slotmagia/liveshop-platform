@@ -23,6 +23,35 @@
 .ls-ui-card-title { margin: 0; color: var(--ls-ink); font-size: 15px; font-weight: 650; }
 .ls-ui-card-body { padding: 16px; }
 .ls-ui-search-card { margin-bottom: 12px; }
+.ls-ui-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.ls-ui-tab {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--ls-border-soft);
+  border-radius: var(--ls-radius-xs);
+  background: var(--ls-surface);
+  color: var(--ls-ink-soft);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+}
+.ls-ui-tab:hover { background: var(--ls-surface-hover); color: var(--ls-ink); }
+.ls-ui-tab:focus-visible { outline: 2px solid var(--ls-primary); outline-offset: 1px; }
+.ls-ui-tab[aria-selected="true"] {
+  border-color: var(--ls-primary-line);
+  background: var(--ls-primary-soft);
+  color: var(--ls-primary);
+}
 .ls-ui-data-card { min-height: 160px; }
 .ls-ui-table-toolbar { display: flex; min-height: 62px; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ls-border); background: var(--ls-surface); }
 .ls-ui-table-toolbar__title { min-width: 0; margin: 0; color: var(--ls-ink); font-size: 15px; font-weight: 650; }

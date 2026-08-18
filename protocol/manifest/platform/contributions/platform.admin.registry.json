@@ -5,7 +5,7 @@
   "route": "/menus",
   "title": "菜单管理",
   "icon": "panel-left",
-  "description": "以活动 Manifest 为唯一事实源管理模块版本，并只读预览四端菜单导航与完整能力契约。",
+  "description": "以活动 Manifest 为唯一事实源管理模块版本，只读预览四端菜单导航与完整能力契约。接口下展示已声明通知事件；有权限时可配置投递规则并选择模板。",
   "sort": 110,
   "navigation": {
     "groupId": "legacy-admin-system",
@@ -27,12 +27,27 @@
       "requiredPermissions": [
         "platform.registry.manage"
       ]
+    },
+    {
+      "methods": ["GET"],
+      "prefix": "/admin/platform/notify-events",
+      "requiredPermissions": ["platform.notify-event.read"]
+    },
+    {
+      "methods": ["PUT"],
+      "prefix": "/admin/platform/notify-events",
+      "requiredPermissions": ["platform.notify-event.manage"]
+    },
+    {
+      "methods": ["GET"],
+      "prefix": "/admin/platform/notify-templates",
+      "requiredPermissions": ["platform.notify-template.read"]
     }
   ],
   "artifact": {
     "type": "iframe",
     "name": "@liveshop/platform-admin",
-    "version": "5.1.0",
+    "version": "6.0.0",
     "entry": "http://127.0.0.1:15180",
     "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
   },

@@ -30,12 +30,20 @@ func (l *Logic) Activate(ctx context.Context, activation appmodel.Activation) er
 	if l.deps.Release == nil {
 		return model.ErrUnavailable
 	}
-	return l.deps.Release.ActivateAudited(ctx, authctx.RegistryActor(ctx), activation.ModuleID, activation.Version)
+	if err := l.deps.Release.ActivateAudited(ctx, authctx.RegistryActor(ctx), activation.ModuleID, activation.Version); err != nil {
+		return err
+	}
+	_ = l.ProjectNotifications(ctx)
+	return nil
 }
 
 func (l *Logic) Deactivate(ctx context.Context, moduleID string) error {
 	if l.deps.Release == nil {
 		return model.ErrUnavailable
 	}
-	return l.deps.Release.DeactivateAudited(ctx, authctx.RegistryActor(ctx), moduleID)
+	if err := l.deps.Release.DeactivateAudited(ctx, authctx.RegistryActor(ctx), moduleID); err != nil {
+		return err
+	}
+	_ = l.ProjectNotifications(ctx)
+	return nil
 }

@@ -55,8 +55,9 @@ type Config struct {
 	WorkloadIdentity struct {
 		Issuer string `yaml:"issuer"`
 		HTTP   struct {
-			Gateway BearerWorkload `yaml:"gateway"`
-			Release BearerWorkload `yaml:"release"`
+			Gateway  BearerWorkload `yaml:"gateway"`
+			Release  BearerWorkload `yaml:"release"`
+			Identity BearerWorkload `yaml:"identity"`
 		} `yaml:"http"`
 		GRPC struct {
 			Gateway  MTLSWorkload `yaml:"gateway"`
@@ -66,6 +67,22 @@ type Config struct {
 	InternalGrant struct {
 		Token string `yaml:"token"`
 	} `yaml:"internal_grant"`
+	Edge struct {
+		Enabled        bool   `yaml:"enabled"`
+		IdentityOrigin string `yaml:"identity_origin"`
+		AskOrigin      string `yaml:"ask_origin"`
+		CaddyAdmin     string `yaml:"caddy_admin"`
+		Caddyfile      string `yaml:"caddyfile"`
+		ACMEEmail      string `yaml:"acme_email"`
+		Upstreams      struct {
+			Shop    string `yaml:"shop"`
+			Live    string `yaml:"live"`
+			Merch   string `yaml:"merch"`
+			Admin   string `yaml:"admin"`
+			RTS     string `yaml:"rts"`
+			Gateway string `yaml:"gateway"`
+		} `yaml:"upstreams"`
+	} `yaml:"edge"`
 	HTTP struct {
 		AllowedOrigins []string `yaml:"allowed_origins"`
 	} `yaml:"http"`

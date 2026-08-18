@@ -8,27 +8,31 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/liveshop-platform/module-platform/internal/application/admin/appmodel"
 	"github.com/liveshop-platform/module-platform/internal/application/admin/service"
-	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
+	bizedge "github.com/liveshop-platform/module-platform/internal/biz/capability/edge"
+	edgemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/edge/model"
 	providermodel "github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider/model"
-	"github.com/liveshop-platform/module-platform/internal/common/web"
+	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
+	bizmodel "github.com/liveshop-platform/module-platform/internal/biz/model"
 	"github.com/liveshop-platform/module-platform/internal/common/server"
+	"github.com/liveshop-platform/module-platform/internal/common/web"
 )
 
 type Surface struct {
 	token string
 	sms   service.SMS
 	live  service.LiveProvider
+	edge  *bizedge.UseCase
 }
 
-func New(token string, sms service.SMS, live service.LiveProvider) Surface {
-	return Surface{token: token, sms: sms, live: live}
+func New(token string, sms service.SMS, live service.LiveProvider, edge *bizedge.UseCase) Surface {
+	return Surface{token: token, sms: sms, live: live, edge: edge}
 }
 
 func (s Surface) RegisterHTTP(root *ghttp.RouterGroup) {
 	root.Group("/internal/v1", func(group *ghttp.RouterGroup) {
 		group.Middleware(web.ResponseHandler)
 		group.Middleware(requireToken(s.token))
-		group.Bind(&controller{sms: s.sms, live: s.live})
+		group.Bind(&controller{sms: s.sms, live: s.live, edge: s.edge})
 	})
 }
 
@@ -37,6 +41,7 @@ var _ server.Surface = Surface{}
 type controller struct {
 	sms  service.SMS
 	live service.LiveProvider
+	edge *bizedge.UseCase
 }
 
 type smsGetReq struct {
@@ -58,10 +63,27 @@ type liveGetReq struct {
 }
 type livePutReq struct {
 	g.Meta          `path:"/live-providers/assignments" method:"put"`
-	CommandKey      string                           `json:"commandKey"`
-	ExpectedVersion int64                            `json:"expectedVersion"`
-	MerchantID      int64                            `json:"merchantId"`
+	CommandKey      string                            `json:"commandKey"`
+	ExpectedVersion int64                             `json:"expectedVersion"`
+	MerchantID      int64                             `json:"merchantId"`
 	Providers       []appmodel.LiveProviderAssignment `json:"providers"`
+}
+
+type edgeSnapshotReq struct {
+	g.Meta `path:"/edge/snapshot" method:"get"`
+}
+
+type edgeSnapshotView struct {
+	CnameTarget    string            `json:"cnameTarget"`
+	RootDomain     string            `json:"rootDomain"`
+	ShopDomain     string            `json:"shopDomain"`
+	LiveDomain     string            `json:"liveDomain"`
+	RtsDomain      string            `json:"rtsDomain"`
+	AdminDomain    string            `json:"adminDomain"`
+	MerchantDomain string            `json:"merchantDomain"`
+	ForceHTTPS     bool              `json:"forceHttps"`
+	ReservedHosts  []string          `json:"reservedHosts"`
+	Upstreams      map[string]string `json:"upstreams"`
 }
 
 type smsRegionOption struct {
@@ -72,17 +94,17 @@ type smsRegionOption struct {
 	Enabled  bool   `json:"enabled"`
 }
 type smsView struct {
-	MerchantID   int64              `json:"merchantId"`
-	ShopID       int64              `json:"shopId"`
-	DialCodes    []string           `json:"dialCodes"`
-	Unrestricted bool               `json:"unrestricted"`
-	Regions      []smsRegionOption  `json:"regions"`
-	Version      int64              `json:"version"`
+	MerchantID   int64             `json:"merchantId"`
+	ShopID       int64             `json:"shopId"`
+	DialCodes    []string          `json:"dialCodes"`
+	Unrestricted bool              `json:"unrestricted"`
+	Regions      []smsRegionOption `json:"regions"`
+	Version      int64             `json:"version"`
 }
 type liveView struct {
-	MerchantID int64                           `json:"merchantId"`
+	MerchantID int64                             `json:"merchantId"`
 	Providers  []appmodel.LiveProviderAssignment `json:"providers"`
-	Version    int64                           `json:"version"`
+	Version    int64                             `json:"version"`
 }
 
 func (c *controller) GetSMS(ctx context.Context, req *smsGetReq) (*smsView, error) {
@@ -150,6 +172,31 @@ func (c *controller) projectSMS(ctx context.Context, value smsmodel.MerchantGran
 		})
 	}
 	return smsView{MerchantID: value.MerchantID, ShopID: value.ShopID, DialCodes: value.DialCodes, Unrestricted: value.Unrestricted, Regions: regions, Version: value.Version}, nil
+}
+
+func (c *controller) GetEdgeSnapshot(ctx context.Context, _ *edgeSnapshotReq) (*edgeSnapshotView, error) {
+	if c.edge == nil {
+		return nil, web.Failure(bizmodel.ErrUnavailable)
+	}
+	value, err := c.edge.Snapshot(ctx)
+	if err != nil {
+		return nil, web.Failure(err)
+	}
+	view := projectEdge(value)
+	return &view, nil
+}
+
+func projectEdge(value edgemodel.Snapshot) edgeSnapshotView {
+	hosts := append([]string{}, value.ReservedHosts...)
+	upstreams := map[string]string{}
+	for key, item := range value.Upstreams {
+		upstreams[key] = item
+	}
+	return edgeSnapshotView{
+		CnameTarget: value.CNAMETarget, RootDomain: value.RootDomain, ShopDomain: value.ShopDomain,
+		LiveDomain: value.LiveDomain, RtsDomain: value.RTSDomain, AdminDomain: value.AdminDomain,
+		MerchantDomain: value.MerchantDomain, ForceHTTPS: value.ForceHTTPS, ReservedHosts: hosts, Upstreams: upstreams,
+	}
 }
 
 func projectLive(value providermodel.AssignmentSet) liveView {

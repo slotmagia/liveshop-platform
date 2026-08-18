@@ -85,6 +85,11 @@ workload_identity:
       public_key: fkfxuRj0sxDYBT3U_qghrTrtjfv4y3djZObZ-EL_Zho
       subject: module-release-ci
       permissions: [registry.release.write, registry.activation.write]
+    identity:
+      key_id: identity-workload-dev-1
+      public_key: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
+      subject: identity
+      permissions: [platform.notify-event.dispatch]
   grpc:
     gateway:
       spiffe_id: spiffe://liveshop.local/gateway
@@ -93,7 +98,7 @@ workload_identity:
     identity:
       spiffe_id: spiffe://liveshop.local/identity
       subject: liveshop-identity
-      permissions: [platform.registry.active-capabilities.read]
+      permissions: [platform.registry.active-capabilities.read, platform.notify-event.dispatch]
 http:
   allowed_origins: [http://gateway.internal]
   cookie_secure: false

@@ -7,7 +7,7 @@
 - Platform 是模块控制面和跨业务基础设施控制面，拥有 Registry、Navigation、Settings、Audit、Notification、Storage、Telemetry/Attribution、Live Provider 与 Localization。
 - Identity 是浏览器用户身份、组织、角色、策略、Subject grant、DataScope、有效授权和 Module Capability 签发的唯一事实源。
 - Platform 不得实现登录、用户会话、IAM 写入、有效权限计算、权益投影或 Module Capability 私钥签发。
-- Platform notification 只拥有短信/邮件 Provider、模板、通知事件和投递证据，不拥有 Identity 验证码挑战或核验结果。
+- Platform notification 只拥有短信/邮件 Provider、可复用模板库、通知事件策略和投递证据，不拥有 Identity 验证码挑战或核验结果。
 - Platform storage 只拥有对象存储驱动、通道、密钥引用和健康状态；素材资产属于 Catalog。Platform live-provider 只拥有 Provider、分配和凭据引用；直播房间与场次属于 Live。
 - Platform telemetry/attribution 只拥有全局埋点和可重建归因投影；游客风险决策、客服账号和商户能力治理属于 Identity。
 - 经营分析、店铺访问和广告商品映射属于 Catalog；Platform 只向 Catalog 发布版本化 telemetry 事件或公开投影，不保存 Catalog 经营指标副本。

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	providermodel "github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider/model"
 	"github.com/go-sql-driver/mysql"
+	providermodel "github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider/model"
 )
 
 func (r *LiveProviderRepository) GetAssignments(ctx context.Context, merchantID int64) (providermodel.AssignmentSet, error) {

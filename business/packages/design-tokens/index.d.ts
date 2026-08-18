@@ -28,6 +28,8 @@ export declare const ui: Readonly<{
   cardTitle: string
   cardBody: string
   searchCard: string
+  tabs: string
+  tab: string
   dataCard: string
   tableToolbar: string
   tableToolbarTitle: string
@@ -148,6 +150,22 @@ export interface CardOptions {
 }
 export declare function card(options?: CardOptions): HTMLElement
 export declare function searchCard(body: Node | Node[]): HTMLElement
+export interface TabItem {
+  value: string
+  label: string
+}
+export interface TabsOptions {
+  items: TabItem[]
+  value?: string
+  ariaLabel?: string
+  onChange?: (value: string) => void
+}
+export interface TabsApi {
+  element: HTMLElement
+  set(value: string): void
+  value(): string
+}
+export declare function tabs(options: TabsOptions): TabsApi
 export interface DataCardOptions {
   title?: string
   actions?: Node | Node[]

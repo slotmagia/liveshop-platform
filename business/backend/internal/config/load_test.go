@@ -45,6 +45,9 @@ func TestShippedConfigsMapEverySection(t *testing.T) {
 			if cfg.WorkloadIdentity.HTTP.Release.Subject == "" {
 				t.Error("workload_identity.http.release did not map")
 			}
+			if cfg.WorkloadIdentity.HTTP.Identity.Subject == "" {
+				t.Error("workload_identity.http.identity did not map")
+			}
 			if cfg.WorkloadIdentity.GRPC.Gateway.SPIFFEID == "" {
 				t.Error("workload_identity.grpc.gateway did not map")
 			}
@@ -56,6 +59,12 @@ func TestShippedConfigsMapEverySection(t *testing.T) {
 			// them. Otherwise the container fails at startup rather than here.
 			if !test.complete {
 				return
+			}
+			if cfg.InternalGrant.Token == "" {
+				t.Error("internal_grant did not map")
+			}
+			if cfg.Edge.IdentityOrigin == "" || cfg.Edge.Upstreams.Shop == "" || cfg.Edge.Upstreams.Gateway == "" {
+				t.Error("edge did not map")
 			}
 			if cfg.Database.URL == "" {
 				t.Error("database did not map")

@@ -7,8 +7,10 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/application/admin/logic"
 	"github.com/liveshop-platform/module-platform/internal/application/admin/router"
 	"github.com/liveshop-platform/module-platform/internal/biz"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/edge"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/email"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
 	"github.com/lvtuopen-ai/kernel-go/modulesession"
@@ -23,6 +25,8 @@ type Config struct {
 	SMS            *sms.UseCase
 	Email          *email.UseCase
 	Storage        *storage.UseCase
+	Notification   *notification.UseCase
+	Edge           *edge.UseCase
 	ModuleSessions *modulesession.Verifier
 }
 
@@ -38,6 +42,8 @@ func New(config Config) Surface {
 			SMS:          config.SMS,
 			Email:        config.Email,
 			Storage:      config.Storage,
+			Notification: config.Notification,
+			Edge:         config.Edge,
 		}),
 		ModuleSessions: config.ModuleSessions,
 	}}

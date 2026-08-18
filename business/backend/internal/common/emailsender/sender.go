@@ -113,7 +113,7 @@ func (s *SMTPSender) sendSMTP(ctx context.Context, config map[string]string, inp
 		"Subject: " + mime.QEncoding.Encode("UTF-8", input.Subject) + "\r\n" +
 		"MIME-Version: 1.0\r\n" +
 		"Content-Type: text/html; charset=\"UTF-8\"\r\n\r\n" +
-		"<p>这是一封来自总后台「邮件管理」的测试邮件，收到即说明当前配置可正常发信。</p>"
+		bodyHTML(input)
 	if _, err = writer.Write([]byte(message)); err != nil {
 		return "", fmt.Errorf("write message: %w", err)
 	}
@@ -124,4 +124,11 @@ func (s *SMTPSender) sendSMTP(ctx context.Context, config map[string]string, inp
 		return "", err
 	}
 	return "发送成功，请到收件箱确认", nil
+}
+
+func bodyHTML(input emailmodel.TestSend) string {
+	if strings.TrimSpace(input.BodyHTML) != "" {
+		return input.BodyHTML
+	}
+	return "<p>这是一封来自总后台「邮件管理」的测试邮件，收到即说明当前配置可正常发信。</p>"
 }

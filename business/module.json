@@ -4,7 +4,7 @@
   "metadata": {
     "id": "platform",
     "name": "Platform Control Plane",
-    "version": "5.1.0"
+    "version": "6.0.0"
   },
   "spec": {
     "backend": {
@@ -1902,6 +1902,603 @@
               ]
             }
           ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/notify-events",
+          "operations": [
+            {
+              "id": "platform.admin.notify-events.list",
+              "method": "GET",
+              "path": "/admin/platform/notify-events",
+              "summary": "查询通知事件目录",
+              "description": "返回当前活动 Registry 快照投影出的通知事件、渠道策略和投递模式。Admin 不能新建未声明的事件。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.notify-event.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "module",
+                  "location": "query",
+                  "type": "string",
+                  "description": "模块 id"
+                },
+                {
+                  "name": "channel",
+                  "location": "query",
+                  "type": "string",
+                  "description": "已开启的渠道：SMS、EMAIL 或 IN_APP"
+                },
+                {
+                  "name": "keyword",
+                  "location": "query",
+                  "type": "string",
+                  "description": "title、eventKey 或 operationId"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "事件列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "按模块与 operation 分组展示所需的行"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.notify-events.get",
+              "method": "GET",
+              "path": "/admin/platform/notify-events/{eventKey}",
+              "summary": "读取一个通知事件",
+              "description": "返回声明与现行策略（含每渠道 templateCode）。eventKey 按字面匹配，含点号。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.notify-event.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "eventKey",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "模块声明的事件键"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "事件详情",
+                  "fields": []
+                },
+                {
+                  "status": 404,
+                  "description": "事件未投影或不可 Dispatch",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.notify-events.policy.replace",
+              "method": "PUT",
+              "path": "/admin/platform/notify-events/{eventKey}/policy",
+              "summary": "版本化保存渠道策略",
+              "description": "按 expectedVersion 与 commandKey 保存投递模式、渠道开关和每渠道 templateCode。开启的渠道必须选择未退役且变量覆盖事件声明的模板。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.notify-event.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "eventKey",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "事件键"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前策略版本"
+                },
+                {
+                  "name": "dispatchMode",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "SYNC、ASYNC 或 SCHEDULED"
+                },
+                {
+                  "name": "delaySeconds",
+                  "location": "body",
+                  "type": "integer",
+                  "description": "仅 SCHEDULED，0..2592000"
+                },
+                {
+                  "name": "channels",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "allowedChannels 子集：enabled 与 templateCode"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新策略",
+                  "fields": []
+                },
+                {
+                  "status": 409,
+                  "description": "expectedVersion 或 commandKey 冲突",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.notify-events.deliveries.list",
+              "method": "GET",
+              "path": "/admin/platform/notify-events/{eventKey}/deliveries",
+              "summary": "查询事件投递记录",
+              "description": "只读返回该事件的渠道 Delivery 证据，不含密钥或未渲染的调用方变量以外的原文绕过。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.notify-event.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "eventKey",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "事件键"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "投递列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "按时间倒序"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "internal",
+          "prefix": "/internal/platform/notify-events",
+          "operations": [
+            {
+              "id": "platform.internal.notify-events.deliveries.create",
+              "method": "POST",
+              "path": "/internal/platform/notify-events/deliveries",
+              "summary": "统一 Dispatch 通知",
+              "description": "业务模块在本模块事务提交后调用。运行时查找键是 eventKey。调用方模块必须等于 eventKey 前缀。浏览器禁止调用。",
+              "authentication": "workload-identity",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.notify-event.dispatch"
+              ],
+              "requestFields": [
+                {
+                  "name": "eventKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "必须出现在调用方模块的活动声明中"
+                },
+                {
+                  "name": "deliveryKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "全局幂等键，禁止使用请求 UUID"
+                },
+                {
+                  "name": "merchantId",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "店铺范围商户"
+                },
+                {
+                  "name": "shopId",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "店铺；允许 0 仅当事件声明允许平台级"
+                },
+                {
+                  "name": "recipients",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "按启用渠道提供 phone、email、subject"
+                },
+                {
+                  "name": "variables",
+                  "location": "body",
+                  "type": "object",
+                  "required": true,
+                  "description": "键集合必须等于声明变量"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "各渠道 Delivery",
+                  "fields": [
+                    {
+                      "name": "deliveries",
+                      "type": "array",
+                      "description": "deliveryId、channel、status、deduped"
+                    }
+                  ]
+                },
+                {
+                  "status": 409,
+                  "description": "相同 deliveryKey 但请求摘要不同",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.internal.notify-events.deliveries.get",
+              "method": "GET",
+              "path": "/internal/platform/notify-events/deliveries/{deliveryId}",
+              "summary": "读取一次渠道投递",
+              "description": "查询 Delivery 终态或 UNKNOWN 恢复。与 gRPC GetDelivery 同一 logic。",
+              "authentication": "workload-identity",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.notify-event.dispatch"
+              ],
+              "requestFields": [
+                {
+                  "name": "deliveryId",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "Dispatch 返回的投递 id"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "投递证据",
+                  "fields": []
+                },
+                {
+                  "status": 404,
+                  "description": "投递不存在",
+                  "fields": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/notify-templates",
+          "operations": [
+            {
+              "id": "platform.admin.notify-templates.list",
+              "method": "GET",
+              "path": "/admin/platform/notify-templates",
+              "summary": "查询可复用通知模板",
+              "description": "返回模板库。可按渠道与关键字过滤。退役模板仍列出，策略不得再选择。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.notify-template.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "channel",
+                  "location": "query",
+                  "type": "string",
+                  "description": "SMS、EMAIL 或 IN_APP"
+                },
+                {
+                  "name": "keyword",
+                  "location": "query",
+                  "type": "string",
+                  "description": "code / title / subject"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "模板列表",
+                  "fields": [
+                    {
+                      "name": "items",
+                      "type": "array",
+                      "description": "按渠道与 code 排序"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.notify-templates.get",
+              "method": "GET",
+              "path": "/admin/platform/notify-templates/{code}",
+              "summary": "读取一份通知模板",
+              "description": "按模板 code 字面匹配，含点号。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.notify-template.read"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "模板编码"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "模板",
+                  "fields": []
+                },
+                {
+                  "status": 404,
+                  "description": "不存在",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.notify-templates.update",
+              "method": "PUT",
+              "path": "/admin/platform/notify-templates/{code}",
+              "summary": "版本化保存通知模板",
+              "description": "create-or-replace。commandKey + expectedVersion。新建 expectedVersion=0。占位符必须合法变量名。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.notify-template.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "模板编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "新建为 0"
+                },
+                {
+                  "name": "channel",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "SMS、EMAIL 或 IN_APP"
+                },
+                {
+                  "name": "textTemplate",
+                  "location": "body",
+                  "type": "string",
+                  "description": "SMS 正文"
+                },
+                {
+                  "name": "subject",
+                  "location": "body",
+                  "type": "string",
+                  "description": "EMAIL 主题"
+                },
+                {
+                  "name": "bodyHtml",
+                  "location": "body",
+                  "type": "string",
+                  "description": "EMAIL HTML"
+                },
+                {
+                  "name": "title",
+                  "location": "body",
+                  "type": "string",
+                  "description": "IN_APP 标题"
+                },
+                {
+                  "name": "body",
+                  "location": "body",
+                  "type": "string",
+                  "description": "IN_APP 正文"
+                },
+                {
+                  "name": "variables",
+                  "location": "body",
+                  "type": "array",
+                  "description": "模板声明使用的变量；空则从正文提取"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新模板",
+                  "fields": []
+                },
+                {
+                  "status": 409,
+                  "description": "版本或命令冲突",
+                  "fields": []
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.notify-templates.retire",
+              "method": "POST",
+              "path": "/admin/platform/notify-templates/{code}/retire",
+              "summary": "退役通知模板",
+              "description": "退役后不可再被策略选中。Dispatch 已引用的历史投递不受影响。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.notify-template.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "code",
+                  "location": "path",
+                  "type": "string",
+                  "required": true,
+                  "description": "模板编码"
+                },
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "已退役模板",
+                  "fields": []
+                },
+                {
+                  "status": 409,
+                  "description": "版本或命令冲突",
+                  "fields": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "surface": "admin",
+          "prefix": "/admin/platform/notify-channels",
+          "operations": [
+            {
+              "id": "platform.admin.notify-channels.in-app.get",
+              "method": "GET",
+              "path": "/admin/platform/notify-channels/in-app",
+              "summary": "读取站内信驱动配置",
+              "description": "返回内置 inbox 驱动的启用状态。无外部密钥。",
+              "authentication": "module-session",
+              "idempotency": "safe",
+              "requiredPermissions": [
+                "platform.notify-channel.read"
+              ],
+              "requestFields": [],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "站内信配置",
+                  "fields": [
+                    {
+                      "name": "driver",
+                      "type": "string",
+                      "description": "固定 inbox"
+                    },
+                    {
+                      "name": "enabled",
+                      "type": "boolean",
+                      "description": "是否接受新的站内投递"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "platform.admin.notify-channels.in-app.update",
+              "method": "PUT",
+              "path": "/admin/platform/notify-channels/in-app",
+              "summary": "版本化保存站内信驱动配置",
+              "description": "commandKey + expectedVersion。停用后新的 IN_APP Dispatch 记 FAILED_PERMANENT。",
+              "authentication": "module-session",
+              "idempotency": "idempotent",
+              "requiredPermissions": [
+                "platform.notify-channel.manage"
+              ],
+              "requestFields": [
+                {
+                  "name": "commandKey",
+                  "location": "body",
+                  "type": "string",
+                  "required": true,
+                  "description": "稳定幂等键"
+                },
+                {
+                  "name": "expectedVersion",
+                  "location": "body",
+                  "type": "integer",
+                  "required": true,
+                  "description": "当前版本"
+                },
+                {
+                  "name": "enabled",
+                  "location": "body",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "是否启用 inbox"
+                }
+              ],
+              "responses": [
+                {
+                  "status": 200,
+                  "description": "最新配置",
+                  "fields": []
+                },
+                {
+                  "status": 409,
+                  "description": "版本或命令冲突",
+                  "fields": []
+                }
+              ]
+            }
+          ]
         }
       ],
       "grpc": {
@@ -2067,6 +2664,55 @@
         "description": "版本化新增、编辑、启停、设为默认和退役存储通道，并测试写入。"
       },
       {
+        "code": "platform.notify-event.read",
+        "name": "查看通知事件",
+        "resource": "platform.notify-event",
+        "action": "read",
+        "description": "查看已激活模块声明的通知事件、渠道策略、所选模板和投递记录；不返回密钥明文。"
+      },
+      {
+        "code": "platform.notify-event.manage",
+        "name": "管理通知事件",
+        "resource": "platform.notify-event",
+        "action": "manage",
+        "description": "版本化保存通知事件的渠道开关、投递模式和所选模板。"
+      },
+      {
+        "code": "platform.notify-template.read",
+        "name": "查看通知模板",
+        "resource": "platform.notify-template",
+        "action": "read",
+        "description": "查看可复用的短信、邮件和站内信模板。"
+      },
+      {
+        "code": "platform.notify-template.manage",
+        "name": "管理通知模板",
+        "resource": "platform.notify-template",
+        "action": "manage",
+        "description": "版本化新增、编辑和退役通知模板。"
+      },
+      {
+        "code": "platform.notify-channel.read",
+        "name": "查看通知方式",
+        "resource": "platform.notify-channel",
+        "action": "read",
+        "description": "查看站内信 inbox 驱动配置；短信与邮件通道仍用各自权限。"
+      },
+      {
+        "code": "platform.notify-channel.manage",
+        "name": "管理通知方式",
+        "resource": "platform.notify-channel",
+        "action": "manage",
+        "description": "版本化启停站内信 inbox 驱动。"
+      },
+      {
+        "code": "platform.notify-event.dispatch",
+        "name": "投递通知事件",
+        "resource": "platform.notify-event",
+        "action": "dispatch",
+        "description": "仅业务模块工作负载在本模块事务提交后调用统一 Dispatch；浏览器不得持有。"
+      },
+      {
         "code": "platform.placeholder.read",
         "name": "Read migration placeholders",
         "resource": "platform.placeholder",
@@ -2101,7 +2747,7 @@
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
@@ -2125,104 +2771,6 @@
               ],
               "requiredPermissions": [
                 "platform.audit.read"
-              ]
-            }
-          ]
-        }
-      },
-      {
-        "id": "platform.admin.email",
-        "surface": "admin",
-        "kind": "page",
-        "route": "/email",
-        "title": "邮件管理",
-        "description": "配置 Platform 邮件发信驱动与单例 SMTP 账号。表单由驱动 schema 生成，密钥只写并加密存储。邮件模板属于通知事件，不在本页维护。",
-        "icon": "mail",
-        "sort": 120,
-        "navigation": {
-          "groupId": "legacy-admin-config",
-          "groupTitle": "系统配置",
-          "groupIcon": "sliders-horizontal",
-          "groupSort": 500
-        },
-        "requiredPermissions": [
-          "platform.email.read"
-        ],
-        "allowedRoutes": [
-          {
-            "methods": [
-              "GET"
-            ],
-            "prefix": "/admin/platform/email",
-            "requiredPermissions": [
-              "platform.email.read"
-            ]
-          },
-          {
-            "methods": [
-              "PUT",
-              "POST"
-            ],
-            "prefix": "/admin/platform/email",
-            "requiredPermissions": [
-              "platform.email.manage"
-            ]
-          }
-        ],
-        "artifact": {
-          "type": "iframe",
-          "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
-          "entry": "http://127.0.0.1:15180",
-          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
-        },
-        "frontend": {
-          "component": "EmailPage",
-          "props": [],
-          "events": [],
-          "actions": [
-            {
-              "id": "load-email-drivers",
-              "label": "加载驱动",
-              "description": "从后端驱动注册表读取动态表单元数据。",
-              "invocation": "http",
-              "target": "platform.admin.email.drivers.list",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.email.read"
-              ]
-            },
-            {
-              "id": "load-email-config",
-              "label": "加载配置",
-              "description": "读取当前单例发信配置。",
-              "invocation": "http",
-              "target": "platform.admin.email.config.get",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.email.read"
-              ]
-            },
-            {
-              "id": "save-email-config",
-              "label": "保存配置",
-              "description": "以 expectedVersion 和 commandKey 版本化保存发信配置。",
-              "invocation": "http",
-              "target": "platform.admin.email.config.update",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.email.manage"
-              ]
-            },
-            {
-              "id": "test-email-send",
-              "label": "测试发送",
-              "description": "使用已保存配置发送测试邮件。",
-              "invocation": "http",
-              "target": "platform.admin.email.config.test",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.email.manage"
               ]
             }
           ]
@@ -2270,7 +2818,7 @@
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
@@ -2349,12 +2897,307 @@
         }
       },
       {
+        "id": "platform.admin.notify-channels",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/notify-channels",
+        "title": "通知方式",
+        "description": "以驱动管理短信、邮件和站内信通道。短信与邮件沿用既有 HTTP；站内信为内置 inbox。业务模板在「通知模板」。",
+        "icon": "radio",
+        "sort": 110,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.notify-channel.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/sms",
+            "requiredPermissions": [
+              "platform.sms.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT",
+              "POST"
+            ],
+            "prefix": "/admin/platform/sms",
+            "requiredPermissions": [
+              "platform.sms.manage"
+            ]
+          },
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/email",
+            "requiredPermissions": [
+              "platform.email.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT",
+              "POST"
+            ],
+            "prefix": "/admin/platform/email",
+            "requiredPermissions": [
+              "platform.email.manage"
+            ]
+          },
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/notify-channels",
+            "requiredPermissions": [
+              "platform.notify-channel.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT"
+            ],
+            "prefix": "/admin/platform/notify-channels",
+            "requiredPermissions": [
+              "platform.notify-channel.manage"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "6.0.0",
+          "entry": "http://127.0.0.1:15180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "NotifyChannelsPage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "load-sms-drivers",
+              "label": "加载短信驱动",
+              "description": "从短信驱动注册表读取表单元数据。",
+              "invocation": "http",
+              "target": "platform.admin.sms.drivers.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.sms.read"
+              ]
+            },
+            {
+              "id": "load-email-drivers",
+              "label": "加载邮件驱动",
+              "description": "从邮件驱动注册表读取表单元数据。",
+              "invocation": "http",
+              "target": "platform.admin.email.drivers.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.email.read"
+              ]
+            },
+            {
+              "id": "load-in-app-channel",
+              "label": "加载站内信",
+              "description": "读取 inbox 驱动启用状态。",
+              "invocation": "http",
+              "target": "platform.admin.notify-channels.in-app.get",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.notify-channel.read"
+              ]
+            },
+            {
+              "id": "save-in-app-channel",
+              "label": "保存站内信",
+              "description": "版本化保存 inbox 启用状态。",
+              "invocation": "http",
+              "target": "platform.admin.notify-channels.in-app.update",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.notify-channel.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.notify-events",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/notify-events",
+        "title": "通知事件",
+        "description": "跨模块检索已激活模块声明的通知事件，配置投递模式、渠道开关与所选模板，并查看投递记录。不能新建事件。模板库在「通知模板」，通道驱动在「通知方式」。",
+        "icon": "bell",
+        "sort": 130,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.notify-event.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/notify-events",
+            "requiredPermissions": [
+              "platform.notify-event.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT"
+            ],
+            "prefix": "/admin/platform/notify-events",
+            "requiredPermissions": [
+              "platform.notify-event.manage"
+            ]
+          },
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/notify-templates",
+            "requiredPermissions": [
+              "platform.notify-template.read"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "6.0.0",
+          "entry": "http://127.0.0.1:15180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "NotifyEventsPage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "refresh-notify-events",
+              "label": "刷新目录",
+              "description": "重新加载已投影的通知事件。",
+              "invocation": "http",
+              "target": "platform.admin.notify-events.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.notify-event.read"
+              ]
+            },
+            {
+              "id": "save-notify-event-policy",
+              "label": "保存渠道策略",
+              "description": "以 expectedVersion 和 commandKey 版本化保存投递模式与渠道开关。",
+              "invocation": "http",
+              "target": "platform.admin.notify-events.policy.replace",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.notify-event.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "platform.admin.notify-templates",
+        "surface": "admin",
+        "kind": "page",
+        "route": "/notify-templates",
+        "title": "通知模板",
+        "description": "维护可复用的短信、邮件和站内信模板。接口事件在菜单目录或通知事件页选择模板，本页不发明 eventKey。",
+        "icon": "file-text",
+        "sort": 120,
+        "navigation": {
+          "groupId": "legacy-admin-config",
+          "groupTitle": "系统配置",
+          "groupIcon": "sliders-horizontal",
+          "groupSort": 500
+        },
+        "requiredPermissions": [
+          "platform.notify-template.read"
+        ],
+        "allowedRoutes": [
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/notify-templates",
+            "requiredPermissions": [
+              "platform.notify-template.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT",
+              "POST"
+            ],
+            "prefix": "/admin/platform/notify-templates",
+            "requiredPermissions": [
+              "platform.notify-template.manage"
+            ]
+          }
+        ],
+        "artifact": {
+          "type": "iframe",
+          "name": "@liveshop/platform-admin",
+          "version": "6.0.0",
+          "entry": "http://127.0.0.1:15180",
+          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "frontend": {
+          "component": "NotifyTemplatesPage",
+          "props": [],
+          "events": [],
+          "actions": [
+            {
+              "id": "refresh-notify-templates",
+              "label": "刷新模板",
+              "description": "重新加载模板库。",
+              "invocation": "http",
+              "target": "platform.admin.notify-templates.list",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.notify-template.read"
+              ]
+            },
+            {
+              "id": "save-notify-template",
+              "label": "保存模板",
+              "description": "以 expectedVersion 和 commandKey 版本化保存模板。",
+              "invocation": "http",
+              "target": "platform.admin.notify-templates.update",
+              "parameters": [],
+              "requiredPermissions": [
+                "platform.notify-template.manage"
+              ]
+            }
+          ]
+        }
+      },
+      {
         "id": "platform.admin.registry",
         "surface": "admin",
         "kind": "page",
         "route": "/menus",
         "title": "菜单管理",
-        "description": "以活动 Manifest 为唯一事实源管理模块版本，并只读预览四端菜单导航与完整能力契约。",
+        "description": "以活动 Manifest 为唯一事实源管理模块版本，只读预览四端菜单导航与完整能力契约。接口下展示已声明通知事件；有权限时可配置投递规则并选择模板。",
         "icon": "panel-left",
         "sort": 110,
         "navigation": {
@@ -2377,12 +3220,39 @@
             "requiredPermissions": [
               "platform.registry.manage"
             ]
+          },
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/notify-events",
+            "requiredPermissions": [
+              "platform.notify-event.read"
+            ]
+          },
+          {
+            "methods": [
+              "PUT"
+            ],
+            "prefix": "/admin/platform/notify-events",
+            "requiredPermissions": [
+              "platform.notify-event.manage"
+            ]
+          },
+          {
+            "methods": [
+              "GET"
+            ],
+            "prefix": "/admin/platform/notify-templates",
+            "requiredPermissions": [
+              "platform.notify-template.read"
+            ]
           }
         ],
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
@@ -2495,7 +3365,7 @@
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
@@ -2556,104 +3426,6 @@
         }
       },
       {
-        "id": "platform.admin.sms",
-        "surface": "admin",
-        "kind": "page",
-        "route": "/sms",
-        "title": "短信配置",
-        "description": "管理 Platform 短信驱动元数据、通道、区域路由和按 app_id + commercial_id 的商户开通。表单由驱动 schema 生成，密钥只写并加密存储。短信模板属于通知事件，不在本页维护。",
-        "icon": "message-square",
-        "sort": 110,
-        "navigation": {
-          "groupId": "legacy-admin-config",
-          "groupTitle": "系统配置",
-          "groupIcon": "sliders-horizontal",
-          "groupSort": 500
-        },
-        "requiredPermissions": [
-          "platform.sms.read"
-        ],
-        "allowedRoutes": [
-          {
-            "methods": [
-              "GET"
-            ],
-            "prefix": "/admin/platform/sms",
-            "requiredPermissions": [
-              "platform.sms.read"
-            ]
-          },
-          {
-            "methods": [
-              "PUT",
-              "POST"
-            ],
-            "prefix": "/admin/platform/sms",
-            "requiredPermissions": [
-              "platform.sms.manage"
-            ]
-          }
-        ],
-        "artifact": {
-          "type": "iframe",
-          "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
-          "entry": "http://127.0.0.1:15180",
-          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
-        },
-        "frontend": {
-          "component": "SmsPage",
-          "props": [],
-          "events": [],
-          "actions": [
-            {
-              "id": "load-sms-drivers",
-              "label": "加载驱动",
-              "description": "从后端驱动注册表读取动态表单元数据。",
-              "invocation": "http",
-              "target": "platform.admin.sms.drivers.list",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.sms.read"
-              ]
-            },
-            {
-              "id": "refresh-sms-channels",
-              "label": "刷新通道",
-              "description": "重新加载短信通道目录。",
-              "invocation": "http",
-              "target": "platform.admin.sms.channels.list",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.sms.read"
-              ]
-            },
-            {
-              "id": "save-sms-channel",
-              "label": "保存通道",
-              "description": "以 expectedVersion 和 commandKey 版本化保存通道。",
-              "invocation": "http",
-              "target": "platform.admin.sms.channels.update",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.sms.manage"
-              ]
-            },
-            {
-              "id": "test-sms-send",
-              "label": "测试发送",
-              "description": "指定通道或按路由发送测试短信。",
-              "invocation": "http",
-              "target": "platform.admin.sms.test",
-              "parameters": [],
-              "requiredPermissions": [
-                "platform.sms.manage"
-              ]
-            }
-          ]
-        }
-      },
-      {
         "id": "platform.admin.storage",
         "surface": "admin",
         "kind": "page",
@@ -2695,7 +3467,7 @@
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
@@ -2773,7 +3545,7 @@
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
@@ -2806,40 +3578,7 @@
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
-          "entry": "http://127.0.0.1:15180",
-          "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
-        },
-        "frontend": {
-          "component": "PlaceholderPage",
-          "props": [],
-          "events": [],
-          "actions": []
-        }
-      },
-      {
-        "id": "platform.placeholder.admin.notify-events",
-        "surface": "admin",
-        "kind": "page",
-        "route": "/notify-events",
-        "title": "通知事件",
-        "description": "通知事件菜单占位。页面与业务事实归 platform 模块；领域契约、真实接口和数据源完成前不提供业务操作或模拟数据。",
-        "icon": "bell",
-        "sort": 130,
-        "navigation": {
-          "groupId": "legacy-admin-config",
-          "groupTitle": "系统配置",
-          "groupIcon": "sliders-horizontal",
-          "groupSort": 500
-        },
-        "requiredPermissions": [
-          "platform.placeholder.read"
-        ],
-        "allowedRoutes": [],
-        "artifact": {
-          "type": "iframe",
-          "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },
@@ -2872,7 +3611,7 @@
         "artifact": {
           "type": "iframe",
           "name": "@liveshop/platform-admin",
-          "version": "5.1.0",
+          "version": "6.0.0",
           "entry": "http://127.0.0.1:15180",
           "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         },

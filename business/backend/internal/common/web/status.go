@@ -4,7 +4,9 @@ import (
 	"errors"
 	"net/http"
 
+	edgemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/edge/model"
 	providermodel "github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider/model"
+	notifymodel "github.com/liveshop-platform/module-platform/internal/biz/capability/notification/model"
 	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
 	storagemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/storage/model"
 	"github.com/liveshop-platform/module-platform/internal/biz/model"
@@ -40,6 +42,14 @@ var domainStatus = []struct {
 	{smsmodel.ErrRetired, http.StatusConflict},
 	{smsmodel.ErrInUse, http.StatusConflict},
 	{smsmodel.ErrNoChannel, http.StatusConflict},
+	{notifymodel.ErrInvalid, http.StatusBadRequest},
+	{notifymodel.ErrNotFound, http.StatusNotFound},
+	{notifymodel.ErrConflict, http.StatusConflict},
+	{notifymodel.ErrForbidden, http.StatusForbidden},
+	{edgemodel.ErrHostInvalid, http.StatusBadRequest},
+	{edgemodel.ErrNotBound, http.StatusNotFound},
+	{edgemodel.ErrForbidden, http.StatusForbidden},
+	{edgemodel.ErrApply, http.StatusServiceUnavailable},
 
 	{model.ErrUnavailable, http.StatusServiceUnavailable},
 }

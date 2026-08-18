@@ -68,7 +68,7 @@ function displayTime(value?: string): string {
   }).format(date)
 }
 
-export async function startEmail(root: HTMLElement, client: HostHttpClient, context: HostContext): Promise<void> {
+export async function startEmail(root: HTMLElement, client: HostHttpClient, context: HostContext, options?: { embedded?: boolean }): Promise<void> {
   const state = statusLine()
   const canManage = context.permissions.includes('platform.email.manage')
   let metadataError = ''
@@ -130,7 +130,7 @@ export async function startEmail(root: HTMLElement, client: HostHttpClient, cont
       const item = await client.request<EmailConfig>(`${prefix}/config`)
       config = item?.version ? item : null
       render()
-      state.set(config ? `已加载发信配置 · ${driverLabel(config.driver)}` : '尚未保存发信配置。模板请到「通知事件」维护。')
+      state.set(config ? `已加载发信配置 · ${driverLabel(config.driver)}` : '尚未保存发信配置。模板请到「通知模板」维护。')
     } catch (error) {
       state.set(`加载失败：${String(error)}`, 'danger')
     }
@@ -275,9 +275,8 @@ export async function startEmail(root: HTMLElement, client: HostHttpClient, cont
     editor.open()
   }
 
-  root.replaceChildren(page({
-    showSummary: false,
-    children: [state.element, card],
-  }))
+  const children = [state.element, card]
+  if (options?.embedded) root.replaceChildren(...children)
+  else root.replaceChildren(page({ showSummary: false, children }))
   void load()
 }

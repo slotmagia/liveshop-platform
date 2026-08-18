@@ -18,6 +18,15 @@ test('console page summary is a standalone card', () => {
   assert.match(css, /\.ls-ui-page-header\s*\{[^}]*border:\s*1px solid var\(--ls-border\)[^}]*border-radius:\s*var\(--ls-radius-md\)[^}]*background:\s*var\(--ls-surface\)[^}]*box-shadow:\s*var\(--ls-shadow-card\)/s)
 })
 
+test('chip tabs sit between search and data and paint the selected item', () => {
+  assert.match(css, /\.ls-ui-tabs\s*\{[^}]*display:\s*flex[^}]*margin:\s*0 0 12px/s)
+  assert.match(css, /\.ls-ui-tab\s*\{[^}]*height:\s*26px/s)
+  assert.match(css, /\.ls-ui-tab\[aria-selected="true"\]\s*\{[^}]*background:\s*var\(--ls-primary-soft\)/s)
+  assert.match(factory, /export function tabs\(\{ items = \[\], value = '', ariaLabel, onChange \} = \{\}\)/)
+  assert.match(factory, /root\.setAttribute\('role', 'tablist'\)/)
+  assert.match(factory, /node\.setAttribute\('role', 'tab'\)/)
+})
+
 test('search and data regions are independent cards with a data toolbar', () => {
   const pageRules = [...css.matchAll(/\.ls-ui-page\s*\{(?<body>[^}]*)\}/gs)]
   assert.ok(pageRules.length > 0)

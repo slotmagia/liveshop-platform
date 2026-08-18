@@ -76,6 +76,7 @@ func Workload(verifier *workloadidentity.Verifier, permission string) ghttp.Hand
 			return
 		}
 		logctx.FromContext(request.GetCtx()).Info("workload authorization allowed", "workload", claims.Subject, "permission", permission, "method", request.Method, "path", request.URL.Path, "decision", "allow")
+		request.SetCtx(authctx.WithWorkloadSubject(request.GetCtx(), claims.Subject))
 		request.Middleware.Next()
 	}
 }

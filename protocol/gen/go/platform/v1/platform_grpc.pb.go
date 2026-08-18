@@ -166,3 +166,152 @@ var PlatformRegistryService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "platform/v1/platform.proto",
 }
+
+const (
+	PlatformNotificationService_Dispatch_FullMethodName    = "/liveshop.platform.v1.PlatformNotificationService/Dispatch"
+	PlatformNotificationService_GetDelivery_FullMethodName = "/liveshop.platform.v1.PlatformNotificationService/GetDelivery"
+)
+
+// PlatformNotificationServiceClient is the client API for PlatformNotificationService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// PlatformNotificationService is the unified Dispatch contract. It is not part
+// of PlatformRegistryService: snapshots stay read-only, notifications are writes
+// after a business transaction commits.
+type PlatformNotificationServiceClient interface {
+	Dispatch(ctx context.Context, in *DispatchRequest, opts ...grpc.CallOption) (*DispatchResponse, error)
+	GetDelivery(ctx context.Context, in *GetDeliveryRequest, opts ...grpc.CallOption) (*GetDeliveryResponse, error)
+}
+
+type platformNotificationServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewPlatformNotificationServiceClient(cc grpc.ClientConnInterface) PlatformNotificationServiceClient {
+	return &platformNotificationServiceClient{cc}
+}
+
+func (c *platformNotificationServiceClient) Dispatch(ctx context.Context, in *DispatchRequest, opts ...grpc.CallOption) (*DispatchResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DispatchResponse)
+	err := c.cc.Invoke(ctx, PlatformNotificationService_Dispatch_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *platformNotificationServiceClient) GetDelivery(ctx context.Context, in *GetDeliveryRequest, opts ...grpc.CallOption) (*GetDeliveryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDeliveryResponse)
+	err := c.cc.Invoke(ctx, PlatformNotificationService_GetDelivery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// PlatformNotificationServiceServer is the server API for PlatformNotificationService service.
+// All implementations must embed UnimplementedPlatformNotificationServiceServer
+// for forward compatibility.
+//
+// PlatformNotificationService is the unified Dispatch contract. It is not part
+// of PlatformRegistryService: snapshots stay read-only, notifications are writes
+// after a business transaction commits.
+type PlatformNotificationServiceServer interface {
+	Dispatch(context.Context, *DispatchRequest) (*DispatchResponse, error)
+	GetDelivery(context.Context, *GetDeliveryRequest) (*GetDeliveryResponse, error)
+	mustEmbedUnimplementedPlatformNotificationServiceServer()
+}
+
+// UnimplementedPlatformNotificationServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedPlatformNotificationServiceServer struct{}
+
+func (UnimplementedPlatformNotificationServiceServer) Dispatch(context.Context, *DispatchRequest) (*DispatchResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Dispatch not implemented")
+}
+func (UnimplementedPlatformNotificationServiceServer) GetDelivery(context.Context, *GetDeliveryRequest) (*GetDeliveryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDelivery not implemented")
+}
+func (UnimplementedPlatformNotificationServiceServer) mustEmbedUnimplementedPlatformNotificationServiceServer() {
+}
+func (UnimplementedPlatformNotificationServiceServer) testEmbeddedByValue() {}
+
+// UnsafePlatformNotificationServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to PlatformNotificationServiceServer will
+// result in compilation errors.
+type UnsafePlatformNotificationServiceServer interface {
+	mustEmbedUnimplementedPlatformNotificationServiceServer()
+}
+
+func RegisterPlatformNotificationServiceServer(s grpc.ServiceRegistrar, srv PlatformNotificationServiceServer) {
+	// If the following call panics, it indicates UnimplementedPlatformNotificationServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&PlatformNotificationService_ServiceDesc, srv)
+}
+
+func _PlatformNotificationService_Dispatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DispatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlatformNotificationServiceServer).Dispatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PlatformNotificationService_Dispatch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlatformNotificationServiceServer).Dispatch(ctx, req.(*DispatchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlatformNotificationService_GetDelivery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeliveryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlatformNotificationServiceServer).GetDelivery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PlatformNotificationService_GetDelivery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlatformNotificationServiceServer).GetDelivery(ctx, req.(*GetDeliveryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// PlatformNotificationService_ServiceDesc is the grpc.ServiceDesc for PlatformNotificationService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var PlatformNotificationService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "liveshop.platform.v1.PlatformNotificationService",
+	HandlerType: (*PlatformNotificationServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Dispatch",
+			Handler:    _PlatformNotificationService_Dispatch_Handler,
+		},
+		{
+			MethodName: "GetDelivery",
+			Handler:    _PlatformNotificationService_GetDelivery_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "platform/v1/platform.proto",
+}

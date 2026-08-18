@@ -33,6 +33,11 @@ workload_identity:
       public_key: ""
       subject: module-release-ci
       permissions: [registry.release.write, registry.activation.write]
+    identity:
+      key_id: ""
+      public_key: ""
+      subject: identity
+      permissions: [platform.notify-event.dispatch]
   grpc:
     gateway:
       spiffe_id: spiffe://liveshop.local/gateway
@@ -41,9 +46,23 @@ workload_identity:
     identity:
       spiffe_id: spiffe://liveshop.local/identity
       subject: liveshop-identity
-      permissions: [platform.registry.active-capabilities.read]
+      permissions: [platform.registry.active-capabilities.read, platform.notify-event.dispatch]
 internal_grant:
   token: ""
+edge:
+  enabled: false
+  identity_origin: ""
+  ask_origin: ""
+  caddy_admin: ""
+  caddyfile: ""
+  acme_email: ""
+  upstreams:
+    shop: ""
+    live: ""
+    merch: ""
+    admin: ""
+    rts: ""
+    gateway: ""
 http:
   allowed_origins: []
 grpc:

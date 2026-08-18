@@ -101,7 +101,7 @@ function selectedCodes(value: string): string[] {
   return [...new Set(value.split(/[\s,]+/).map(code => code.trim()).filter(Boolean))]
 }
 
-export async function startSMS(root: HTMLElement, client: HostHttpClient, context: HostContext): Promise<void> {
+export async function startSMS(root: HTMLElement, client: HostHttpClient, context: HostContext, options?: { embedded?: boolean }): Promise<void> {
   const state = statusLine()
   const canManage = context.permissions.includes('platform.sms.manage')
   let tab: Tab = 'channels'
@@ -527,10 +527,9 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
     editor.open()
   }
 
-  root.replaceChildren(page({
-    showSummary: false,
-    children: [state.element, tabs, channelSearch, channelCard, regionSearch, regionCard, grantSearch, grantCard],
-  }))
+  const children = [state.element, tabs, channelSearch, channelCard, regionSearch, regionCard, grantSearch, grantCard]
+  if (options?.embedded) root.replaceChildren(...children)
+  else root.replaceChildren(page({ showSummary: false, children }))
   switchTab('channels')
   try {
     regions = await client.request<SMSRegion[]>(`${prefix}/regions?lifecycle=ACTIVE`)

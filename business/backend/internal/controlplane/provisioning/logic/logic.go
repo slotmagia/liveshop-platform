@@ -5,16 +5,22 @@ import (
 	"context"
 
 	"github.com/liveshop-platform/module-platform/internal/biz"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/model"
 	"github.com/liveshop-platform/module-platform/internal/controlplane/provisioning/appmodel"
 	"github.com/liveshop-platform/module-platform/internal/controlplane/provisioning/service"
 )
 
-type Logic struct{ release *biz.Release }
+type Logic struct {
+	release *biz.Release
+	notify  *notification.UseCase
+}
 
 var _ service.Provisioning = (*Logic)(nil)
 
-func New(release *biz.Release) *Logic { return &Logic{release: release} }
+func New(release *biz.Release, notify *notification.UseCase) *Logic {
+	return &Logic{release: release, notify: notify}
+}
 
 func (l *Logic) RegisterRelease(ctx context.Context, document []byte) (appmodel.RegisteredRelease, error) {
 	if l.release == nil {
@@ -31,7 +37,16 @@ func (l *Logic) Activate(ctx context.Context, activation appmodel.Activation) er
 	if l.release == nil {
 		return model.ErrUnavailable
 	}
-	return l.release.Activate(ctx, activation.ModuleID, activation.Version)
+	if err := l.release.Activate(ctx, activation.ModuleID, activation.Version); err != nil {
+		return err
+	}
+	if l.notify != nil {
+		revision, items, err := l.release.ActiveCapabilities(ctx)
+		if err == nil {
+			_ = l.notify.ProjectCapabilities(ctx, revision, items)
+		}
+	}
+	return nil
 }
 
 func (l *Logic) Routes(ctx context.Context) (appmodel.RouteSnapshot, error) {
