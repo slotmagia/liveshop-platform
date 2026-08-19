@@ -24,7 +24,7 @@
 
 ## 目录与发布
 
-- `module.json` 由 `protocol/manifest/platform` 组合生成，禁止手工制造第二份契约。
+- `module.json` 由兄弟仓 `liveshop-protocol/platform/manifest/platform` 组合生成，禁止手工制造第二份契约。
 - 改 Manifest 碎片、`g.Meta`、contribution 或前端 API 路径后，先 compose，再按仓库根 [`docs/命名规范检查.md`](../docs/命名规范检查.md) 做命名检查。
 - Protocol 变更必须同步生成 Go 代码、Manifest、测试和 baseline。
 - 浏览器页面只调用 Manifest 声明的 Gateway 路由，不直接调用内部 gRPC 或工作负载接口。

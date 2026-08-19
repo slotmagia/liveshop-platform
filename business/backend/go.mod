@@ -44,6 +44,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/liveshop-platform/contracts => ../../protocol
+replace github.com/liveshop-platform/contracts => ../../../liveshop-protocol/platform
 
 replace github.com/lvtuopen-ai/kernel-go => ../../../kernel-go

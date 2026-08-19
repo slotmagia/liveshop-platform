@@ -6,7 +6,7 @@ $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $backend = Join-Path $root 'backend'
 # Wire contracts live in the sibling protocol module, which is published on its
 # own so consumers never depend on this module's implementation.
-$protocol = [IO.Path]::GetFullPath((Join-Path $root '..\protocol'))
+$protocol = [IO.Path]::GetFullPath((Join-Path $root '..\..\liveshop-protocol\platform'))
 
 $goFiles = @(rg --files $backend $protocol -g '*.go' -g '!gen/**')
 if ($LASTEXITCODE -ne 0) { throw 'Unable to enumerate Go sources.' }

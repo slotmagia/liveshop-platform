@@ -3,8 +3,8 @@
 Platform 在 `server.grpc` 监听 `liveshop.platform.v1.PlatformRegistryService`。Proto 是唯一线协议事实源：
 
 ```text
-protocol/proto/platform/v1/platform.proto
-protocol/gen/go/platform/v1/
+liveshop-protocol/platform/proto/platform/v1/platform.proto
+liveshop-protocol/platform/gen/go/platform/v1/
 ```
 
 当前公开 `PlatformRegistryService` 的两个只读、安全且可重试的 RPC：

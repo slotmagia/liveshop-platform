@@ -8,7 +8,7 @@ $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $backend = Join-Path $root 'backend'
 # The wire contracts are a sibling module so consumers depend on them without
 # depending on this module's implementation.
-$protocol = [IO.Path]::GetFullPath((Join-Path $root '..\protocol'))
+$protocol = [IO.Path]::GetFullPath((Join-Path $root '..\..\liveshop-protocol\platform'))
 & (Join-Path $PSScriptRoot 'verify-module.ps1')
 
 go -C $backend run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...

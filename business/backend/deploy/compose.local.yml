@@ -38,7 +38,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-      additional_contexts: {kernel: ../../../../kernel-go, protocol: ../../../protocol}
+      additional_contexts: {kernel: ../../../../kernel-go, protocol: ../../../../liveshop-protocol/platform}
     entrypoint: ["/app/grpccerts"]
     command: ["-out", "/certs", "-owner", "65532"]
     volumes: ["grpc-certs:/certs"]
@@ -51,7 +51,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-      additional_contexts: {kernel: ../../../../kernel-go, protocol: ../../../protocol}
+      additional_contexts: {kernel: ../../../../kernel-go, protocol: ../../../../liveshop-protocol/platform}
     command: ["-config", "/app/configs/platform.compose.yaml"]
     ports: ["127.0.0.1:18082:18082", "127.0.0.1:19082:19082"]
     volumes: ["grpc-certs:/run/grpc:ro"]

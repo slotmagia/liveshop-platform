@@ -41,7 +41,7 @@ type checker struct {
 
 func main() {
 	root := flag.String("root", "..", "business module root")
-	protocol := flag.String("protocol", "", "wire contract module root; defaults to <root>/../protocol")
+	protocol := flag.String("protocol", "", "wire contract module root; defaults to <workspace>/liveshop-protocol/platform")
 	flag.Parse()
 	abs, err := filepath.Abs(*root)
 	if err != nil {
@@ -49,7 +49,7 @@ func main() {
 	}
 	contracts := *protocol
 	if contracts == "" {
-		contracts = filepath.Join(abs, "..", "protocol")
+		contracts = filepath.Join(abs, "..", "..", "liveshop-protocol", "platform")
 	}
 	contractsAbs, err := filepath.Abs(contracts)
 	if err != nil {
