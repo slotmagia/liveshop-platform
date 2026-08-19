@@ -1,4 +1,18 @@
 export const HOST_PROTOCOL = 2 as const
+
+/** RFC 4122 v4. `crypto.randomUUID` is absent outside secure contexts (plain HTTP on a LAN host). */
+export function randomUUID(): string {
+  const cryptoObj = globalThis.crypto
+  if (cryptoObj && typeof cryptoObj.randomUUID === 'function') return cryptoObj.randomUUID()
+  const bytes = new Uint8Array(16)
+  if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') cryptoObj.getRandomValues(bytes)
+  else for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256)
+  bytes[6] = (bytes[6] & 0x0f) | 0x40
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+
 export type Surface = 'admin' | 'merch' | 'shop' | 'live'
 export type ContributionKind = 'page' | 'slot' | 'widget' | 'action'
 export interface AllowedRoute {
@@ -195,10 +209,18 @@ export interface HostHttpClient {
   requestRaw(path: string, init?: RequestInit): Promise<Response>
 }
 
+/** Shop/Live Host login. Password and challengeId are mutually exclusive. */
+export interface HostLoginCredentials {
+  username?: string
+  password?: string
+  challengeId?: string
+}
+
 export interface RemoteModuleContext extends HostContext {
   api: HostHttpClient
   navigate(path: string): void
   events: EventTarget
+  login?(credentials: HostLoginCredentials): Promise<void>
 }
 
 export interface RemoteModule {
@@ -273,7 +295,7 @@ export function hostModuleUpload<T>(options: {
   if (window.parent === window || !hostOrigin) return Promise.reject(new Error('module upload requires an active iframe Host connection'))
   if (!options.path.startsWith('/')) return Promise.reject(new Error('module upload path must be absolute'))
   installHostModuleUploadBridge()
-  const requestId = crypto.randomUUID()
+  const requestId = randomUUID()
   return new Promise<T>((resolve, reject) => {
     const timer = window.setTimeout(() => {
       hostModuleUploadHandlers.delete(requestId)
@@ -334,7 +356,7 @@ export function hostOverlay(): { open(): void; close(): void } {
   return {
     open() {
       if (requestId) return
-      requestId = crypto.randomUUID()
+      requestId = randomUUID()
       post('LIVESHOP_HOST_OVERLAY_OPEN')
     },
     close() {
@@ -381,7 +403,7 @@ export function hostFormModal(options: HostFormModalOptions): HostFormModalApi {
   const api: HostFormModalApi = {
     open(values = {}, nextTitle) {
       if (requestId) api.close()
-      requestId = crypto.randomUUID()
+      requestId = randomUUID()
       title = nextTitle ?? baseTitle
       const activeRequestId = requestId
       hostFormModalHandlers.set(activeRequestId, {

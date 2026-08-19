@@ -1,5 +1,5 @@
 import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { hostFormModal } from '@liveshop/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
 import { badge, button, create, dataCard, page, statusLine, table, ui } from '@liveshop/design-tokens'
 import { startEmail } from './EmailPage'
 import { startSMS } from './SmsPage'
@@ -72,7 +72,7 @@ export async function startNotifyChannels(root: HTMLElement, client: HostHttpCli
                 modal.setBusy(true)
                 client.request('/admin/platform/notify-channels/in-app', {
                   method: 'PUT',
-                  body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: config.version || 0, enabled: !config.enabled }),
+                  body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: config.version || 0, enabled: !config.enabled }),
                 }).then(() => { modal.close(); return renderInApp() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
               },
             })

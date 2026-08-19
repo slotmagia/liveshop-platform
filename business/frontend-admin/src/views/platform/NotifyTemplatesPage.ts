@@ -1,5 +1,5 @@
 import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { hostFormModal } from '@liveshop/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
 import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
 
 interface NotifyTemplate {
@@ -103,8 +103,8 @@ export async function startNotifyTemplates(root: HTMLElement, client: HostHttpCl
       fields: [
         { name: 'code', label: '编码', required: true, disabled: Boolean(current), placeholder: 'identity.auth.otp.requested.sms' },
         { name: 'channel', label: '渠道', kind: 'select', required: true, disabled: Boolean(current), options: channels },
-        { name: 'textTemplate', label: 'SMS 正文（{{variable}}）', kind: 'textarea', wide: true, rows: 4 },
-        { name: 'subject', label: 'EMAIL 主题', wide: true },
+        { name: 'textTemplate', label: 'SMS 正文（占位符写成 {{code}}，必须是事件已声明变量）', kind: 'textarea', wide: true, rows: 4, placeholder: '您的验证码是 {{code}}，{{ttlSeconds}} 秒内有效' },
+        { name: 'subject', label: 'EMAIL 主题（可用 {{code}}）', wide: true },
         { name: 'bodyHtml', label: 'EMAIL HTML', kind: 'textarea', wide: true, rows: 6 },
         { name: 'title', label: 'IN_APP 标题', wide: true },
         { name: 'body', label: 'IN_APP 正文', kind: 'textarea', wide: true, rows: 4 },
@@ -117,7 +117,7 @@ export async function startNotifyTemplates(root: HTMLElement, client: HostHttpCl
         client.request(`${prefix}/${encodeURIComponent(code)}`, {
           method: 'PUT',
           body: JSON.stringify({
-            commandKey: crypto.randomUUID(), expectedVersion: current?.version || 0, channel: form.channel,
+            commandKey: randomUUID(), expectedVersion: current?.version || 0, channel: form.channel,
             textTemplate: form.textTemplate || '', subject: form.subject || '', bodyHtml: form.bodyHtml || '',
             title: form.title || '', body: form.body || '',
           }),
@@ -145,7 +145,7 @@ export async function startNotifyTemplates(root: HTMLElement, client: HostHttpCl
         modal.setBusy(true)
         client.request(`${prefix}/${encodeURIComponent(item.code)}/retire`, {
           method: 'POST',
-          body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: item.version }),
+          body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: item.version }),
         }).then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })

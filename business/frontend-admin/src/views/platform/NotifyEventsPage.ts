@@ -1,5 +1,5 @@
 import type { HostContext, HostHttpClient, HostModalField } from '@liveshop/host-sdk'
-import { hostFormModal } from '@liveshop/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
 import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
 
 interface NotifyChannelPolicy {
@@ -27,6 +27,7 @@ interface NotifyTemplate {
   code: string
   channel: string
   lifecycle: string
+  variables?: string[]
 }
 
 interface NotifyDelivery {
@@ -150,13 +151,20 @@ export async function startNotifyEvents(root: HTMLElement, client: HostHttpClien
       state.set(`加载模板库失败：${String(error)}`, 'danger')
       return
     }
+    const eventVariables = item.variables || []
+    const compatible = (channel: string) => templates.filter(template => (
+      template.channel === channel
+      && template.lifecycle !== 'RETIRED'
+      && (template.variables || []).every(name => eventVariables.includes(name))
+    ))
     const fields: HostModalField[] = [
+      { name: 'eventVariables', label: '事件变量（模板占位符必须是其子集）', disabled: true, wide: true },
       { name: 'dispatchMode', label: '投递模式', kind: 'select', required: true, options: modes },
       { name: 'delaySeconds', label: '定时延迟（秒）', type: 'number', placeholder: '仅 SCHEDULED' },
       ...item.allowedChannels.flatMap(channel => {
         const options = [
           { value: '', label: '不选择模板' },
-          ...templates.filter(template => template.channel === channel && template.lifecycle !== 'RETIRED').map(template => ({ value: template.code, label: template.code })),
+          ...compatible(channel).map(template => ({ value: template.code, label: template.code })),
         ]
         return [
           { name: `channel_${channel}`, label: `${channel} 渠道`, kind: 'select' as const, required: true, options: [{ value: 'true', label: '开启' }, { value: 'false', label: '关闭' }] },
@@ -165,6 +173,7 @@ export async function startNotifyEvents(root: HTMLElement, client: HostHttpClien
       }),
     ]
     const values: Record<string, string> = {
+      eventVariables: eventVariables.map(name => `{{${name}}}`).join(' ') || '（无）',
       dispatchMode: item.dispatchMode || item.defaultDispatch,
       delaySeconds: String(item.delaySeconds || 0),
     }
@@ -193,7 +202,7 @@ export async function startNotifyEvents(root: HTMLElement, client: HostHttpClien
         client.request(`${prefix}/${encodeURIComponent(item.eventKey)}/policy`, {
           method: 'PUT',
           body: JSON.stringify({
-            commandKey: crypto.randomUUID(), expectedVersion: item.policyVersion, dispatchMode,
+            commandKey: randomUUID(), expectedVersion: item.policyVersion, dispatchMode,
             delaySeconds: dispatchMode === 'SCHEDULED' ? delaySeconds : 0, channels,
           }),
         }).then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))

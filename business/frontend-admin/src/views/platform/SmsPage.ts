@@ -1,5 +1,5 @@
 import type { HostContext, HostHttpClient, HostModalField, HostModalTreeNode } from '@liveshop/host-sdk'
-import { hostFormModal } from '@liveshop/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
 import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
 
 type Lifecycle = 'ACTIVE' | 'RETIRED'
@@ -396,7 +396,7 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
         modal.setBusy(true)
         client.request(`${prefix}/channels/${encodeURIComponent(code)}`, {
           method: 'PUT',
-          body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: current?.version ?? 0, name: values.name.trim(), driver: definition.code, region, priority, publicConfig, secrets }),
+          body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: current?.version ?? 0, name: values.name.trim(), driver: definition.code, region, priority, publicConfig, secrets }),
         }).then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })
@@ -434,7 +434,7 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
         modal.setBusy(true)
         client.request(`${prefix}/regions/${encodeURIComponent(code)}`, {
           method: 'PUT',
-          body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: current?.version ?? 0, dialCode, name: values.name.trim(), iso2, emoji: values.emoji.trim(), sort }),
+          body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: current?.version ?? 0, dialCode, name: values.name.trim(), iso2, emoji: values.emoji.trim(), sort }),
         }).then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })
@@ -461,7 +461,7 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
         modal.setBusy(true)
         client.request(`${prefix}/merchant-grants`, {
           method: 'PUT',
-          body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: grant?.version ?? 0, merchantId, shopId, dialCodes }),
+          body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: grant?.version ?? 0, merchantId, shopId, dialCodes }),
         }).then(async () => { modal.close(); await loadGrant() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })
@@ -501,7 +501,7 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
       submitLabel: action,
       onSubmit: (_values, modal) => {
         modal.setBusy(true)
-        client.request(`${prefix}/${kind}/${encodeURIComponent(code)}/${enabled ? 'enable' : 'disable'}`, { method: 'POST', body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: version }) })
+        client.request(`${prefix}/${kind}/${encodeURIComponent(code)}/${enabled ? 'enable' : 'disable'}`, { method: 'POST', body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: version }) })
           .then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })
@@ -520,7 +520,7 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
       onSubmit: (values, modal) => {
         if (values.confirm !== code) { modal.setError('请选择确认项。'); return }
         modal.setBusy(true)
-        client.request(`${prefix}/${kind}/${encodeURIComponent(code)}/retire`, { method: 'POST', body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: version }) })
+        client.request(`${prefix}/${kind}/${encodeURIComponent(code)}/retire`, { method: 'POST', body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: version }) })
           .then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })

@@ -1,5 +1,5 @@
 import type { HostContext, HostHttpClient, HostModalField } from '@liveshop/host-sdk'
-import { hostFormModal } from '@liveshop/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
 import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
 
 type Kind = 'RTMP' | 'RTC'
@@ -352,7 +352,7 @@ export async function startLiveProviders(root: HTMLElement, client: HostHttpClie
         client.request(`${prefix}/${encodeURIComponent(code)}`, {
           method: 'PUT',
           body: JSON.stringify({
-            commandKey: crypto.randomUUID(), expectedVersion: current?.version ?? 0,
+            commandKey: randomUUID(), expectedVersion: current?.version ?? 0,
             name: values.name.trim(), driver: definition.code,
             app: value('app'), pushDomain: value('pushDomain'), pullDomain: value('pullDomain'),
             agoraAppId: value('agoraAppId'), codec: value('codec'), region: value('region'), ingestDomain: value('ingestDomain'),
@@ -382,7 +382,7 @@ export async function startLiveProviders(root: HTMLElement, client: HostHttpClie
       onSubmit: (values, modal) => {
         if (values.confirm !== current.code) { modal.setError('请选择确认项。'); return }
         modal.setBusy(true)
-        client.request(`${prefix}/${encodeURIComponent(current.code)}/retire`, { method: 'POST', body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: current.version }) })
+        client.request(`${prefix}/${encodeURIComponent(current.code)}/retire`, { method: 'POST', body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: current.version }) })
           .then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })

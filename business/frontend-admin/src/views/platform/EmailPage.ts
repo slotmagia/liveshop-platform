@@ -1,5 +1,5 @@
 import type { HostContext, HostHttpClient, HostModalField } from '@liveshop/host-sdk'
-import { hostFormModal } from '@liveshop/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
 import { badge, button, create, dataCard, page, statusLine, table, ui } from '@liveshop/design-tokens'
 
 interface DriverFieldOption {
@@ -214,7 +214,7 @@ export async function startEmail(root: HTMLElement, client: HostHttpClient, cont
         modal.setBusy(true)
         client.request(`${prefix}/config`, {
           method: 'PUT',
-          body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: current?.version ?? 0, driver: definition.code, publicConfig, secrets }),
+          body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: current?.version ?? 0, driver: definition.code, publicConfig, secrets }),
         }).then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })
@@ -239,7 +239,7 @@ export async function startEmail(root: HTMLElement, client: HostHttpClient, cont
       submitLabel: action,
       onSubmit: (_values, modal) => {
         modal.setBusy(true)
-        client.request(`${prefix}/config/${enabled ? 'enable' : 'disable'}`, { method: 'POST', body: JSON.stringify({ commandKey: crypto.randomUUID(), expectedVersion: version }) })
+        client.request(`${prefix}/config/${enabled ? 'enable' : 'disable'}`, { method: 'POST', body: JSON.stringify({ commandKey: randomUUID(), expectedVersion: version }) })
           .then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
       },
     })

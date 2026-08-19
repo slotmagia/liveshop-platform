@@ -437,6 +437,16 @@ func TemplateCoversEvent(item LibraryTemplate, eventVariables []string) bool {
 	return templateUsesDeclared(strings.Join([]string{item.TextTemplate, item.Subject, item.BodyHTML, item.Title, item.Body}, " "), declared)
 }
 
+func PolicyTemplateError(item LibraryTemplate, channel Channel, event Event) error {
+	if item.Channel != channel {
+		return apperror.Wrap(ErrInvalid, ErrInvalid.Reason, "template "+item.Code+" is channel "+string(item.Channel)+", not "+string(channel), "templateCode", item.Code, "channel", string(channel))
+	}
+	if !TemplateCoversEvent(item, event.Variables) {
+		return apperror.Wrap(ErrInvalid, ErrInvalid.Reason, "template "+item.Code+" placeholders must be a subset of "+event.EventKey+" variables ("+strings.Join(event.Variables, ", ")+")", "templateCode", item.Code, "eventKey", event.EventKey)
+	}
+	return nil
+}
+
 func Render(template string, variables map[string]string) string {
 	return templateVarPattern.ReplaceAllStringFunc(template, func(match string) string {
 		name := strings.TrimSuffix(strings.TrimPrefix(match, "{{"), "}}")

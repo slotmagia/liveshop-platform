@@ -1,5 +1,5 @@
 ﻿import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { hostFormModal } from '@liveshop/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
 import { badge, button, card, create, dataCard, field, grid, navIcon, page, resolveGroupIconName, resolvePageIconName, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
 
 interface ReleaseInfo { version: string; digest: string }
@@ -138,7 +138,7 @@ interface NotifyEventRow {
   channels: Record<string, NotifyChannelPolicy>
   policyVersion: number
 }
-interface NotifyTemplateOption { code: string; channel: string; lifecycle: string }
+interface NotifyTemplateOption { code: string; channel: string; lifecycle: string; variables?: string[] }
 
 type RegistryNotify = { client: HostHttpClient; canManage: boolean; fail: (error: unknown) => void }
 type RegistryActionIcon = 'plus' | 'refresh-cw' | 'pencil' | 'trash-2' | 'chevron-down' | 'chevron-right' | 'corner-down-right'
@@ -366,7 +366,14 @@ async function openCatalogEventPolicy(notify: RegistryNotify, declaration: Notif
     notify.fail(error)
     return
   }
+  const eventVariables = item.variables || declaration.variables || []
+  const compatible = (channel: string) => templates.filter(template => (
+    template.channel === channel
+    && template.lifecycle !== 'RETIRED'
+    && (template.variables || []).every(name => eventVariables.includes(name))
+  ))
   const fields = [
+    { name: 'eventVariables', label: '事件变量（模板占位符必须是其子集）', disabled: true, wide: true },
     { name: 'dispatchMode', label: '投递模式', kind: 'select' as const, required: true, options: modes },
     { name: 'delaySeconds', label: '定时延迟（秒）', type: 'number', placeholder: '仅 SCHEDULED' },
     ...declaration.allowedChannels.flatMap(channel => ([
@@ -377,12 +384,13 @@ async function openCatalogEventPolicy(notify: RegistryNotify, declaration: Notif
         kind: 'select' as const,
         options: [
           { value: '', label: '不选择模板' },
-          ...templates.filter(template => template.channel === channel && template.lifecycle !== 'RETIRED').map(template => ({ value: template.code, label: template.code })),
+          ...compatible(channel).map(template => ({ value: template.code, label: template.code })),
         ],
       },
     ])),
   ]
   const values: Record<string, string> = {
+    eventVariables: eventVariables.map(name => `{{${name}}}`).join(' ') || '（无）',
     dispatchMode: item.dispatchMode || declaration.defaultDispatch,
     delaySeconds: String(item.delaySeconds || 0),
   }
@@ -411,7 +419,7 @@ async function openCatalogEventPolicy(notify: RegistryNotify, declaration: Notif
       notify.client.request(`/admin/platform/notify-events/${encodeURIComponent(declaration.eventKey)}/policy`, {
         method: 'PUT',
         body: JSON.stringify({
-          commandKey: crypto.randomUUID(), expectedVersion: item.policyVersion, dispatchMode,
+          commandKey: randomUUID(), expectedVersion: item.policyVersion, dispatchMode,
           delaySeconds: dispatchMode === 'SCHEDULED' ? delaySeconds : 0, channels,
         }),
       }).then(() => modal.close()).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))

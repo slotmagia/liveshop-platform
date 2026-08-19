@@ -82,8 +82,8 @@ func (u *UseCase) ReplacePolicy(ctx context.Context, scope notifymodel.Scope, in
 		if err != nil {
 			return notifymodel.Policy{}, err
 		}
-		if template.Channel != channel || !notifymodel.TemplateCoversEvent(template, event.Variables) {
-			return notifymodel.Policy{}, notifymodel.ErrInvalid
+		if err := notifymodel.PolicyTemplateError(template, channel, event); err != nil {
+			return notifymodel.Policy{}, err
 		}
 	}
 	return u.repository.ReplacePolicy(ctx, scope, input, notifymodel.CommandHash(input))

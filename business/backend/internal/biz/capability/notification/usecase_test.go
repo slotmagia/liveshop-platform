@@ -3,6 +3,7 @@ package notification
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -243,14 +244,18 @@ func TestReplacePolicyRejectsTemplateVariableSuperset(t *testing.T) {
 		t.Fatal(err)
 	}
 	event, _ := usecase.GetEvent(context.Background(), "identity.auth.otp.requested")
-	if _, err := usecase.ReplacePolicy(context.Background(), scope, notifymodel.ReplacePolicy{
-		EventKey: event.EventKey, CommandKey: "pol-extra", ExpectedVersion: event.Policy.Version, DispatchMode: notifymodel.ModeSync,
+	_, err := usecase.ReplacePolicy(context.Background(), scope, notifymodel.ReplacePolicy{
+		EventKey: event.EventKey, CommandKey: "pol-extra", ExpectedVersion: event.Policy.Version, DispatchMode: event.Policy.DispatchMode,
 		Channels: map[notifymodel.Channel]notifymodel.ChannelPolicy{
 			notifymodel.ChannelSMS:   {Enabled: true, TemplateCode: "otp.sms.extra"},
 			notifymodel.ChannelEmail: {Enabled: false},
 		},
-	}); !errors.Is(err, notifymodel.ErrInvalid) {
+	})
+	if !errors.Is(err, notifymodel.ErrInvalid) {
 		t.Fatalf("err=%v", err)
+	}
+	if !strings.Contains(err.Error(), "otp.sms.extra") || !strings.Contains(err.Error(), "code") {
+		t.Fatalf("message=%v", err)
 	}
 }
 
