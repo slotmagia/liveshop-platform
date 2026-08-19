@@ -27,6 +27,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/common/storagesender"
 	"github.com/liveshop-platform/module-platform/internal/config"
 	"github.com/liveshop-platform/module-platform/internal/data/mysql"
+	"github.com/liveshop-platform/module-platform/internal/data/registryhttp"
 	"github.com/liveshop-platform/module-platform/internal/data/secretbox"
 	"github.com/lvtuopen-ai/kernel-go/modulesession"
 	"github.com/lvtuopen-ai/kernel-go/workloadidentity"
@@ -57,6 +58,7 @@ type Dependencies struct {
 	// Ready reports backing-store readiness to the health endpoints.
 	Ready func(context.Context) error
 
+	project  func(context.Context)
 	shutdown func() error
 }
 
@@ -97,10 +99,13 @@ func NewDependencies(cfg *config.Config) (Dependencies, error) {
 	smsUse := sms.New(adapters.sms, smssender.New())
 	emailUse := email.New(adapters.email, emailsender.New())
 	notifyUse := notification.New(adapters.notification, notifysender.Adapter{SMS: smsUse, Email: emailUse})
-	release := biz.NewRelease(adapters.release)
-	if revision, items, err := release.ActiveCapabilities(ctx); err == nil {
-		_ = notifyUse.ProjectCapabilities(ctx, revision, items)
+	registryStore, err := registryhttp.New(cfg)
+	if err != nil {
+		_ = database.Close()
+		return Dependencies{}, err
 	}
+	release := biz.NewRelease(registryStore)
+	projectCapabilities(ctx, release, notifyUse)
 	settings := biz.NewSettings(adapters.settings)
 	edgeUse := edge.New(settings, edgehttp.NewIdentityHTTP(cfg.Edge.IdentityOrigin, cfg.InternalGrant.Token), edgehttp.NewCaddyReloader(cfg.Edge.CaddyAdmin, cfg.Edge.Caddyfile, writeCaddyfile), edge.Config{
 		Enabled: cfg.Edge.Enabled, GrantToken: cfg.InternalGrant.Token, AskOrigin: cfg.Edge.AskOrigin,
@@ -115,6 +120,7 @@ func NewDependencies(cfg *config.Config) (Dependencies, error) {
 		Release: release, Settings: settings, Audit: biz.NewAudit(adapters.audit), LiveProvider: liveprovider.New(adapters.liveProvider), SMS: smsUse, Email: emailUse, Storage: storage.New(adapters.storage, storagesender.New()), Notification: notifyUse, Localization: localization.New(adapters.localization, localization.NoopTranslator{}), Telemetry: telemetry.New(adapters.telemetry), Edge: edgeUse,
 		Workloads: tokens.workloads, ModuleVerifier: tokens.moduleVerifier,
 		Ready: database.PingContext, shutdown: database.Close,
+		project: func(call context.Context) { projectCapabilities(call, release, notifyUse) },
 	}, nil
 }
 
@@ -146,20 +152,18 @@ const (
 // credential. The same peers present a SPIFFE identity on gRPC, which the gRPC
 // composition root installs separately.
 func trustedWorkloads(cfg *config.Config) map[string]workloadidentity.TrustedWorkload {
-	peers := map[string]workloadidentity.TrustedWorkload{}
-	for _, peer := range []config.BearerWorkload{cfg.WorkloadIdentity.HTTP.Gateway, cfg.WorkloadIdentity.HTTP.Release, cfg.WorkloadIdentity.HTTP.Identity} {
-		peers[peer.KeyID] = workloadidentity.TrustedWorkload{
+	peer := cfg.WorkloadIdentity.HTTP.Identity
+	return map[string]workloadidentity.TrustedWorkload{
+		peer.KeyID: {
 			PublicKey:   peer.PublicKey,
 			Subject:     peer.Subject,
 			Permissions: peer.Permissions,
-		}
+		},
 	}
-	return peers
 }
 
 // stores are the MySQL adapters behind the biz ports.
 type stores struct {
-	release      *mysql.ReleaseRepository
 	settings     *mysql.SettingsRepository
 	audit        *mysql.AuditRepository
 	liveProvider *mysql.LiveProviderRepository
@@ -177,12 +181,7 @@ func newStores(ctx context.Context, database *sql.DB, box *secretbox.Box) (store
 	if err := mysql.Verify(ctx, database); err != nil {
 		return stores{}, fmt.Errorf("platform: database is unreachable: %w", err)
 	}
-	release, err := mysql.NewReleaseRepository(ctx, database)
-	if err != nil {
-		return stores{}, fmt.Errorf("platform: module registry state: %w", err)
-	}
 	return stores{
-		release:      release,
 		settings:     mysql.NewSettingsRepository(database),
 		audit:        mysql.NewAuditRepository(database),
 		liveProvider: mysql.NewLiveProviderRepository(database, box),
@@ -193,6 +192,34 @@ func newStores(ctx context.Context, database *sql.DB, box *secretbox.Box) (store
 		localization: mysql.NewLocalizationRepository(database, box),
 		telemetry:    mysql.NewTelemetryRepository(database),
 	}, nil
+}
+
+func projectCapabilities(ctx context.Context, release *biz.Release, notify *notification.UseCase) {
+	if release == nil || notify == nil {
+		return
+	}
+	revision, items, err := release.ActiveCapabilities(ctx)
+	if err != nil {
+		return
+	}
+	_ = notify.ProjectCapabilities(ctx, revision, items)
+}
+
+func (d Dependencies) ProjectCapabilitiesLoop(ctx context.Context) {
+	if d.project == nil {
+		return
+	}
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+	d.project(ctx)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			d.project(ctx)
+		}
+	}
 }
 
 func writeCaddyfile(path string, data []byte) error {

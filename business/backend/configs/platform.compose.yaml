@@ -22,32 +22,25 @@ module_capability:
 workload_identity:
   issuer: liveshop-workload-identity
   http:
-    gateway:
-      key_id: gateway-workload-dev-1
-      public_key: ky88xYQS66lbhNA-cUpijVuxRWcWAdFRgMIHFKF7PkA
-      subject: liveshop-gateway
-      permissions: [registry.routes.read]
-    release:
-      key_id: ci-workload-dev-1
-      public_key: fkfxuRj0sxDYBT3U_qghrTrtjfv4y3djZObZ-EL_Zho
-      subject: module-release-ci
-      permissions: [registry.release.write, registry.activation.write]
     identity:
       key_id: identity-workload-dev-1
       public_key: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
       subject: identity
       permissions: [platform.notify-event.dispatch]
   grpc:
-    gateway:
-      spiffe_id: spiffe://liveshop.local/gateway
-      subject: liveshop-gateway
-      permissions: [platform.registry.routes.read]
     identity:
       spiffe_id: spiffe://liveshop.local/identity
       subject: liveshop-identity
-      permissions: [platform.registry.active-capabilities.read, platform.notify-event.dispatch]
+      permissions: [platform.notify-event.dispatch]
 internal_grant:
   token: liveshop-local-internal-grant
+registry:
+  origin_url: http://registry:18070
+  workload:
+    key_id: platform-registry-client-dev-1
+    private_key: Yjrd7sO3a3pVqzJ4WcI8A57yu17ZLNZ2zOjFYzMuH7o
+    issuer: liveshop-workload-identity
+    subject: liveshop-platform
 edge:
   enabled: false
   identity_origin: http://identity:18092

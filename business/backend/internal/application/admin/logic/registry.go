@@ -30,9 +30,10 @@ func (l *Logic) Activate(ctx context.Context, activation appmodel.Activation) er
 	if l.deps.Release == nil {
 		return model.ErrUnavailable
 	}
-	if err := l.deps.Release.ActivateAudited(ctx, authctx.RegistryActor(ctx), activation.ModuleID, activation.Version); err != nil {
+	if err := l.deps.Release.Activate(ctx, activation.ModuleID, activation.Version); err != nil {
 		return err
 	}
+	_ = l.deps.Audit.RecordRegistry(ctx, authctx.RegistryActor(ctx), "registry.module.activate", activation.ModuleID, map[string]string{"version": activation.Version})
 	_ = l.ProjectNotifications(ctx)
 	return nil
 }
@@ -41,9 +42,10 @@ func (l *Logic) Deactivate(ctx context.Context, moduleID string) error {
 	if l.deps.Release == nil {
 		return model.ErrUnavailable
 	}
-	if err := l.deps.Release.DeactivateAudited(ctx, authctx.RegistryActor(ctx), moduleID); err != nil {
+	if err := l.deps.Release.Deactivate(ctx, moduleID); err != nil {
 		return err
 	}
+	_ = l.deps.Audit.RecordRegistry(ctx, authctx.RegistryActor(ctx), "registry.module.deactivate", moduleID, nil)
 	_ = l.ProjectNotifications(ctx)
 	return nil
 }

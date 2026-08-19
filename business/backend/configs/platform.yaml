@@ -23,32 +23,25 @@ module_capability:
 workload_identity:
   issuer: liveshop-workload-identity
   http:
-    gateway:
-      key_id: ""
-      public_key: ""
-      subject: liveshop-gateway
-      permissions: [registry.routes.read]
-    release:
-      key_id: ""
-      public_key: ""
-      subject: module-release-ci
-      permissions: [registry.release.write, registry.activation.write]
     identity:
       key_id: ""
       public_key: ""
       subject: identity
       permissions: [platform.notify-event.dispatch]
   grpc:
-    gateway:
-      spiffe_id: spiffe://liveshop.local/gateway
-      subject: liveshop-gateway
-      permissions: [platform.registry.routes.read]
     identity:
       spiffe_id: spiffe://liveshop.local/identity
       subject: liveshop-identity
-      permissions: [platform.registry.active-capabilities.read, platform.notify-event.dispatch]
+      permissions: [platform.notify-event.dispatch]
 internal_grant:
   token: ""
+registry:
+  origin_url: ""
+  workload:
+    key_id: ""
+    private_key: ""
+    issuer: liveshop-workload-identity
+    subject: liveshop-platform
 edge:
   enabled: false
   identity_origin: ""

@@ -39,20 +39,14 @@ func TestShippedConfigsMapEverySection(t *testing.T) {
 			if cfg.WorkloadIdentity.Issuer == "" {
 				t.Error("workload_identity did not map")
 			}
-			if cfg.WorkloadIdentity.HTTP.Gateway.KeyID == "" && test.complete {
-				t.Error("workload_identity.http.gateway did not map")
-			}
-			if cfg.WorkloadIdentity.HTTP.Release.Subject == "" {
-				t.Error("workload_identity.http.release did not map")
-			}
 			if cfg.WorkloadIdentity.HTTP.Identity.Subject == "" {
 				t.Error("workload_identity.http.identity did not map")
 			}
-			if cfg.WorkloadIdentity.GRPC.Gateway.SPIFFEID == "" {
-				t.Error("workload_identity.grpc.gateway did not map")
-			}
 			if cfg.WorkloadIdentity.GRPC.Identity.SPIFFEID == "" || len(cfg.WorkloadIdentity.GRPC.Identity.Permissions) == 0 {
 				t.Error("workload_identity.grpc.identity did not map")
+			}
+			if cfg.Registry.Workload.Issuer == "" {
+				t.Error("registry did not map")
 			}
 			// The template deliberately leaves deployment-supplied values
 			// blank, so only the file the containers boot with is checked for
@@ -77,6 +71,9 @@ func TestShippedConfigsMapEverySection(t *testing.T) {
 			}
 			if cfg.GRPC.TLS.CertificateFile == "" {
 				t.Error("grpc.tls did not map")
+			}
+			if cfg.Registry.OriginURL == "" || cfg.Registry.Workload.PrivateKey == "" {
+				t.Error("registry origin did not map")
 			}
 			if err := Validate(cfg); err != nil {
 				t.Fatalf("validate %s: %v", test.file, err)

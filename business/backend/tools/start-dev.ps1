@@ -23,7 +23,7 @@ $vite = Join-Path $gatewayRepositoryRoot 'node_modules/vite/bin/vite.js'
 if (-not (Test-Path -LiteralPath $vite -PathType Leaf)) {
   throw "Gateway frontend dependencies are missing; run npm install in $gatewayRepositoryRoot"
 }
-$registryUrl = "http://127.0.0.1:$PlatformPort"
+$registryUrl = "http://127.0.0.1:18070"
 $gatewayUrl = "http://127.0.0.1:$GatewayPort"
 $corsOrigins = @(
   "http://127.0.0.1:$(15173+$FrontendPortOffset)",
@@ -47,8 +47,12 @@ foreach ($port in $requestedPorts) {
   finally { if ($listener) { $listener.Stop() } }
 }
 
-& go -C (Join-Path $root 'backend') run ./cmd/grpccerts -out $grpcCerts -force
-if ($LASTEXITCODE -ne 0) { throw 'Failed to generate local Platform gRPC certificates.' }
+$registryBackend = [IO.Path]::GetFullPath((Join-Path $root '..\..\liveshop-registry\business\backend'))
+if (-not (Test-Path -LiteralPath (Join-Path $registryBackend 'go.mod') -PathType Leaf)) {
+  throw "Registry repository is missing: $registryBackend"
+}
+& go -C $registryBackend run ./cmd/grpccerts -out $grpcCerts -force
+if ($LASTEXITCODE -ne 0) { throw 'Failed to generate local Registry gRPC certificates.' }
 
 $grpcCertificateFile = (Join-Path $grpcCerts 'server.pem').Replace('\', '/')
 $grpcPrivateKeyFile = (Join-Path $grpcCerts 'server-key.pem').Replace('\', '/')
@@ -75,30 +79,16 @@ module_capability:
 workload_identity:
   issuer: liveshop-workload-identity
   http:
-    gateway:
-      key_id: gateway-workload-dev-1
-      public_key: ky88xYQS66lbhNA-cUpijVuxRWcWAdFRgMIHFKF7PkA
-      subject: liveshop-gateway
-      permissions: [registry.routes.read]
-    release:
-      key_id: ci-workload-dev-1
-      public_key: fkfxuRj0sxDYBT3U_qghrTrtjfv4y3djZObZ-EL_Zho
-      subject: module-release-ci
-      permissions: [registry.release.write, registry.activation.write]
     identity:
       key_id: identity-workload-dev-1
       public_key: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
       subject: identity
       permissions: [platform.notify-event.dispatch]
   grpc:
-    gateway:
-      spiffe_id: spiffe://liveshop.local/gateway
-      subject: liveshop-gateway
-      permissions: [platform.registry.routes.read]
     identity:
       spiffe_id: spiffe://liveshop.local/identity
       subject: liveshop-identity
-      permissions: [platform.registry.active-capabilities.read, platform.notify-event.dispatch]
+      permissions: [platform.notify-event.dispatch]
 http:
   allowed_origins: [http://gateway.internal]
   cookie_secure: false
@@ -107,6 +97,13 @@ grpc:
     certificate_file: '$grpcCertificateFile'
     private_key_file: '$grpcPrivateKeyFile'
     client_ca_file: '$grpcClientCAFile'
+registry:
+  origin_url: '$registryUrl'
+  workload:
+    key_id: platform-registry-client-dev-1
+    private_key: Yjrd7sO3a3pVqzJ4WcI8A57yu17ZLNZ2zOjFYzMuH7o
+    issuer: liveshop-workload-identity
+    subject: liveshop-platform
 "@ | Set-Content -LiteralPath $platformConfigFile -Encoding utf8
 
 # Gateway reads exactly one YAML too, so local development exercises the same

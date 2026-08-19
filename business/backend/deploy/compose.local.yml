@@ -34,19 +34,6 @@ services:
     command: ["sh", "/migrate.sh"]
     depends_on:
       registry-db: {condition: service_healthy}
-  grpc-certs:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile
-      additional_contexts: {kernel: ../../../../kernel-go, protocol: ../../../../liveshop-protocol/platform}
-    entrypoint: ["/app/grpccerts"]
-    command: ["-out", "/certs", "-owner", "65532"]
-    volumes: ["grpc-certs:/certs"]
-    user: "0:0"
-    read_only: true
-    security_opt: ["no-new-privileges:true"]
-    cap_drop: ["ALL"]
-    cap_add: ["CHOWN"]
   platform:
     build:
       context: ..
@@ -63,7 +50,6 @@ services:
     cap_drop: ["ALL"]
     depends_on:
       registry-seed-local: {condition: service_completed_successfully}
-      grpc-certs: {condition: service_completed_successfully}
   registry-seed-local:
     image: mysql:8.4
     environment: {MYSQL_PWD: liveshop-local}
@@ -86,6 +72,7 @@ volumes:
   registry-db-data:
   grpc-certs:
     name: liveshop-grpc-certs
+    external: true
 networks:
   default:
     name: liveshop-local

@@ -1,12 +1,12 @@
 param(
-  [string]$PlatformUrl = 'http://127.0.0.1:18082',
+  [string]$PlatformUrl = 'http://127.0.0.1:18070',
   [string]$BackendOrigin = '',
   [string]$GRPCEndpoint = 'dns:///platform:19082',
   [string]$ArtifactUrl = 'http://127.0.0.1:15180'
 )
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$resolvedBackendOrigin = if ($BackendOrigin) { $BackendOrigin } else { $PlatformUrl }
+$resolvedBackendOrigin = if ($BackendOrigin) { $BackendOrigin } else { 'http://127.0.0.1:18082' }
 # Windows PowerShell 5.1 defaults to the system ANSI code page. Reading a UTF-8
 # module.json that way turns Chinese titles into "????" before they ever reach
 # MySQL — force UTF-8 on the way in and on the way out.

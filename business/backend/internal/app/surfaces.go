@@ -8,12 +8,10 @@ import (
 	ctrledge "github.com/liveshop-platform/module-platform/internal/controlplane/edge"
 	ctrli18n "github.com/liveshop-platform/module-platform/internal/controlplane/i18n"
 	ctrlnotify "github.com/liveshop-platform/module-platform/internal/controlplane/notification"
-	"github.com/liveshop-platform/module-platform/internal/controlplane/provisioning"
 )
 
 // Applications is the assembled set of Platform control-plane surfaces.
 type Applications struct {
-	Provisioning provisioning.Surface
 	Admin        admin.Surface
 	Shop         shop.Surface
 	Internal     internalgrant.Surface
@@ -23,7 +21,7 @@ type Applications struct {
 }
 
 func (a Applications) HTTP() []server.Surface {
-	return []server.Surface{a.Provisioning, a.Admin, a.Shop, a.Internal, a.Notification, a.I18n, a.Edge}
+	return []server.Surface{a.Admin, a.Shop, a.Internal, a.Notification, a.I18n, a.Edge}
 }
 
 func NewApplications(deps Dependencies, internalToken string) Applications {
@@ -32,7 +30,6 @@ func NewApplications(deps Dependencies, internalToken string) Applications {
 		Notification: deps.Notification, Localization: deps.Localization, Telemetry: deps.Telemetry, Edge: deps.Edge, ModuleSessions: deps.ModuleVerifier,
 	})
 	return Applications{
-		Provisioning: provisioning.New(provisioning.Config{Release: deps.Release, Notification: deps.Notification, Workloads: deps.Workloads}),
 		Admin:        adminSurface,
 		Shop:         shop.New(shop.Config{Telemetry: deps.Telemetry, ModuleSessions: deps.ModuleVerifier}),
 		Internal:     internalgrant.New(internalToken, adminSurface.Application(), adminSurface.Application(), deps.Edge),

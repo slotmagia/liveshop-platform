@@ -63,7 +63,7 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Failed to apply platform control-plane migrations.' }
   & (Join-Path $PSScriptRoot 'start-dev.ps1') -PlatformPort $profile.Platform -PlatformGRPCPort $profile.PlatformGRPC -GatewayPort $profile.Gateway -FrontendPortOffset $profile.FrontendOffset
   Wait-LocalUrl $controlArtifactUrl
-  & (Join-Path $PSScriptRoot 'register-platform-module.ps1') -PlatformUrl $platformUrl -GRPCEndpoint "dns:///127.0.0.1:$($profile.PlatformGRPC)" -ArtifactUrl $controlArtifactUrl
+  & (Join-Path $PSScriptRoot 'register-platform-module.ps1') -PlatformUrl 'http://127.0.0.1:18070' -GRPCEndpoint "dns:///127.0.0.1:$($profile.PlatformGRPC)" -ArtifactUrl $controlArtifactUrl
   if ($LASTEXITCODE -ne 0) { throw 'Failed to register the Platform Control Plane module.' }
   Wait-LocalUrl "$gatewayUrl/health"
   Wait-LocalUrl $adminUrl
@@ -85,6 +85,7 @@ try {
   Write-Host "  Platform gRPC: 127.0.0.1:$($profile.PlatformGRPC)"
   Write-Host "  Gateway:  $gatewayUrl"
   Write-Host 'Identity must run separately to issue browser Module Capabilities.'
+  Write-Host 'Registry must already be listening on http://127.0.0.1:18070 before this script registers Platform.'
   Write-Host 'Start an external module repository to add business capabilities.'
 } catch {
   & (Join-Path $PSScriptRoot 'stop-dev.ps1')

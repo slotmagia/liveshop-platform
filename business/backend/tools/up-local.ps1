@@ -51,15 +51,18 @@ function Wait-Ready([string]$Url, [int]$TimeoutMinutes = 5) {
 }
 
 Ensure-LocalNetwork
-if ($Fresh) {
-  Invoke-Native { docker compose -f $compose down -v --remove-orphans } 'Failed to reset the local Platform stack.'
+$certs = Invoke-Native { docker volume ls -q --filter 'name=^liveshop-grpc-certs$' }
+if ("$certs".Trim() -ne 'liveshop-grpc-certs') {
+  throw 'Missing liveshop-grpc-certs. Start Registry first: liveshop-registry/business/backend/tools/up-local.ps1'
+}
+try {
+  Wait-Ready 'http://127.0.0.1:18070/readyz'
+} catch {
+  throw 'Registry is not ready on http://127.0.0.1:18070/readyz. Start Registry first: liveshop-registry/business/backend/tools/up-local.ps1'
 }
 
-Invoke-Native { docker compose -f $compose up --build --no-deps grpc-certs }
-if ($LASTEXITCODE -ne 0) { throw 'Local gRPC certificate bootstrap failed.' }
-$certState = Invoke-Native { docker compose -f $compose ps --all --format '{{.Service}}|{{.State}}|{{.ExitCode}}' grpc-certs }
-if (@($certState).Count -ne 1 -or "$certState" -ne 'grpc-certs|exited|0') {
-  throw "Local gRPC certificate bootstrap did not complete successfully: $certState"
+if ($Fresh) {
+  Invoke-Native { docker compose -f $compose down -v --remove-orphans } 'Failed to reset the local Platform stack.'
 }
 
 Invoke-Native { docker compose -f $compose up -d --build --remove-orphans } 'Local Platform container deployment failed.'
@@ -68,7 +71,7 @@ Wait-Http 'http://127.0.0.1:15180'
 
 if ($Register) {
   & (Join-Path $tools 'register-platform-module.ps1') `
-    -PlatformUrl 'http://127.0.0.1:18082' `
+    -PlatformUrl 'http://127.0.0.1:18070' `
     -BackendOrigin 'http://platform:18082' `
     -GRPCEndpoint 'dns:///platform:19082' `
     -ArtifactUrl 'http://127.0.0.1:15180'

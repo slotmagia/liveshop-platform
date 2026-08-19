@@ -21,6 +21,7 @@ func Validate(cfg *Config) error {
 		validateCredentialEncryption,
 		validateModuleCapability,
 		validateWorkloadIdentity,
+		validateRegistry,
 		validateHTTP,
 		validateGRPC,
 		validateEdge,
@@ -107,43 +108,40 @@ func validateModuleCapability(cfg *Config) error {
 func validateWorkloadIdentity(cfg *Config) error {
 	fields := []field{
 		{name: "workload_identity.issuer", value: cfg.WorkloadIdentity.Issuer},
-		{name: "workload_identity.http.gateway.key_id", value: cfg.WorkloadIdentity.HTTP.Gateway.KeyID},
-		{name: "workload_identity.http.gateway.public_key", value: cfg.WorkloadIdentity.HTTP.Gateway.PublicKey},
-		{name: "workload_identity.http.gateway.subject", value: cfg.WorkloadIdentity.HTTP.Gateway.Subject},
-		{name: "workload_identity.http.release.key_id", value: cfg.WorkloadIdentity.HTTP.Release.KeyID},
-		{name: "workload_identity.http.release.public_key", value: cfg.WorkloadIdentity.HTTP.Release.PublicKey},
-		{name: "workload_identity.http.release.subject", value: cfg.WorkloadIdentity.HTTP.Release.Subject},
 		{name: "workload_identity.http.identity.key_id", value: cfg.WorkloadIdentity.HTTP.Identity.KeyID},
 		{name: "workload_identity.http.identity.public_key", value: cfg.WorkloadIdentity.HTTP.Identity.PublicKey},
 		{name: "workload_identity.http.identity.subject", value: cfg.WorkloadIdentity.HTTP.Identity.Subject},
-		{name: "workload_identity.grpc.gateway.spiffe_id", value: cfg.WorkloadIdentity.GRPC.Gateway.SPIFFEID},
-		{name: "workload_identity.grpc.gateway.subject", value: cfg.WorkloadIdentity.GRPC.Gateway.Subject},
 		{name: "workload_identity.grpc.identity.spiffe_id", value: cfg.WorkloadIdentity.GRPC.Identity.SPIFFEID},
 		{name: "workload_identity.grpc.identity.subject", value: cfg.WorkloadIdentity.GRPC.Identity.Subject},
 	}
 	if err := requireFields(fields); err != nil {
 		return err
 	}
-	if err := requireSPIFFEID("workload_identity.grpc.gateway.spiffe_id", cfg.WorkloadIdentity.GRPC.Gateway.SPIFFEID); err != nil {
-		return err
-	}
 	if err := requireSPIFFEID("workload_identity.grpc.identity.spiffe_id", cfg.WorkloadIdentity.GRPC.Identity.SPIFFEID); err != nil {
 		return err
-	}
-	if !contains(cfg.WorkloadIdentity.HTTP.Gateway.Permissions, "registry.routes.read") {
-		return fmt.Errorf("platform: config workload_identity.http.gateway.permissions must include registry.routes.read")
-	}
-	if !contains(cfg.WorkloadIdentity.HTTP.Release.Permissions, "registry.release.write") || !contains(cfg.WorkloadIdentity.HTTP.Release.Permissions, "registry.activation.write") {
-		return fmt.Errorf("platform: config workload_identity.http.release.permissions must include registry.release.write and registry.activation.write")
 	}
 	if !exactPermissions(cfg.WorkloadIdentity.HTTP.Identity.Permissions, "platform.notify-event.dispatch") {
 		return fmt.Errorf("platform: config workload_identity.http.identity.permissions must contain only platform.notify-event.dispatch")
 	}
-	if !exactPermissions(cfg.WorkloadIdentity.GRPC.Gateway.Permissions, "platform.registry.routes.read") {
-		return fmt.Errorf("platform: config workload_identity.grpc.gateway.permissions must contain only platform.registry.routes.read")
+	if !exactPermissions(cfg.WorkloadIdentity.GRPC.Identity.Permissions, "platform.notify-event.dispatch") {
+		return fmt.Errorf("platform: config workload_identity.grpc.identity.permissions must contain only platform.notify-event.dispatch")
 	}
-	if !exactPermissions(cfg.WorkloadIdentity.GRPC.Identity.Permissions, "platform.registry.active-capabilities.read", "platform.notify-event.dispatch") {
-		return fmt.Errorf("platform: config workload_identity.grpc.identity.permissions must contain platform.registry.active-capabilities.read and platform.notify-event.dispatch")
+	return nil
+}
+
+func validateRegistry(cfg *Config) error {
+	if err := requireFields([]field{
+		{name: "registry.origin_url", value: cfg.Registry.OriginURL},
+		{name: "registry.workload.key_id", value: cfg.Registry.Workload.KeyID},
+		{name: "registry.workload.private_key", value: cfg.Registry.Workload.PrivateKey},
+		{name: "registry.workload.issuer", value: cfg.Registry.Workload.Issuer},
+		{name: "registry.workload.subject", value: cfg.Registry.Workload.Subject},
+	}); err != nil {
+		return err
+	}
+	parsed, err := url.Parse(cfg.Registry.OriginURL)
+	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+		return fmt.Errorf("platform: config registry.origin_url must be an http(s) origin")
 	}
 	return nil
 }

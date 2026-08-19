@@ -46,16 +46,21 @@ func (a *Release) ActivateAudited(ctx context.Context, actor model.RegistryAudit
 	return a.repository.Activate(ctx, &actor, moduleID, version)
 }
 
-// DeactivateAudited refuses to remove the control-plane module, whose own
-// route serves the request performing the change.
-func (a *Release) DeactivateAudited(ctx context.Context, actor model.RegistryAuditActor, moduleID string) error {
+func (a *Release) Deactivate(ctx context.Context, moduleID string) error {
 	if moduleID == model.PlatformModuleID {
 		return model.ErrPlatformSelfDeactivation
 	}
 	if strings.TrimSpace(moduleID) == "" {
 		return model.ErrReleaseInvalid
 	}
-	return a.repository.Deactivate(ctx, &actor, moduleID)
+	return a.repository.Deactivate(ctx, nil, moduleID)
+}
+
+// DeactivateAudited refuses to remove the control-plane module, whose own
+// route serves the request performing the change. Audit is written by the
+// admin surface after Registry accepts the change.
+func (a *Release) DeactivateAudited(ctx context.Context, actor model.RegistryAuditActor, moduleID string) error {
+	return a.Deactivate(ctx, moduleID)
 }
 
 func (a *Release) Routes(ctx context.Context) (uint64, []modulemanifest.ActiveRoute, error) {

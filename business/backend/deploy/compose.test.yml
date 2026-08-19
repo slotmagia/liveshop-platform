@@ -1,8 +1,5 @@
 name: liveshop-platform-test
 services:
-  grpc-certs:
-    image: ${LIVESHOP_IMAGE_PREFIX}/backend:${LIVESHOP_IMAGE_TAG}
-    build: !reset null
   platform:
     image: ${LIVESHOP_IMAGE_PREFIX}/backend:${LIVESHOP_IMAGE_TAG}
     build: !reset null

@@ -67,6 +67,15 @@ type Config struct {
 	InternalGrant struct {
 		Token string `yaml:"token"`
 	} `yaml:"internal_grant"`
+	Registry struct {
+		OriginURL string `yaml:"origin_url"`
+		Workload  struct {
+			KeyID      string `yaml:"key_id"`
+			PrivateKey string `yaml:"private_key"`
+			Issuer     string `yaml:"issuer"`
+			Subject    string `yaml:"subject"`
+		} `yaml:"workload"`
+	} `yaml:"registry"`
 	Edge struct {
 		Enabled        bool   `yaml:"enabled"`
 		IdentityOrigin string `yaml:"identity_origin"`

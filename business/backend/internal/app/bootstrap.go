@@ -44,10 +44,9 @@ func bootstrap(ctx context.Context) (*instance, error) {
 			ClientCAFile:    cfg.GRPC.TLS.ClientCAFile,
 		},
 		Workloads: []grpcauth.Workload{
-			workload(cfg.WorkloadIdentity.GRPC.Gateway),
 			workload(cfg.WorkloadIdentity.GRPC.Identity),
 		},
-	}, applications.Provisioning, applications.Notification)
+	}, applications.Notification)
 	if err != nil {
 		_ = deps.Close()
 		return nil, err
