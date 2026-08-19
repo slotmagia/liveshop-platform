@@ -15,6 +15,7 @@ import (
 	edgemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/edge/model"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/email"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/localization"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
@@ -45,6 +46,7 @@ type Dependencies struct {
 	Email        *email.UseCase
 	Storage      *storage.UseCase
 	Notification *notification.UseCase
+	Localization *localization.UseCase
 	Edge         *edge.UseCase
 
 	Workloads      *workloadidentity.Verifier
@@ -108,7 +110,7 @@ func NewDependencies(cfg *config.Config) (Dependencies, error) {
 		},
 	})
 	return Dependencies{
-		Release: release, Settings: settings, Audit: biz.NewAudit(adapters.audit), LiveProvider: liveprovider.New(adapters.liveProvider), SMS: smsUse, Email: emailUse, Storage: storage.New(adapters.storage, storagesender.New()), Notification: notifyUse, Edge: edgeUse,
+		Release: release, Settings: settings, Audit: biz.NewAudit(adapters.audit), LiveProvider: liveprovider.New(adapters.liveProvider), SMS: smsUse, Email: emailUse, Storage: storage.New(adapters.storage, storagesender.New()), Notification: notifyUse, Localization: localization.New(adapters.localization, localization.NoopTranslator{}), Edge: edgeUse,
 		Workloads: tokens.workloads, ModuleVerifier: tokens.moduleVerifier,
 		Ready: database.PingContext, shutdown: database.Close,
 	}, nil
@@ -163,6 +165,7 @@ type stores struct {
 	email        *mysql.EmailRepository
 	storage      *mysql.StorageRepository
 	notification *mysql.NotificationRepository
+	localization *mysql.LocalizationRepository
 }
 
 // newStores gates every adapter behind one reachability check and one schema
@@ -184,6 +187,7 @@ func newStores(ctx context.Context, database *sql.DB, box *secretbox.Box) (store
 		email:        mysql.NewEmailRepository(database, box),
 		storage:      mysql.NewStorageRepository(database, box),
 		notification: mysql.NewNotificationRepository(database),
+		localization: mysql.NewLocalizationRepository(database, box),
 	}, nil
 }
 

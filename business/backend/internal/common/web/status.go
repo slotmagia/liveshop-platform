@@ -6,6 +6,7 @@ import (
 
 	edgemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/edge/model"
 	providermodel "github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider/model"
+	locmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/localization/model"
 	notifymodel "github.com/liveshop-platform/module-platform/internal/biz/capability/notification/model"
 	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
 	storagemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/storage/model"
@@ -50,6 +51,13 @@ var domainStatus = []struct {
 	{edgemodel.ErrNotBound, http.StatusNotFound},
 	{edgemodel.ErrForbidden, http.StatusForbidden},
 	{edgemodel.ErrApply, http.StatusServiceUnavailable},
+	{locmodel.ErrInvalid, http.StatusBadRequest},
+	{locmodel.ErrEntityUnknown, http.StatusBadRequest},
+	{locmodel.ErrLocaleUnknown, http.StatusBadRequest},
+	{locmodel.ErrProviderKey, http.StatusConflict},
+	{locmodel.ErrNotFound, http.StatusNotFound},
+	{locmodel.ErrConflict, http.StatusConflict},
+	{locmodel.ErrUnavailable, http.StatusServiceUnavailable},
 
 	{model.ErrUnavailable, http.StatusServiceUnavailable},
 }

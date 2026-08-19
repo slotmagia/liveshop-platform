@@ -9,6 +9,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/application/admin/appmodel"
 	emailmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/email/model"
 	providermodel "github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider/model"
+	locmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/localization/model"
 	notifymodel "github.com/liveshop-platform/module-platform/internal/biz/capability/notification/model"
 	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
 	storagemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/storage/model"
@@ -93,4 +94,15 @@ type NotifyTemplates interface {
 type NotifyChannels interface {
 	GetNotifyInApp(context.Context) (notifymodel.InAppConfig, error)
 	ReplaceNotifyInApp(context.Context, appmodel.ReplaceNotifyInApp) (notifymodel.InAppConfig, error)
+}
+
+type I18n interface {
+	I18nDrivers() []locmodel.DriverDefinition
+	I18nLocales() []locmodel.Locale
+	I18nEntities() []locmodel.Entity
+	GetI18nConfig(context.Context) (locmodel.Config, error)
+	PutI18nConfig(context.Context, appmodel.PutI18nConfig) (locmodel.Config, error)
+	ListI18nTexts(context.Context, string, string) ([]locmodel.WorklistRow, error)
+	PublishI18nText(context.Context, appmodel.PublishI18nText) (locmodel.PublishResult, error)
+	FillI18nTexts(context.Context, appmodel.FillI18nTexts) (locmodel.FillResult, error)
 }

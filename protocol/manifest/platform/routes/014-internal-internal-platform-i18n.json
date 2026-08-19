@@ -1,0 +1,66 @@
+{
+  "surface": "internal",
+  "prefix": "/internal/platform/i18n",
+  "operations": [
+    {
+      "id": "platform.internal.i18n.texts.list",
+      "method": "GET",
+      "path": "/internal/platform/i18n/texts",
+      "summary": "读取已发布译文组",
+      "description": "仅 status=published。浏览器禁止调用。merchantId/shopId 为 0 表示不按店铺过滤。",
+      "authentication": "workload-identity",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [
+        { "name": "entityType", "location": "query", "type": "string", "required": true, "description": "类型" },
+        { "name": "locale", "location": "query", "type": "string", "required": true, "description": "目标语言" },
+        { "name": "merchantId", "location": "query", "type": "integer", "required": false, "description": "可选店铺过滤" },
+        { "name": "shopId", "location": "query", "type": "integer", "required": false, "description": "可选店铺过滤" }
+      ],
+      "responses": [{ "status": 200, "description": "已发布组", "fields": [{ "name": "items", "type": "array", "description": "entityId、value、version" }] }]
+    },
+    {
+      "id": "platform.internal.i18n.locales.list",
+      "method": "GET",
+      "path": "/internal/platform/i18n/locales",
+      "summary": "平台目标语言目录",
+      "description": "供 Identity 组装店铺语言页。浏览器禁止调用。",
+      "authentication": "workload-identity",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [],
+      "responses": [{ "status": 200, "description": "目标语言", "fields": [] }]
+    },
+    {
+      "id": "platform.internal.i18n.entities.list",
+      "method": "GET",
+      "path": "/internal/platform/i18n/entities",
+      "summary": "可翻译类型登记",
+      "description": "与 Admin 工作台同一登记表。浏览器禁止调用。",
+      "authentication": "workload-identity",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [],
+      "responses": [{ "status": 200, "description": "类型登记", "fields": [] }]
+    },
+    {
+      "id": "platform.internal.i18n.sources.update",
+      "method": "PUT",
+      "path": "/internal/platform/i18n/sources",
+      "summary": "投影源文快照",
+      "description": "Catalog/Live/Trade 在源文变更后调用，对应 *.changed 事件投递。浏览器禁止调用。",
+      "authentication": "workload-identity",
+      "idempotency": "idempotent",
+      "requiredPermissions": ["platform.i18n.ingest"],
+      "requestFields": [
+        { "name": "entityType", "location": "body", "type": "string", "required": true, "description": "类型" },
+        { "name": "entityId", "location": "body", "type": "string", "required": true, "description": "实体 id" },
+        { "name": "merchantId", "location": "body", "type": "integer", "required": true, "description": "商户；平台级 0" },
+        { "name": "shopId", "location": "body", "type": "integer", "required": true, "description": "店铺；平台级 0" },
+        { "name": "source", "location": "body", "type": "string", "required": true, "description": "源语言文本" },
+        { "name": "sourceVersion", "location": "body", "type": "integer", "required": true, "description": "源聚合版本" }
+      ],
+      "responses": [{ "status": 200, "description": "已投影", "fields": [] }]
+    }
+  ]
+}

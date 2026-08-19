@@ -8,6 +8,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/edge"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/email"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/localization"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
@@ -23,6 +24,7 @@ type Deps struct {
 	Email        *email.UseCase
 	Storage      *storage.UseCase
 	Notification *notification.UseCase
+	Localization *localization.UseCase
 	Edge         *edge.UseCase
 }
 
@@ -39,6 +41,7 @@ var (
 	_ service.NotifyEvents    = (*Logic)(nil)
 	_ service.NotifyTemplates = (*Logic)(nil)
 	_ service.NotifyChannels  = (*Logic)(nil)
+	_ service.I18n            = (*Logic)(nil)
 )
 
 func New(deps Deps) *Logic { return &Logic{deps: deps} }

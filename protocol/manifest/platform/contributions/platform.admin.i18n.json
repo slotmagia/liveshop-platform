@@ -1,11 +1,11 @@
 {
-  "id": "platform.placeholder.admin.i18n",
+  "id": "platform.admin.i18n",
   "surface": "admin",
   "kind": "page",
   "route": "/i18n",
   "title": "翻译工作台",
   "icon": "languages",
-  "description": "翻译工作台菜单占位。页面与业务事实归 platform 模块；领域契约、真实接口和数据源完成前不提供业务操作或模拟数据。",
+  "description": "维护类目、礼物和支付通道的已发布译文与机器翻译 Provider。源文由业务模块事件投影，不直查业务库。",
   "sort": 160,
   "navigation": {
     "groupId": "legacy-admin-config",
@@ -14,18 +14,29 @@
     "groupSort": 500
   },
   "requiredPermissions": [
-    "platform.placeholder.read"
+    "platform.i18n.read"
   ],
-  "allowedRoutes": [],
+  "allowedRoutes": [
+    {
+      "methods": ["GET"],
+      "prefix": "/admin/platform/i18n",
+      "requiredPermissions": ["platform.i18n.read"]
+    },
+    {
+      "methods": ["PUT", "POST"],
+      "prefix": "/admin/platform/i18n",
+      "requiredPermissions": ["platform.i18n.manage"]
+    }
+  ],
   "artifact": {
     "type": "iframe",
     "name": "@liveshop/platform-admin",
-    "version": "6.0.0",
+    "version": "6.1.0",
     "entry": "http://127.0.0.1:15180",
     "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
   },
   "frontend": {
-    "component": "PlaceholderPage",
+    "component": "I18nPage",
     "props": [],
     "events": [],
     "actions": []

@@ -31,6 +31,7 @@ type Application interface {
 	service.NotifyEvents
 	service.NotifyTemplates
 	service.NotifyChannels
+	service.I18n
 }
 
 type Deps struct {
@@ -68,6 +69,8 @@ func RegisterHTTP(root *ghttp.RouterGroup, deps Deps) {
 	bind(Prefix, "platform.notify-template.manage", adminhttp.NewNotifyTemplatesWriter(deps.Application))
 	bind(Prefix, "platform.notify-channel.read", adminhttp.NewNotifyChannelsReader(deps.Application))
 	bind(Prefix, "platform.notify-channel.manage", adminhttp.NewNotifyChannelsWriter(deps.Application))
+	bind(Prefix, "platform.i18n.read", adminhttp.NewI18nReader(deps.Application))
+	bind(Prefix, "platform.i18n.manage", adminhttp.NewI18nWriter(deps.Application))
 	root.Group("/uploads", func(group *ghttp.RouterGroup) {
 		group.GET("/:folder/:name", servePublicUpload(deps.Application))
 	})

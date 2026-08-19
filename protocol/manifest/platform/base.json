@@ -4,7 +4,7 @@
   "metadata": {
     "id": "platform",
     "name": "Platform Control Plane",
-    "version": "6.0.0"
+    "version": "6.1.0"
   },
   "spec": {
     "backend": {

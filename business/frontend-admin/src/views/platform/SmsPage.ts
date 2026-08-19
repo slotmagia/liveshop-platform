@@ -1,6 +1,11 @@
 import type { HostContext, HostHttpClient, HostModalField, HostModalTreeNode } from '@liveshop/host-sdk'
 import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
+import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, tabs, ui } from '@liveshop/design-tokens'
+
+export interface NotifyChannelMounts {
+  search?: HTMLElement
+  data: HTMLElement
+}
 
 type Lifecycle = 'ACTIVE' | 'RETIRED'
 type Tab = 'channels' | 'regions' | 'grants'
@@ -101,7 +106,7 @@ function selectedCodes(value: string): string[] {
   return [...new Set(value.split(/[\s,]+/).map(code => code.trim()).filter(Boolean))]
 }
 
-export async function startSMS(root: HTMLElement, client: HostHttpClient, context: HostContext, options?: { embedded?: boolean }): Promise<void> {
+export async function startSMS(root: HTMLElement, client: HostHttpClient, context: HostContext, options?: { embedded?: boolean; mounts?: NotifyChannelMounts }): Promise<void> {
   const state = statusLine()
   const canManage = context.permissions.includes('platform.sms.manage')
   let tab: Tab = 'channels'
@@ -149,44 +154,65 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
   let regions: SMSRegion[] = []
   let grant: MerchantGrant | null = null
 
-  const channelCard = dataCard({
-    title: '短信通道',
-    actions: [button({ label: '刷新', variant: 'secondary', onClick: () => void load() }), ...(canManage ? [button({ label: '新增通道', onClick: () => openChannel() })] : [])],
-    body: channelsTable.element,
-  })
-  const regionCard = dataCard({
-    title: '短信区域',
-    actions: [button({ label: '刷新', variant: 'secondary', onClick: () => void load() }), ...(canManage ? [button({ label: '新增区域', onClick: () => openRegion() })] : [])],
-    body: regionsTable.element,
-  })
-  const grantCard = dataCard({
-    title: '商户区域开通',
-    actions: [button({ label: '查询', variant: 'secondary', onClick: () => void loadGrant() }), ...(canManage ? [button({ label: '保存开通范围', onClick: () => openGrant() })] : [])],
-    body: grantsTable.element,
-  })
-
-  const tabs = create('div', ui.actions)
-  const tabButtons: Record<Tab, HTMLElement> = {
-    channels: button({ label: '通道', variant: 'secondary', onClick: () => switchTab('channels') }),
-    regions: button({ label: '区域', variant: 'secondary', onClick: () => switchTab('regions') }),
-    grants: button({ label: '商户开通', variant: 'secondary', onClick: () => switchTab('grants') }),
-  }
-  tabs.append(tabButtons.channels, tabButtons.regions, tabButtons.grants)
-
   const channelSearch = searchCard(channelFilter.element)
   const regionSearch = searchCard(regionFilter.element)
   const grantSearch = searchCard(grantFilter.element)
+  const searchHost = options?.mounts?.search ?? create('div')
+  const dataHost = options?.mounts?.data ?? create('div')
+  let dataCardNode: HTMLElement | undefined
+
+  const tableTabs = tabs({
+    items: [
+      { value: 'channels', label: '通道' },
+      { value: 'regions', label: '区域' },
+      { value: 'grants', label: '商户开通' },
+    ],
+    value: 'channels',
+    ariaLabel: '短信表格',
+    onChange: value => switchTab(value as Tab),
+  })
+
+  function currentTable(): HTMLElement {
+    if (tab === 'regions') return regionsTable.element
+    if (tab === 'grants') return grantsTable.element
+    return channelsTable.element
+  }
+
+  function currentActions(): HTMLElement[] {
+    const refresh = button({
+      label: '刷新',
+      variant: 'secondary',
+      onClick: () => { if (tab === 'grants') void loadGrant(); else void load() },
+    })
+    if (!canManage) return [refresh]
+    if (tab === 'regions') return [refresh, button({ label: '新增区域', onClick: () => openRegion() })]
+    if (tab === 'grants') return [refresh, button({ label: '保存开通范围', onClick: () => openGrant() })]
+    return [refresh, button({ label: '新增通道', onClick: () => openChannel() })]
+  }
+
+  function syncSearch(): void {
+    searchHost.replaceChildren(tab === 'regions' ? regionSearch : tab === 'grants' ? grantSearch : channelSearch)
+  }
+
+  function syncCard(): void {
+    const next = dataCard({
+      title: tab === 'regions' ? '短信区域' : tab === 'grants' ? '商户区域开通' : '短信通道',
+      actions: currentActions(),
+      body: currentTable(),
+    })
+    next.querySelector(`.${ui.tableToolbarTitle}`)?.replaceWith(tableTabs.element)
+    if (dataCardNode) dataCardNode.replaceWith(next)
+    else dataHost.replaceChildren(next)
+    dataCardNode = next
+  }
 
   function switchTab(next: Tab): void {
     tab = next
-    channelSearch.hidden = next !== 'channels'
-    channelCard.hidden = next !== 'channels'
-    regionSearch.hidden = next !== 'regions'
-    regionCard.hidden = next !== 'regions'
-    grantSearch.hidden = next !== 'grants'
-    grantCard.hidden = next !== 'grants'
-    if (next === 'grants' && !grant) state.set('输入 merchant_id 与 shop_id 后查询开通范围。空选择表示不限制区域。')
-    else void load()
+    tableTabs.set(next)
+    syncSearch()
+    syncCard()
+    if (next === 'grants' && !grant) return
+    void load()
   }
 
   function lifecycleBadge(item: { lifecycle: Lifecycle; enabled: boolean }): HTMLElement {
@@ -527,9 +553,14 @@ export async function startSMS(root: HTMLElement, client: HostHttpClient, contex
     editor.open()
   }
 
-  const children = [state.element, tabs, channelSearch, channelCard, regionSearch, regionCard, grantSearch, grantCard]
-  if (options?.embedded) root.replaceChildren(...children)
-  else root.replaceChildren(page({ showSummary: false, children }))
+  if (options?.mounts) {
+    searchHost.replaceChildren()
+    dataHost.replaceChildren()
+  } else if (options?.embedded) {
+    root.replaceChildren(searchHost, dataHost)
+  } else {
+    root.replaceChildren(page({ showSummary: false, children: [searchHost, dataHost] }))
+  }
   switchTab('channels')
   try {
     regions = await client.request<SMSRegion[]>(`${prefix}/regions?lifecycle=ACTIVE`)

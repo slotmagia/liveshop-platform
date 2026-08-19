@@ -152,5 +152,26 @@
     "resource": "platform.placeholder",
     "action": "read",
     "description": "Open registered menu placeholders without granting any business API route."
+  },
+  {
+    "code": "platform.i18n.read",
+    "name": "查看翻译工作台",
+    "resource": "platform.i18n",
+    "action": "read",
+    "description": "查看可翻译类型、工作台清单和机器翻译配置；不返回密钥明文。"
+  },
+  {
+    "code": "platform.i18n.manage",
+    "name": "管理翻译工作台",
+    "resource": "platform.i18n",
+    "action": "manage",
+    "description": "发布译文、机器预填并版本化保存机器翻译 Provider 配置。"
+  },
+  {
+    "code": "platform.i18n.ingest",
+    "name": "投影翻译源文",
+    "resource": "platform.i18n",
+    "action": "ingest",
+    "description": "仅业务模块工作负载在源文变更后投影快照；浏览器不得持有。"
   }
 ]

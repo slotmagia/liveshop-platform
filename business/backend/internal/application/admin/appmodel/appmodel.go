@@ -206,3 +206,28 @@ type ReplaceNotifyInApp struct {
 	ExpectedVersion int64
 	Enabled         bool
 }
+
+type PutI18nConfig struct {
+	CommandKey      string
+	ExpectedVersion int64
+	Provider        string
+	APIKey          string
+	APIKeyClear     bool
+}
+
+type PublishI18nText struct {
+	CommandKey      string
+	ExpectedVersion int64
+	EntityType      string
+	EntityID        string
+	Locale          string
+	Value           string
+	MerchantID      int64
+	ShopID          int64
+}
+
+type FillI18nTexts struct {
+	CommandKey string
+	EntityType string
+	Locale     string
+}

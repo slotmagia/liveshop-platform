@@ -485,6 +485,8 @@ export function createHttpClient(context: HostContext): HostHttpClient {
       if (!(init.body instanceof FormData) && init.body !== undefined && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
       headers.set('Authorization', `Bearer ${context.moduleToken}`)
       headers.set('X-Liveshop-Surface', context.surface)
+      if (context.locale) headers.set('X-Locale', context.locale)
+      if (context.locale) headers.set('Accept-Language', context.locale)
       try {
         response = await fetch(context.gatewayBaseUrl + path, {
           ...init,

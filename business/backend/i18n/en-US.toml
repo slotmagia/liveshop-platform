@@ -1,0 +1,10 @@
+[errors]
+"platform.i18n.invalid" = "Invalid i18n request"
+"platform.i18n.not_found" = "Translation entry was not found"
+"platform.i18n.conflict" = "Version conflict; refresh and retry"
+"platform.i18n.entity_unknown" = "Unknown translatable entity type"
+"platform.i18n.locale_unknown" = "Locale is not a platform target language"
+"platform.i18n.provider_key" = "Machine translation API key is not set"
+"platform.i18n.unavailable" = "Localization store is unavailable"
+"common.internal_error" = "Service temporarily unavailable"
+"common.invalid_param" = "Invalid request parameter"

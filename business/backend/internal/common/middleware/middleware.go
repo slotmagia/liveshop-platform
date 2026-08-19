@@ -40,7 +40,7 @@ func CORS(allowedOrigins map[string]struct{}) ghttp.HandlerFunc {
 			request.Response.Header().Set("Access-Control-Allow-Credentials", "true")
 			request.Response.Header().Set("Vary", "Origin")
 		}
-		request.Response.Header().Set("Access-Control-Allow-Headers", "Authorization,Content-Type,X-Liveshop-Surface")
+		request.Response.Header().Set("Access-Control-Allow-Headers", "Authorization,Content-Type,X-Liveshop-Surface,X-Locale")
 		request.Response.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		if request.Method == http.MethodOptions {
 			request.Response.WriteStatus(http.StatusNoContent)
@@ -78,6 +78,17 @@ func Workload(verifier *workloadidentity.Verifier, permission string) ghttp.Hand
 		logctx.FromContext(request.GetCtx()).Info("workload authorization allowed", "workload", claims.Subject, "permission", permission, "method", request.Method, "path", request.URL.Path, "decision", "allow")
 		request.SetCtx(authctx.WithWorkloadSubject(request.GetCtx(), claims.Subject))
 		request.Middleware.Next()
+	}
+}
+
+func InternalGrantOrWorkload(verifier *workloadidentity.Verifier, grantToken, permission string) ghttp.HandlerFunc {
+	workload := Workload(verifier, permission)
+	return func(request *ghttp.Request) {
+		if grantToken != "" && request.Header.Get("X-Liveshop-Internal-Grant") == grantToken {
+			request.Middleware.Next()
+			return
+		}
+		workload(request)
 	}
 }
 

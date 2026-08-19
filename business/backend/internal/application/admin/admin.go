@@ -10,6 +10,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/edge"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/email"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/liveprovider"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/localization"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
@@ -26,6 +27,7 @@ type Config struct {
 	Email          *email.UseCase
 	Storage        *storage.UseCase
 	Notification   *notification.UseCase
+	Localization   *localization.UseCase
 	Edge           *edge.UseCase
 	ModuleSessions *modulesession.Verifier
 }
@@ -43,6 +45,7 @@ func New(config Config) Surface {
 			Email:        config.Email,
 			Storage:      config.Storage,
 			Notification: config.Notification,
+			Localization: config.Localization,
 			Edge:         config.Edge,
 		}),
 		ModuleSessions: config.ModuleSessions,

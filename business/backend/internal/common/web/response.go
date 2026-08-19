@@ -9,7 +9,6 @@ import (
 
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/liveshop-platform/module-platform/internal/biz/model"
-	"github.com/lvtuopen-ai/kernel-go/apperror"
 	"github.com/lvtuopen-ai/kernel-go/logctx"
 )
 
@@ -97,12 +96,13 @@ func WriteFailure(request *ghttp.Request, status int, err error) {
 	request.Response.ClearBuffer()
 	request.Response.Header().Set("Content-Type", "application/json; charset=utf-8")
 	request.Response.WriteHeader(status)
-	response := map[string]any{"code": status * 100, "message": err.Error()}
-	if applicationError, ok := apperror.As(err); ok {
-		response["reason"] = applicationError.Reason
-		if len(applicationError.Args) > 0 {
-			response["args"] = applicationError.Args
-		}
+	message, reason, args := localizeFailure(request, err)
+	response := map[string]any{"code": status * 100, "message": message}
+	if reason != "" {
+		response["reason"] = reason
+	}
+	if len(args) > 0 {
+		response["args"] = args
 	}
 	request.Response.WriteJson(response)
 }

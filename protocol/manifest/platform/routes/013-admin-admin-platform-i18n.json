@@ -1,0 +1,122 @@
+{
+  "surface": "admin",
+  "prefix": "/admin/platform/i18n",
+  "operations": [
+    {
+      "id": "platform.admin.i18n.drivers.list",
+      "method": "GET",
+      "path": "/admin/platform/i18n/drivers",
+      "summary": "查询机器翻译驱动",
+      "description": "返回 noop、deepl、google 及密钥字段元数据；不返回密钥明文。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [],
+      "responses": [{ "status": 200, "description": "驱动列表", "fields": [{ "name": "items", "type": "array", "description": "驱动定义" }] }]
+    },
+    {
+      "id": "platform.admin.i18n.config.get",
+      "method": "GET",
+      "path": "/admin/platform/i18n/config",
+      "summary": "取机器翻译配置",
+      "description": "返回当前 Provider 与 apiKeySet。version 为 0 表示尚未保存过密钥。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [],
+      "responses": [{ "status": 200, "description": "脱敏配置", "fields": [] }]
+    },
+    {
+      "id": "platform.admin.i18n.config.update",
+      "method": "PUT",
+      "path": "/admin/platform/i18n/config",
+      "summary": "版本化保存机器翻译配置",
+      "description": "空 apiKey 保留已保存密钥；apiKeyClear 清除。密钥 AES-GCM 存储。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": ["platform.i18n.manage"],
+      "requestFields": [
+        { "name": "commandKey", "location": "body", "type": "string", "required": true, "description": "幂等键" },
+        { "name": "expectedVersion", "location": "body", "type": "integer", "required": true, "description": "新建为 0" },
+        { "name": "provider", "location": "body", "type": "string", "required": true, "description": "noop / deepl / google" }
+      ],
+      "responses": [{ "status": 200, "description": "保存后的配置", "fields": [] }, { "status": 409, "description": "版本或命令冲突", "fields": [] }]
+    },
+    {
+      "id": "platform.admin.i18n.locales.list",
+      "method": "GET",
+      "path": "/admin/platform/i18n/locales",
+      "summary": "平台目标语言",
+      "description": "第一期仅 en-US。源语言 zh-CN 不在此列表。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [],
+      "responses": [{ "status": 200, "description": "目标语言", "fields": [{ "name": "items", "type": "array", "description": "code 与 label" }] }]
+    },
+    {
+      "id": "platform.admin.i18n.entities.list",
+      "method": "GET",
+      "path": "/admin/platform/i18n/entities",
+      "summary": "可翻译内容类型",
+      "description": "第一期：catalog.category、live.gift、trade.payment.channel。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [],
+      "responses": [{ "status": 200, "description": "类型与目标语言", "fields": [] }]
+    },
+    {
+      "id": "platform.admin.i18n.texts.list",
+      "method": "GET",
+      "path": "/admin/platform/i18n/texts",
+      "summary": "翻译工作台清单",
+      "description": "entityType 与 locale 必填。源文来自 i18n_source 投影，禁止 JOIN 业务表。第一期全量不分页。",
+      "authentication": "module-session",
+      "idempotency": "safe",
+      "requiredPermissions": ["platform.i18n.read"],
+      "requestFields": [
+        { "name": "entityType", "location": "query", "type": "string", "required": true, "description": "可翻译类型" },
+        { "name": "locale", "location": "query", "type": "string", "required": true, "description": "目标语言" }
+      ],
+      "responses": [{ "status": 200, "description": "工作台行", "fields": [{ "name": "items", "type": "array", "description": "源文、译文、状态、stale、version" }] }]
+    },
+    {
+      "id": "platform.admin.i18n.texts.publish",
+      "method": "POST",
+      "path": "/admin/platform/i18n/texts/publish",
+      "summary": "发布译文",
+      "description": "merchantId 与 shopId 必须与源文投影行一致。写入 history。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": ["platform.i18n.manage"],
+      "requestFields": [
+        { "name": "commandKey", "location": "body", "type": "string", "required": true, "description": "幂等键" },
+        { "name": "expectedVersion", "location": "body", "type": "integer", "required": true, "description": "无译文为 0" },
+        { "name": "entityType", "location": "body", "type": "string", "required": true, "description": "类型" },
+        { "name": "entityId", "location": "body", "type": "string", "required": true, "description": "实体 id" },
+        { "name": "locale", "location": "body", "type": "string", "required": true, "description": "目标语言" },
+        { "name": "value", "location": "body", "type": "string", "required": true, "description": "译文" },
+        { "name": "merchantId", "location": "body", "type": "integer", "required": true, "description": "行上的商户" },
+        { "name": "shopId", "location": "body", "type": "integer", "required": true, "description": "行上的店铺；平台级为 0" }
+      ],
+      "responses": [{ "status": 200, "description": "发布结果", "fields": [] }, { "status": 409, "description": "版本冲突", "fields": [] }]
+    },
+    {
+      "id": "platform.admin.i18n.texts.fill",
+      "method": "POST",
+      "path": "/admin/platform/i18n/texts/fill",
+      "summary": "机器预填草稿",
+      "description": "跳过 published 且未 stale 的行。不发布。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": ["platform.i18n.manage"],
+      "requestFields": [
+        { "name": "commandKey", "location": "body", "type": "string", "required": true, "description": "幂等键" },
+        { "name": "entityType", "location": "body", "type": "string", "required": true, "description": "类型" },
+        { "name": "locale", "location": "body", "type": "string", "required": true, "description": "目标语言" }
+      ],
+      "responses": [{ "status": 200, "description": "预填计数", "fields": [] }]
+    }
+  ]
+}

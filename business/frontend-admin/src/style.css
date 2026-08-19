@@ -1,5 +1,7 @@
 @import '@liveshop/design-tokens/console.css';
 
+.ls-ui-table-toolbar .ls-ui-tabs { margin: 0; }
+
 .registry-catalog {
   padding: 16px;
 }

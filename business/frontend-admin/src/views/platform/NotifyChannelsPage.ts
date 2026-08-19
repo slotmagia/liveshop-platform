@@ -1,6 +1,6 @@
 import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
 import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, create, dataCard, page, statusLine, table, ui } from '@liveshop/design-tokens'
+import { badge, button, create, dataCard, notify, page, table, tabs } from '@liveshop/design-tokens'
 import { startEmail } from './EmailPage'
 import { startSMS } from './SmsPage'
 
@@ -14,30 +14,31 @@ interface InAppConfig {
 }
 
 export async function startNotifyChannels(root: HTMLElement, client: HostHttpClient, context: HostContext): Promise<void> {
-  const state = statusLine()
   const canManage = context.permissions.includes('platform.notify-channel.manage')
-  let kind: Kind = 'sms'
-  const body = create('div')
-  const tabs = create('div', ui.actions)
-  const buttons: Record<Kind, HTMLElement> = {
-    sms: button({ label: '短信', variant: 'secondary', onClick: () => void switchKind('sms') }),
-    email: button({ label: '邮件', variant: 'secondary', onClick: () => void switchKind('email') }),
-    'in-app': button({ label: '站内信', variant: 'secondary', onClick: () => void switchKind('in-app') }),
-  }
-  tabs.append(buttons.sms, buttons.email, buttons['in-app'])
+  const searchSlot = create('div')
+  const dataSlot = create('div')
+  const kindTabs = tabs({
+    items: [
+      { value: 'sms', label: '短信' },
+      { value: 'email', label: '邮件' },
+      { value: 'in-app', label: '站内信' },
+    ],
+    value: 'sms',
+    ariaLabel: '通知方式',
+    onChange: value => { void switchKind(value as Kind) },
+  })
 
   async function switchKind(next: Kind): Promise<void> {
-    kind = next
-    for (const [key, control] of Object.entries(buttons)) {
-      control.setAttribute('data-active', key === next ? 'true' : 'false')
-    }
-    body.replaceChildren()
+    kindTabs.set(next)
+    searchSlot.hidden = next !== 'sms'
+    if (next !== 'sms') searchSlot.replaceChildren()
+    dataSlot.replaceChildren()
     if (next === 'sms') {
-      await startSMS(body, client, context, { embedded: true })
+      await startSMS(dataSlot, client, context, { mounts: { search: searchSlot, data: dataSlot } })
       return
     }
     if (next === 'email') {
-      await startEmail(body, client, context, { embedded: true })
+      await startEmail(dataSlot, client, context, { mounts: { data: dataSlot } })
       return
     }
     await renderInApp()
@@ -50,8 +51,7 @@ export async function startNotifyChannels(root: HTMLElement, client: HostHttpCli
       actions: [button({ label: '刷新', variant: 'secondary', onClick: () => void renderInApp() })],
       body: rows.element,
     })
-    body.replaceChildren(card)
-    state.set('正在加载站内信驱动…')
+    dataSlot.replaceChildren(card)
     try {
       const config = await client.request<InAppConfig>('/admin/platform/notify-channels/in-app')
       rows.setRows([[
@@ -80,20 +80,15 @@ export async function startNotifyChannels(root: HTMLElement, client: HostHttpCli
           },
         }) : '',
       ]])
-      state.set(`站内信驱动 inbox · ${config.enabled ? '已启用' : '已停用'}`)
     } catch (error) {
-      state.set(`加载站内信失败：${String(error)}`, 'danger')
+      rows.setRows([])
+      notify(`加载站内信失败：${String(error)}`, 'danger')
     }
   }
 
   root.replaceChildren(page({
     showSummary: false,
-    children: [
-      dataCard({ title: '通知方式', body: create('p', undefined, '短信、邮件、站内信均为驱动。模板在「通知模板」，事件规则在菜单目录或「通知事件」。') }),
-      tabs,
-      state.element,
-      body,
-    ],
+    children: [searchSlot, kindTabs.element, dataSlot],
   }))
   await switchKind('sms')
 }

@@ -68,7 +68,7 @@ function displayTime(value?: string): string {
   }).format(date)
 }
 
-export async function startEmail(root: HTMLElement, client: HostHttpClient, context: HostContext, options?: { embedded?: boolean }): Promise<void> {
+export async function startEmail(root: HTMLElement, client: HostHttpClient, context: HostContext, options?: { embedded?: boolean; mounts?: { data: HTMLElement } }): Promise<void> {
   const state = statusLine()
   const canManage = context.permissions.includes('platform.email.manage')
   let metadataError = ''
@@ -275,8 +275,9 @@ export async function startEmail(root: HTMLElement, client: HostHttpClient, cont
     editor.open()
   }
 
-  const children = [state.element, card]
-  if (options?.embedded) root.replaceChildren(...children)
+  const children = [card]
+  if (options?.mounts) options.mounts.data.replaceChildren(...children)
+  else if (options?.embedded) root.replaceChildren(...children)
   else root.replaceChildren(page({ showSummary: false, children }))
   void load()
 }

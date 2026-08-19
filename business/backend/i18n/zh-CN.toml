@@ -1,0 +1,10 @@
+[errors]
+"platform.i18n.invalid" = "请求不合法"
+"platform.i18n.not_found" = "翻译条目不存在"
+"platform.i18n.conflict" = "版本冲突，请刷新后重试"
+"platform.i18n.entity_unknown" = "未知的可翻译类型"
+"platform.i18n.locale_unknown" = "不是平台目标语言"
+"platform.i18n.provider_key" = "机器翻译密钥未配置"
+"platform.i18n.unavailable" = "翻译服务暂不可用"
+"common.internal_error" = "服务暂时不可用"
+"common.invalid_param" = "请求参数不合法"
