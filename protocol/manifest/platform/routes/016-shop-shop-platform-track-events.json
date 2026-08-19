@@ -1,0 +1,53 @@
+{
+  "surface": "shop",
+  "prefix": "/shop/platform",
+  "operations": [
+    {
+      "id": "platform.shop.health.get",
+      "method": "GET",
+      "path": "/shop/platform/health",
+      "summary": "店铺面存活检查",
+      "description": "Shop HTTP 面存活探测，不校验 Module Capability。",
+      "authentication": "public",
+      "idempotency": "safe",
+      "requiredPermissions": [],
+      "requestFields": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "存活",
+          "fields": [
+            { "name": "status", "type": "string", "description": "ok" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform.shop.track-events.create",
+      "method": "POST",
+      "path": "/shop/platform/track-events",
+      "summary": "上报店铺埋点事件",
+      "description": "最多 100 条、512KiB。租户与主体取 Module Capability；event_id 去重；非法行逐条拒绝。不接受 appId / commercialId / uid。",
+      "authentication": "module-session",
+      "idempotency": "idempotent",
+      "requiredPermissions": [
+        "platform.track-event.write"
+      ],
+      "requestFields": [
+        { "name": "events", "location": "body", "type": "array", "required": true, "description": "埋点事件数组" }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "受理结果",
+          "fields": [
+            { "name": "accepted", "type": "integer", "description": "新写入条数" },
+            { "name": "duplicates", "type": "integer", "description": "去重条数" },
+            { "name": "rejected", "type": "integer", "description": "校验拒绝条数" },
+            { "name": "errors", "type": "array", "description": "逐行错误" }
+          ]
+        }
+      ]
+    }
+  ]
+}

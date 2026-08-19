@@ -204,7 +204,7 @@ func (u *UseCase) Dispatch(ctx context.Context, caller notifymodel.Caller, input
 	if event.Policy.DispatchMode == notifymodel.ModeScheduled && input.NotBefore.Before(u.clock()) {
 		return notifymodel.DispatchResult{}, notifymodel.ErrInvalid
 	}
-	channels := notifymodel.EnabledChannels(event.Policy, event.AllowedChannels)
+	channels := notifymodel.ChannelsWithRecipient(notifymodel.EnabledChannels(event.Policy, event.AllowedChannels), input.Recipients)
 	results, pending, err := u.repository.PrepareDeliveries(ctx, input, event, channels, notifymodel.RequestHash(input))
 	if err != nil {
 		return notifymodel.DispatchResult{}, err

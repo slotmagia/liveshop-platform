@@ -10,6 +10,7 @@ import (
 	notifymodel "github.com/liveshop-platform/module-platform/internal/biz/capability/notification/model"
 	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
 	storagemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/storage/model"
+	telemmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/telemetry/model"
 	"github.com/liveshop-platform/module-platform/internal/biz/model"
 )
 
@@ -58,6 +59,8 @@ var domainStatus = []struct {
 	{locmodel.ErrNotFound, http.StatusNotFound},
 	{locmodel.ErrConflict, http.StatusConflict},
 	{locmodel.ErrUnavailable, http.StatusServiceUnavailable},
+	{telemmodel.ErrInvalid, http.StatusBadRequest},
+	{telemmodel.ErrForbidden, http.StatusForbidden},
 
 	{model.ErrUnavailable, http.StatusServiceUnavailable},
 }

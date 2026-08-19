@@ -1,6 +1,6 @@
-import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, dataCard, notify, page, searchCard, searchForm, table } from '@liveshop/design-tokens'
+import type { HostContext, HostHttpClient } from '@liveshops/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshops/host-sdk'
+import { badge, button, dataCard, notify, page, searchCard, searchForm, table } from '@liveshops/design-tokens'
 
 interface DriverDefinition { code: string; name: string; description: string }
 interface LocaleItem { code: string; label: string }

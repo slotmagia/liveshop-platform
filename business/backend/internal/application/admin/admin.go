@@ -14,6 +14,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/telemetry"
 	"github.com/lvtuopen-ai/kernel-go/modulesession"
 )
 
@@ -28,6 +29,7 @@ type Config struct {
 	Storage        *storage.UseCase
 	Notification   *notification.UseCase
 	Localization   *localization.UseCase
+	Telemetry      *telemetry.UseCase
 	Edge           *edge.UseCase
 	ModuleSessions *modulesession.Verifier
 }
@@ -46,6 +48,7 @@ func New(config Config) Surface {
 			Storage:      config.Storage,
 			Notification: config.Notification,
 			Localization: config.Localization,
+			Telemetry:    config.Telemetry,
 			Edge:         config.Edge,
 		}),
 		ModuleSessions: config.ModuleSessions,

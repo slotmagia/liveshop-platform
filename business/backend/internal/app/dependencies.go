@@ -19,6 +19,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/telemetry"
 	"github.com/liveshop-platform/module-platform/internal/common/edgehttp"
 	"github.com/liveshop-platform/module-platform/internal/common/emailsender"
 	"github.com/liveshop-platform/module-platform/internal/common/notifysender"
@@ -47,6 +48,7 @@ type Dependencies struct {
 	Storage      *storage.UseCase
 	Notification *notification.UseCase
 	Localization *localization.UseCase
+	Telemetry    *telemetry.UseCase
 	Edge         *edge.UseCase
 
 	Workloads      *workloadidentity.Verifier
@@ -110,7 +112,7 @@ func NewDependencies(cfg *config.Config) (Dependencies, error) {
 		},
 	})
 	return Dependencies{
-		Release: release, Settings: settings, Audit: biz.NewAudit(adapters.audit), LiveProvider: liveprovider.New(adapters.liveProvider), SMS: smsUse, Email: emailUse, Storage: storage.New(adapters.storage, storagesender.New()), Notification: notifyUse, Localization: localization.New(adapters.localization, localization.NoopTranslator{}), Edge: edgeUse,
+		Release: release, Settings: settings, Audit: biz.NewAudit(adapters.audit), LiveProvider: liveprovider.New(adapters.liveProvider), SMS: smsUse, Email: emailUse, Storage: storage.New(adapters.storage, storagesender.New()), Notification: notifyUse, Localization: localization.New(adapters.localization, localization.NoopTranslator{}), Telemetry: telemetry.New(adapters.telemetry), Edge: edgeUse,
 		Workloads: tokens.workloads, ModuleVerifier: tokens.moduleVerifier,
 		Ready: database.PingContext, shutdown: database.Close,
 	}, nil
@@ -166,6 +168,7 @@ type stores struct {
 	storage      *mysql.StorageRepository
 	notification *mysql.NotificationRepository
 	localization *mysql.LocalizationRepository
+	telemetry    *mysql.TelemetryRepository
 }
 
 // newStores gates every adapter behind one reachability check and one schema
@@ -188,6 +191,7 @@ func newStores(ctx context.Context, database *sql.DB, box *secretbox.Box) (store
 		storage:      mysql.NewStorageRepository(database, box),
 		notification: mysql.NewNotificationRepository(database),
 		localization: mysql.NewLocalizationRepository(database, box),
+		telemetry:    mysql.NewTelemetryRepository(database),
 	}, nil
 }
 

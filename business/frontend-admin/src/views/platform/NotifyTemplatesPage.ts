@@ -1,6 +1,6 @@
-import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
+import type { HostContext, HostHttpClient, HostModalField } from '@liveshops/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshops/host-sdk'
+import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshops/design-tokens'
 
 interface NotifyTemplate {
   code: string
@@ -96,43 +96,99 @@ export async function startNotifyTemplates(root: HTMLElement, client: HostHttpCl
     } finally { filter.setBusy(false) }
   }
 
-  function openEditor(current?: NotifyTemplate): void {
-    const channel = current?.channel || 'SMS'
-    const editor = hostFormModal({
-      title: current ? `编辑模板 · ${current.code}` : '新增模板',
-      fields: [
-        { name: 'code', label: '编码', required: true, disabled: Boolean(current), placeholder: 'identity.auth.otp.requested.sms' },
-        { name: 'channel', label: '渠道', kind: 'select', required: true, disabled: Boolean(current), options: channels },
-        { name: 'textTemplate', label: 'SMS 正文（占位符写成 {{code}}，必须是事件已声明变量）', kind: 'textarea', wide: true, rows: 4, placeholder: '您的验证码是 {{code}}，{{ttlSeconds}} 秒内有效' },
-        { name: 'subject', label: 'EMAIL 主题（可用 {{code}}）', wide: true },
-        { name: 'bodyHtml', label: 'EMAIL HTML', kind: 'textarea', wide: true, rows: 6 },
-        { name: 'title', label: 'IN_APP 标题', wide: true },
-        { name: 'body', label: 'IN_APP 正文', kind: 'textarea', wide: true, rows: 4 },
-      ],
-      submitLabel: '保存',
-      onSubmit: (form, modal) => {
-        const code = (form.code || '').trim().toLowerCase()
-        if (!/^[a-z][a-z0-9._-]{1,63}$/.test(code)) { modal.setError('编码须为小写字母开头的 2–64 位 [a-z0-9._-]。'); return }
-        modal.setBusy(true)
-        client.request(`${prefix}/${encodeURIComponent(code)}`, {
-          method: 'PUT',
-          body: JSON.stringify({
-            commandKey: randomUUID(), expectedVersion: current?.version || 0, channel: form.channel,
-            textTemplate: form.textTemplate || '', subject: form.subject || '', bodyHtml: form.bodyHtml || '',
-            title: form.title || '', body: form.body || '',
-          }),
-        }).then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
-      },
-    })
-    editor.open({
-      code: current?.code || '',
+  function channelSelector(disabled: boolean): HostModalField {
+    return { name: 'channel', label: '渠道', kind: 'select', required: true, disabled, options: channels }
+  }
+
+  function editorFields(channel: string, current?: NotifyTemplate, carried: Record<string, string> = {}): {
+    fields: HostModalField[]
+    values: Record<string, string>
+  } {
+    const fields: HostModalField[] = [
+      { name: 'code', label: '编码', required: true, disabled: Boolean(current), placeholder: 'identity.auth.otp.requested.sms' },
+      channelSelector(Boolean(current)),
+    ]
+    const values: Record<string, string> = {
+      code: carried.code || current?.code || '',
       channel,
+      textTemplate: carried.textTemplate || current?.textTemplate || '',
+      subject: carried.subject || current?.subject || '',
+      bodyHtml: carried.bodyHtml || current?.bodyHtml || '',
+      title: carried.title || current?.title || '',
+      body: carried.body || current?.body || '',
+    }
+    if (channel === 'SMS') {
+      fields.push({
+        name: 'textTemplate', required: true, wide: true, kind: 'textarea', rows: 4,
+        label: 'SMS 正文（占位符写成 {{code}}，必须是事件已声明变量）',
+        placeholder: '您的验证码是 {{code}}，{{ttlSeconds}} 秒内有效',
+      })
+    } else if (channel === 'EMAIL') {
+      fields.push(
+        { name: 'subject', label: 'EMAIL 主题（可用 {{code}}）', required: true, wide: true },
+        { name: 'bodyHtml', label: 'EMAIL HTML', required: true, kind: 'textarea', wide: true, rows: 6 },
+      )
+    } else if (channel === 'IN_APP') {
+      fields.push(
+        { name: 'title', label: 'IN_APP 标题', required: true, wide: true },
+        { name: 'body', label: 'IN_APP 正文', required: true, kind: 'textarea', wide: true, rows: 4 },
+      )
+    }
+    return { fields, values }
+  }
+
+  function openEditor(current?: NotifyTemplate): void {
+    const draft: Record<string, string> = {
+      code: current?.code || '',
+      channel: current?.channel || 'SMS',
       textTemplate: current?.textTemplate || '',
       subject: current?.subject || '',
       bodyHtml: current?.bodyHtml || '',
       title: current?.title || '',
       body: current?.body || '',
+    }
+    const remember = (form: Record<string, string>) => {
+      draft.code = form.code ?? draft.code
+      draft.channel = form.channel || draft.channel
+      if ('textTemplate' in form) draft.textTemplate = form.textTemplate
+      if ('subject' in form) draft.subject = form.subject
+      if ('bodyHtml' in form) draft.bodyHtml = form.bodyHtml
+      if ('title' in form) draft.title = form.title
+      if ('body' in form) draft.body = form.body
+    }
+    const editor = hostFormModal({
+      title: current ? `编辑模板 · ${current.code}` : '新增模板',
+      fields: editorFields(draft.channel, current, draft).fields,
+      submitLabel: '保存',
+      onChange: (form, field, modal) => {
+        if (field !== 'channel') return
+        remember(form)
+        const generated = editorFields(form.channel, current, draft)
+        modal.setFields(generated.fields, generated.values, current ? `编辑模板 · ${current.code}` : `新增模板 · ${form.channel}`)
+      },
+      onSubmit: (form, modal) => {
+        remember(form)
+        const code = (draft.code || '').trim().toLowerCase()
+        if (!/^[a-z][a-z0-9._-]{1,63}$/.test(code)) { modal.setError('编码须为小写字母开头的 2–64 位 [a-z0-9._-]。'); return }
+        if (draft.channel === 'SMS' && !draft.textTemplate.trim()) { modal.setError('请填写 SMS 正文。'); return }
+        if (draft.channel === 'EMAIL' && (!draft.subject.trim() || !draft.bodyHtml.trim())) { modal.setError('请填写 EMAIL 主题和 HTML。'); return }
+        if (draft.channel === 'IN_APP' && (!draft.title.trim() || !draft.body.trim())) { modal.setError('请填写 IN_APP 标题和正文。'); return }
+        modal.setBusy(true)
+        client.request(`${prefix}/${encodeURIComponent(code)}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            commandKey: randomUUID(), expectedVersion: current?.version || 0, channel: draft.channel,
+            textTemplate: draft.channel === 'SMS' ? draft.textTemplate : '',
+            subject: draft.channel === 'EMAIL' ? draft.subject : '',
+            bodyHtml: draft.channel === 'EMAIL' ? draft.bodyHtml : '',
+            title: draft.channel === 'IN_APP' ? draft.title : '',
+            body: draft.channel === 'IN_APP' ? draft.body : '',
+          }),
+        }).then(() => { modal.close(); return load() }).catch(error => modal.setError(String(error))).finally(() => modal.setBusy(false))
+      },
     })
+    const generated = editorFields(draft.channel, current, draft)
+    editor.open(generated.values, current ? `编辑模板 · ${current.code}` : `新增模板 · ${draft.channel}`)
   }
 
   function retire(item: NotifyTemplate): void {

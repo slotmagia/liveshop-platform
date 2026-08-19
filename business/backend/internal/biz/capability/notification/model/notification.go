@@ -285,6 +285,42 @@ func EnabledChannels(policy Policy, allowed []Channel) []Channel {
 	return output
 }
 
+func ChannelsWithRecipient(channels []Channel, recipients Recipients) []Channel {
+	output := make([]Channel, 0, len(channels))
+	for _, channel := range channels {
+		if _, ok := RecipientFor(channel, recipients); ok {
+			output = append(output, channel)
+		}
+	}
+	return output
+}
+
+func ConventionalTemplateCode(eventKey string, channel Channel) string {
+	return strings.ToLower(strings.TrimSpace(eventKey)) + "." + strings.ToLower(string(channel))
+}
+
+func BindEmptyPolicyTemplates(policy *Policy, allowed []Channel, lookup func(code string) (LibraryTemplate, bool)) {
+	if policy == nil {
+		return
+	}
+	if policy.Channels == nil {
+		policy.Channels = map[Channel]ChannelPolicy{}
+	}
+	for _, channel := range allowed {
+		current := policy.Channels[channel]
+		if strings.TrimSpace(current.TemplateCode) != "" {
+			continue
+		}
+		code := ConventionalTemplateCode(policy.EventKey, channel)
+		item, ok := lookup(code)
+		if !ok || item.Lifecycle != TemplateActive || item.Channel != channel {
+			continue
+		}
+		current.TemplateCode = code
+		policy.Channels[channel] = current
+	}
+}
+
 func TemplateCodeFor(policy Policy, channel Channel) string {
 	return strings.TrimSpace(policy.Channels[channel].TemplateCode)
 }

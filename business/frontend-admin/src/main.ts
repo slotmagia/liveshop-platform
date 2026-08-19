@@ -1,4 +1,5 @@
-import { connectToHost, iframeHttpClient } from '@liveshop/host-sdk'
+import { connectToHost, iframeHttpClient } from '@liveshops/host-sdk'
+import '@liveshops/design-tokens/console.css'
 import './style.css'
 import { mountPlatformAdmin } from './views/platform/PlatformAdminPage'
 import { renderPlaceholder } from '../../ui/placeholder'

@@ -1,4 +1,6 @@
-@import '@liveshop/design-tokens/console.css';
+/* console.css is imported from main.ts so Vite's JS resolver always emits it.
+   A CSS @import of the same package was dropped in the Alpine production
+   build, which left search/tabs/table as unstyled native controls. */
 
 .ls-ui-table-toolbar .ls-ui-tabs { margin: 0; }
 

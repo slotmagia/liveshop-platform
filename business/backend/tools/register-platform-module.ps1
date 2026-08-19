@@ -21,7 +21,7 @@ $sha256 = [Security.Cryptography.SHA256]::Create()
 try { $hash = $sha256.ComputeHash($bytes) } finally { $sha256.Dispose() }
 $digest = 'sha256:' + (($hash | ForEach-Object { $_.ToString('x2') }) -join '')
 $manifest = $manifest.Replace('sha256:dev-platform-control', $digest)
-$version = ($manifest | ConvertFrom-Json).metadata.version
+$manifestObject = $manifest | ConvertFrom-Json
 $env:WORKLOAD_PRIVATE_KEY = 'MEdxJQh5ZzEe9NhL8TQ7G5rCqZ1Cr00n6DVMiCayO_8'
 $env:WORKLOAD_KEY_ID = 'ci-workload-dev-1'
 $env:WORKLOAD_ISSUER = 'liveshop-workload-identity'
@@ -31,9 +31,5 @@ $kernelRoot = [IO.Path]::GetFullPath((Join-Path $root '..\..\kernel-go'))
 $token = & go -C $kernelRoot run ./cmd/workloadtoken
 if ($LASTEXITCODE -ne 0 -or -not $token) { throw 'Failed to issue platform module CI identity.' }
 $headers = @{Authorization="Bearer $token"}
-$manifestBytes = [Text.Encoding]::UTF8.GetBytes($manifest)
-$release = Invoke-RestMethod -Method Post -Uri "$PlatformUrl/internal/v1/module-registry/releases" -Headers $headers -ContentType 'application/json; charset=utf-8' -Body $manifestBytes
-$body = @{moduleId='platform';version=$version} | ConvertTo-Json -Compress
-$activation = Invoke-RestMethod -Method Post -Uri "$PlatformUrl/internal/v1/module-registry/activate" -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body))
-if ($release.code -ne 0 -or $activation.code -ne 0) { throw 'Platform Control Plane module registration failed.' }
-Write-Output "Platform Control Plane $version registered and activated. digest=$($release.data.digest)"
+. (Join-Path $PSScriptRoot '..\..\..\..\register-local-release.ps1')
+Publish-LocalModuleRelease -PlatformUrl $PlatformUrl -ModuleId 'platform' -Manifest $manifestObject -Headers $headers

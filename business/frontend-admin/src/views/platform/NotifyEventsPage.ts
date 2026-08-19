@@ -1,6 +1,6 @@
-import type { HostContext, HostHttpClient, HostModalField } from '@liveshop/host-sdk'
-import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
+import type { HostContext, HostHttpClient, HostModalField } from '@liveshops/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshops/host-sdk'
+import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, ui } from '@liveshops/design-tokens'
 
 interface NotifyChannelPolicy {
   enabled: boolean

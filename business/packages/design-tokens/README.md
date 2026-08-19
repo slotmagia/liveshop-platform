@@ -1,4 +1,4 @@
-# `@liveshop/design-tokens`
+# `@liveshops/design-tokens`
 
 LiveShop 所有前端界面唯一的视觉与组件契约。视觉基线是既有后台 UI（Stripe 风格 indigo `#635bff` + 中性画布，Inter / JetBrains Mono）。
 
@@ -13,14 +13,14 @@ LiveShop 所有前端界面唯一的视觉与组件契约。视觉基线是既�
 
 | 入口 | 内容 | 谁用 |
 | --- | --- | --- |
-| `@liveshop/design-tokens/console.css` | 令牌 + 后台组件层 | 总后台、商户后台及其 contribution |
-| `@liveshop/design-tokens/storefront.css` | 令牌 + C 端组件层 | 商城 Host、直播 Host |
-| `@liveshop/design-tokens/tokens.css` | 只有 CSS 变量和基础 reset | 需要自带组件层的场景 |
-| `@liveshop/design-tokens/tailwind-preset` | Tailwind theme：色阶、圆角、阴影、字体全部指回令牌 | 用 React + Tailwind 写的后台界面 |
-| `@liveshop/design-tokens/tailwind.css` | `@tailwind` 三段指令 + 基线层与密集工具条按钮 | 同上，在 `console.css` 之后导入 |
-| `@liveshop/design-tokens/*.components.css` | 只有组件层，不含令牌 | remote-esm contribution：Host 文档里已有令牌，重复导入会放大产物 |
-| `@liveshop/design-tokens` | `ui` 类名契约 + 后台组件工厂 | 写后台页面的地方 |
-| `@liveshop/design-tokens/storefront` | `shopUI` 类名契约 + C 端组件工厂 | 写商城/直播页面的地方 |
+| `@liveshops/design-tokens/console.css` | 令牌 + 后台组件层 | 总后台、商户后台及其 contribution |
+| `@liveshops/design-tokens/storefront.css` | 令牌 + C 端组件层 | 商城 Host、直播 Host |
+| `@liveshops/design-tokens/tokens.css` | 只有 CSS 变量和基础 reset | 需要自带组件层的场景 |
+| `@liveshops/design-tokens/tailwind-preset` | Tailwind theme：色阶、圆角、阴影、字体全部指回令牌 | 用 React + Tailwind 写的后台界面 |
+| `@liveshops/design-tokens/tailwind.css` | `@tailwind` 三段指令 + 基线层与密集工具条按钮 | 同上，在 `console.css` 之后导入 |
+| `@liveshops/design-tokens/*.components.css` | 只有组件层，不含令牌 | remote-esm contribution：Host 文档里已有令牌，重复导入会放大产物 |
+| `@liveshops/design-tokens` | `ui` 类名契约 + 后台组件工厂 | 写后台页面的地方 |
+| `@liveshops/design-tokens/storefront` | `shopUI` 类名契约 + C 端组件工厂 | 写商城/直播页面的地方 |
 
 ## 规则
 
@@ -59,8 +59,8 @@ LiveShop 所有前端界面唯一的视觉与组件契约。视觉基线是既�
 - iframe 不得使用 HTML Fullscreen API、读取父窗口 DOM、自行拼接外围遮罩，或直接创建第二套 modal/backdrop CSS。Host 校验 source、origin、protocol 和 `requestId`，同一时刻只保留一个顶层模态框，并在 iframe 卸载时强制清理。
 
 ```js
-import { hostFormModal } from '@liveshop/host-sdk'
-import { button, notify, page, searchCard, searchForm, table, dataCard } from '@liveshop/design-tokens'
+import { hostFormModal } from '@liveshops/host-sdk'
+import { button, notify, page, searchCard, searchForm, table, dataCard } from '@liveshops/design-tokens'
 
 const editor = hostFormModal({
   title: '新建账户',
@@ -110,7 +110,7 @@ root.replaceChildren(page({
 `hero` `section` `productCard` `productGrid` `price` `cta` `tag` `optionList` `panel` `overlay` `livePill` `messageList` `sheet` `emptyState` `skeleton` `create`。
 
 ```js
-import { cta, price, productCard, productGrid } from '@liveshop/design-tokens/storefront'
+import { cta, price, productCard, productGrid } from '@liveshops/design-tokens/storefront'
 
 productGrid(items.map((item) => productCard({
   title: item.title,

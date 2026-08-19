@@ -7,7 +7,7 @@
     "frontend-admin"
   ],
   "scripts": {
-    "build:packages": "npm run test --workspace=@liveshop/design-tokens && npm run build --workspace=@liveshop/host-sdk",
+    "build:packages": "npm run test --workspace=@liveshops/design-tokens && npm run build --workspace=@liveshops/host-sdk",
     "build:platform-contributions": "npm run build --workspace=@liveshop/platform-admin",
     "build": "npm run build:packages && npm run build:platform-contributions",
     "typecheck": "npm run typecheck --workspaces --if-present"

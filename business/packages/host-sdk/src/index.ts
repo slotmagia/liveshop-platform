@@ -68,6 +68,7 @@ export interface HostContext {
   locale: string
   permissions: string[]
   tenant?: { merchantId: number; shopId: number }
+  shopCode?: string
   theme: { mode: 'light' | 'dark' }
 }
 

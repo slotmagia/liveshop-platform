@@ -1,0 +1,60 @@
+{
+  "id": "platform.admin.track-events",
+  "surface": "admin",
+  "kind": "page",
+  "route": "/track-events",
+  "title": "上报事件",
+  "icon": "radar",
+  "description": "只读浏览跨店铺原始埋点事件。租户键为商户 ID 与店铺 ID；事件由店铺端上报，本页不改写或删除。",
+  "sort": 100,
+  "navigation": {
+    "groupId": "legacy-admin-monitor",
+    "groupTitle": "监控",
+    "groupIcon": "activity",
+    "groupSort": 400
+  },
+  "requiredPermissions": [
+    "platform.track-event.read"
+  ],
+  "allowedRoutes": [
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/admin/platform/track-events",
+      "requiredPermissions": [
+        "platform.track-event.read"
+      ]
+    }
+  ],
+  "artifact": {
+    "type": "iframe",
+    "name": "@liveshop/platform-admin",
+    "version": "6.1.0",
+    "entry": "http://127.0.0.1:15180",
+    "integrity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "frontend": {
+    "component": "TrackEventsPage",
+    "props": [],
+    "events": [],
+    "actions": [
+      {
+        "id": "refresh-track-events",
+        "label": "刷新",
+        "description": "按当前筛选重新加载上报事件。",
+        "invocation": "http",
+        "target": "platform.admin.track-events.list",
+        "parameters": [
+          { "name": "merchantId", "type": "integer", "description": "商户 ID" },
+          { "name": "shopId", "type": "integer", "description": "店铺 ID" },
+          { "name": "page", "type": "integer", "description": "页码" },
+          { "name": "pageSize", "type": "integer", "description": "每页条数" }
+        ],
+        "requiredPermissions": [
+          "platform.track-event.read"
+        ]
+      }
+    ]
+  }
+}

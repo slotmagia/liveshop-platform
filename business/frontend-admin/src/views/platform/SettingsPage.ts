@@ -1,5 +1,5 @@
-import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { badge, button, buttonClass, create, dataCard, emptyState, field, page, statusLine, ui } from '@liveshop/design-tokens'
+import type { HostContext, HostHttpClient } from '@liveshops/host-sdk'
+import { badge, button, buttonClass, create, dataCard, emptyState, field, page, statusLine, ui } from '@liveshops/design-tokens'
 
 type FieldType = 'TEXT' | 'NUMBER' | 'BOOL' | 'SELECT' | 'TEXTAREA'
 

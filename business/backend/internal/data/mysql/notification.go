@@ -53,6 +53,9 @@ func (r *NotificationRepository) Project(ctx context.Context, revision uint64, d
 				projectionCommandKey(declaration.EventKey)); err != nil {
 				return err
 			}
+			if err := bindConventionalPolicyTemplates(ctx, tx, declaration.EventKey); err != nil {
+				return err
+			}
 			seen = append(seen, declaration.EventKey)
 		}
 		if len(seen) == 0 {
@@ -611,6 +614,18 @@ func replayNotifyCommand(ctx context.Context, tx *sql.Tx, commandKey, requestHas
 func insertNotifyCommand(ctx context.Context, tx *sql.Tx, commandKey, requestHash, action, kind, resourceID string, version int64) error {
 	_, err := tx.ExecContext(ctx, `INSERT INTO platform_notify_command(command_key,request_hash,action,resource_kind,resource_id,result_version) VALUES(?,?,?,?,?,?)`,
 		commandKey, requestHash, action, kind, resourceID, version)
+	return err
+}
+
+func bindConventionalPolicyTemplates(ctx context.Context, tx *sql.Tx, eventKey string) error {
+	_, err := tx.ExecContext(ctx, `UPDATE platform_notify_event_policy p
+		LEFT JOIN platform_notify_template_library sms ON sms.code=CONCAT(LOWER(p.event_key), '.sms') AND sms.channel='SMS' AND sms.lifecycle='ACTIVE'
+		LEFT JOIN platform_notify_template_library email ON email.code=CONCAT(LOWER(p.event_key), '.email') AND email.channel='EMAIL' AND email.lifecycle='ACTIVE'
+		LEFT JOIN platform_notify_template_library inapp ON inapp.code=CONCAT(LOWER(p.event_key), '.in_app') AND inapp.channel='IN_APP' AND inapp.lifecycle='ACTIVE'
+		SET p.template_sms=IF(p.template_sms='', COALESCE(sms.code, ''), p.template_sms),
+		    p.template_email=IF(p.template_email='', COALESCE(email.code, ''), p.template_email),
+		    p.template_in_app=IF(p.template_in_app='', COALESCE(inapp.code, ''), p.template_in_app)
+		WHERE p.event_key=? AND p.version=1`, eventKey)
 	return err
 }
 

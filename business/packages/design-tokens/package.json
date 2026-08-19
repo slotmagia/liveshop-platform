@@ -1,9 +1,14 @@
 {
-  "name": "@liveshop/design-tokens",
+  "name": "@liveshops/design-tokens",
   "version": "1.5.3",
+  "description": "LiveShop visual tokens and shared console/storefront component factories.",
   "type": "module",
   "scripts": {
     "test": "node --test *-contract.test.mjs"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "exports": {
     ".": {
@@ -35,7 +40,6 @@
     "nav-icons.js",
     "storefront.js",
     "storefront.d.ts",
-    "README.md",
-    "modal-contract.test.mjs"
+    "README.md"
   ]
 }

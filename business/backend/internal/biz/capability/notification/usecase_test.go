@@ -259,6 +259,74 @@ func TestReplacePolicyRejectsTemplateVariableSuperset(t *testing.T) {
 	}
 }
 
+func TestDispatchSkipsChannelWithoutRecipient(t *testing.T) {
+	usecase, _ := setupUseCase(t, stubSender{})
+	scope := notifymodel.Scope{Realm: "PLATFORM", Subject: "op"}
+	if _, err := usecase.UpsertLibraryTemplate(context.Background(), scope, notifymodel.UpsertLibraryTemplate{
+		Code: "identity.auth.otp.requested.sms", Channel: notifymodel.ChannelSMS, CommandKey: "lib-skip-sms", ExpectedVersion: 0,
+		TextTemplate: "code {{code}} ttl {{ttlSeconds}}", Variables: []string{"code", "ttlSeconds"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := usecase.UpsertLibraryTemplate(context.Background(), scope, notifymodel.UpsertLibraryTemplate{
+		Code: "identity.auth.otp.requested.email", Channel: notifymodel.ChannelEmail, CommandKey: "lib-skip-email", ExpectedVersion: 0,
+		Subject: "login", BodyHTML: "<p>{{code}} {{ttlSeconds}}</p>", Variables: []string{"code", "ttlSeconds"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	event, err := usecase.GetEvent(context.Background(), "identity.auth.otp.requested")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := usecase.ReplacePolicy(context.Background(), scope, notifymodel.ReplacePolicy{
+		EventKey: event.EventKey, CommandKey: "pol-skip", ExpectedVersion: event.Policy.Version, DispatchMode: event.Policy.DispatchMode,
+		Channels: map[notifymodel.Channel]notifymodel.ChannelPolicy{
+			notifymodel.ChannelSMS:   {Enabled: true, TemplateCode: "identity.auth.otp.requested.sms"},
+			notifymodel.ChannelEmail: {Enabled: true, TemplateCode: "identity.auth.otp.requested.email"},
+		},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	result, err := usecase.Dispatch(context.Background(), notifymodel.Caller{ModuleID: "identity", Subject: "identity"}, notifymodel.DispatchInput{
+		EventKey: "identity.auth.otp.requested", DeliveryKey: "identity.auth.otp.requested:skip-email", MerchantID: 1, ShopID: 1,
+		Recipients: notifymodel.Recipients{Email: "a@example.com"}, Variables: map[string]string{"code": "123456", "ttlSeconds": "60"},
+	})
+	if err != nil || len(result.Deliveries) != 1 || result.Deliveries[0].Channel != notifymodel.ChannelEmail || result.Deliveries[0].Status != notifymodel.StatusSent {
+		t.Fatalf("result=%#v err=%v", result, err)
+	}
+}
+
+func TestProjectBindsConventionalLibraryTemplates(t *testing.T) {
+	repo := newMemoryRepository()
+	scope := notifymodel.Scope{Realm: "PLATFORM", Subject: "op"}
+	usecase := New(repo, stubSender{})
+	if _, err := usecase.UpsertLibraryTemplate(context.Background(), scope, notifymodel.UpsertLibraryTemplate{
+		Code: "identity.auth.otp.requested.sms", Channel: notifymodel.ChannelSMS, CommandKey: "lib-bind-sms", ExpectedVersion: 0,
+		TextTemplate: "code {{code}} ttl {{ttlSeconds}}", Variables: []string{"code", "ttlSeconds"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := usecase.UpsertLibraryTemplate(context.Background(), scope, notifymodel.UpsertLibraryTemplate{
+		Code: "identity.auth.otp.requested.email", Channel: notifymodel.ChannelEmail, CommandKey: "lib-bind-email", ExpectedVersion: 0,
+		Subject: "login", BodyHTML: "<p>{{code}}</p>", Variables: []string{"code", "ttlSeconds"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.Project(context.Background(), 3, []notifymodel.Declaration{testEvent()}); err != nil {
+		t.Fatal(err)
+	}
+	event, err := usecase.GetEvent(context.Background(), "identity.auth.otp.requested")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if event.Policy.Channels[notifymodel.ChannelSMS].TemplateCode != "identity.auth.otp.requested.sms" {
+		t.Fatalf("sms template=%q", event.Policy.Channels[notifymodel.ChannelSMS].TemplateCode)
+	}
+	if event.Policy.Channels[notifymodel.ChannelEmail].TemplateCode != "identity.auth.otp.requested.email" {
+		t.Fatalf("email template=%q", event.Policy.Channels[notifymodel.ChannelEmail].TemplateCode)
+	}
+}
+
 func TestLibraryTemplateReuseSendsSMS(t *testing.T) {
 	usecase, _ := setupUseCase(t, stubSender{})
 	seedSMSTemplate(t, usecase, "reuse")

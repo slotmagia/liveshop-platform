@@ -48,7 +48,7 @@ func generate(output string, force bool, owner int) error {
 				}
 			}
 			if err := validateExistingBundle(output, time.Now()); err != nil {
-				return fmt.Errorf("existing local gRPC trust bundle is unusable; run the local deployment with -Fresh: %w", err)
+				return fmt.Errorf("existing local gRPC trust bundle is unusable; rotate certificates with -force and keep MySQL volumes: %w", err)
 			}
 			if owner >= 0 {
 				if err := setBundleOwner(output, owner, owner); err != nil {
@@ -74,7 +74,7 @@ func generate(output string, force bool, owner int) error {
 		SerialNumber:          serial(),
 		Subject:               pkix.Name{CommonName: "LiveShop local workload CA"},
 		NotBefore:             now.Add(-time.Minute),
-		NotAfter:              now.Add(24 * time.Hour),
+		NotAfter:              now.Add(365 * 24 * time.Hour),
 		IsCA:                  true,
 		BasicConstraintsValid: true,
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
@@ -94,7 +94,7 @@ func generate(output string, force bool, owner int) error {
 		SerialNumber: serial(),
 		Subject:      pkix.Name{CommonName: "platform"},
 		NotBefore:    now.Add(-time.Minute),
-		NotAfter:     now.Add(24 * time.Hour),
+		NotAfter:     now.Add(365 * 24 * time.Hour),
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		DNSNames:     []string{"platform", "localhost"},
@@ -103,7 +103,7 @@ func generate(output string, force bool, owner int) error {
 	if err := issue(output, "server", serverTemplate, caCertificate, caKey); err != nil {
 		return err
 	}
-	identityServer := &x509.Certificate{SerialNumber: serial(), Subject: pkix.Name{CommonName: "identity"}, NotBefore: now.Add(-time.Minute), NotAfter: now.Add(24 * time.Hour), KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}, DNSNames: []string{"identity", "localhost"}, IPAddresses: []net.IP{net.ParseIP("127.0.0.1")}}
+	identityServer := &x509.Certificate{SerialNumber: serial(), Subject: pkix.Name{CommonName: "identity"}, NotBefore: now.Add(-time.Minute), NotAfter: now.Add(365 * 24 * time.Hour), KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}, DNSNames: []string{"identity", "localhost"}, IPAddresses: []net.IP{net.ParseIP("127.0.0.1")}}
 	if err := issue(output, "identity-server", identityServer, caCertificate, caKey); err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func generate(output string, force bool, owner int) error {
 			SerialNumber: serial(),
 			Subject:      pkix.Name{CommonName: workload.name},
 			NotBefore:    now.Add(-time.Minute),
-			NotAfter:     now.Add(24 * time.Hour),
+			NotAfter:     now.Add(365 * 24 * time.Hour),
 			KeyUsage:     x509.KeyUsageDigitalSignature,
 			ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			URIs:         []*url.URL{identity},
@@ -196,7 +196,7 @@ func validateExistingBundle(output string, now time.Time) error {
 // so being root is not sufficient on its own: ownership has to come back before
 // the bundle can be replaced. Existing files are removed rather than truncated,
 // because their mode is 0600 under the previous owner. Without this the bundle
-// could be written exactly once per volume, and it expires after 24 hours.
+// could be written exactly once per volume, and it expires after one year.
 func reclaim(output string, owner int) error {
 	if owner >= 0 {
 		if err := os.Chown(output, os.Getuid(), os.Getgid()); err != nil {

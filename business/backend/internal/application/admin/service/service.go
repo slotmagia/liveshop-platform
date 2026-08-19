@@ -13,6 +13,7 @@ import (
 	notifymodel "github.com/liveshop-platform/module-platform/internal/biz/capability/notification/model"
 	smsmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/sms/model"
 	storagemodel "github.com/liveshop-platform/module-platform/internal/biz/capability/storage/model"
+	telemmodel "github.com/liveshop-platform/module-platform/internal/biz/capability/telemetry/model"
 	"github.com/liveshop-platform/module-platform/internal/biz/model"
 )
 
@@ -105,4 +106,8 @@ type I18n interface {
 	ListI18nTexts(context.Context, string, string) ([]locmodel.WorklistRow, error)
 	PublishI18nText(context.Context, appmodel.PublishI18nText) (locmodel.PublishResult, error)
 	FillI18nTexts(context.Context, appmodel.FillI18nTexts) (locmodel.FillResult, error)
+}
+
+type TrackEvents interface {
+	ListTrackEvents(context.Context, telemmodel.Filter) (telemmodel.Page, error)
 }

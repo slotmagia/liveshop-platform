@@ -1,6 +1,6 @@
-import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, create, dataCard, notify, page, table, tabs } from '@liveshop/design-tokens'
+import type { HostContext, HostHttpClient } from '@liveshops/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshops/host-sdk'
+import { badge, button, create, dataCard, notify, page, table, tabs } from '@liveshops/design-tokens'
 import { startEmail } from './EmailPage'
 import { startSMS } from './SmsPage'
 

@@ -62,8 +62,15 @@ services:
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
     depends_on:
-      registry-migrate: {condition: service_completed_successfully}
+      registry-seed-local: {condition: service_completed_successfully}
       grpc-certs: {condition: service_completed_successfully}
+  registry-seed-local:
+    image: mysql:8.4
+    environment: {MYSQL_PWD: liveshop-local}
+    volumes: ["../tools/seed-local.sql:/seed.sql:ro"]
+    command: ["sh", "-ec", "mysql --default-character-set=utf8mb4 -h registry-db -uliveshop liveshop_registry < /seed.sql"]
+    depends_on:
+      registry-migrate: {condition: service_completed_successfully}
   platform-control-admin:
     build:
       context: ../..

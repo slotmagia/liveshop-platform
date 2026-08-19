@@ -1,6 +1,6 @@
-import type { HostContext, HostHttpClient, HostModalField, HostModalTreeNode } from '@liveshop/host-sdk'
-import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, tabs, ui } from '@liveshop/design-tokens'
+import type { HostContext, HostHttpClient, HostModalField, HostModalTreeNode } from '@liveshops/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshops/host-sdk'
+import { badge, button, create, dataCard, page, searchCard, searchForm, statusLine, table, tabs, ui } from '@liveshops/design-tokens'
 
 export interface NotifyChannelMounts {
   search?: HTMLElement

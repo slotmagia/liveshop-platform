@@ -1,6 +1,6 @@
-﻿import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
-import { hostFormModal, randomUUID } from '@liveshop/host-sdk'
-import { badge, button, card, create, dataCard, field, grid, navIcon, page, resolveGroupIconName, resolvePageIconName, searchCard, searchForm, statusLine, table, ui } from '@liveshop/design-tokens'
+﻿import type { HostContext, HostHttpClient } from '@liveshops/host-sdk'
+import { hostFormModal, randomUUID } from '@liveshops/host-sdk'
+import { badge, button, card, create, dataCard, field, grid, navIcon, page, resolveGroupIconName, resolvePageIconName, searchCard, searchForm, statusLine, table, ui } from '@liveshops/design-tokens'
 
 interface ReleaseInfo { version: string; digest: string }
 interface ModuleInfo { id: string; name: string; activeVersion?: string; releases: ReleaseInfo[] }

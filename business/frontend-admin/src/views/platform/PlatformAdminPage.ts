@@ -1,4 +1,4 @@
-import type { HostContext, HostHttpClient } from '@liveshop/host-sdk'
+import type { HostContext, HostHttpClient } from '@liveshops/host-sdk'
 import { startAudit, startRegistry } from './PlatformPages'
 import { startLiveProviders } from './LiveProvidersPage'
 import { startSettings } from './SettingsPage'
@@ -7,6 +7,7 @@ import { startI18n } from './I18nPage'
 import { startNotifyEvents } from './NotifyEventsPage'
 import { startNotifyTemplates } from './NotifyTemplatesPage'
 import { startNotifyChannels } from './NotifyChannelsPage'
+import { startTrackEvents } from './TrackEventsPage'
 
 export function mountPlatformAdmin(root: HTMLElement, client: HostHttpClient, context: HostContext) {
   if (context.contributionId === 'platform.admin.registry') return startRegistry(root, client, context)
@@ -18,5 +19,6 @@ export function mountPlatformAdmin(root: HTMLElement, client: HostHttpClient, co
   if (context.contributionId === 'platform.admin.storage') return startStorage(root, client, context)
   if (context.contributionId === 'platform.admin.notify-events') return startNotifyEvents(root, client, context)
   if (context.contributionId === 'platform.admin.i18n') return startI18n(root, client, context)
+  if (context.contributionId === 'platform.admin.track-events') return startTrackEvents(root, client, context)
   throw new Error(`Unsupported Platform Control Plane contribution: ${context.contributionId}`)
 }

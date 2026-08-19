@@ -173,5 +173,19 @@
     "resource": "platform.i18n",
     "action": "ingest",
     "description": "仅业务模块工作负载在源文变更后投影快照；浏览器不得持有。"
+  },
+  {
+    "code": "platform.track-event.read",
+    "name": "查看上报事件",
+    "resource": "platform.track-event",
+    "action": "read",
+    "description": "跨店铺只读浏览原始埋点事件；不返回密钥，也不能改写事件。"
+  },
+  {
+    "code": "platform.track-event.write",
+    "name": "上报埋点事件",
+    "resource": "platform.track-event",
+    "action": "write",
+    "description": "店铺端按 Identity 店铺上下文写入原始埋点；event_id 去重，非法行逐条拒绝。"
   }
 ]

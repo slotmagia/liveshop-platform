@@ -40,7 +40,7 @@ func CORS(allowedOrigins map[string]struct{}) ghttp.HandlerFunc {
 			request.Response.Header().Set("Access-Control-Allow-Credentials", "true")
 			request.Response.Header().Set("Vary", "Origin")
 		}
-		request.Response.Header().Set("Access-Control-Allow-Headers", "Authorization,Content-Type,X-Liveshop-Surface,X-Locale")
+		request.Response.Header().Set("Access-Control-Allow-Headers", "Authorization,Content-Type,X-Liveshop-Surface,X-Locale,X-Ad-Touch-Id,X-Ad-Touch-Type")
 		request.Response.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		if request.Method == http.MethodOptions {
 			request.Response.WriteStatus(http.StatusNoContent)

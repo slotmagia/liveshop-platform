@@ -12,6 +12,7 @@ import (
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/notification"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/sms"
 	"github.com/liveshop-platform/module-platform/internal/biz/capability/storage"
+	"github.com/liveshop-platform/module-platform/internal/biz/capability/telemetry"
 )
 
 // Deps are the use cases the admin surface is allowed to reach.
@@ -25,6 +26,7 @@ type Deps struct {
 	Storage      *storage.UseCase
 	Notification *notification.UseCase
 	Localization *localization.UseCase
+	Telemetry    *telemetry.UseCase
 	Edge         *edge.UseCase
 }
 
@@ -42,6 +44,7 @@ var (
 	_ service.NotifyTemplates = (*Logic)(nil)
 	_ service.NotifyChannels  = (*Logic)(nil)
 	_ service.I18n            = (*Logic)(nil)
+	_ service.TrackEvents     = (*Logic)(nil)
 )
 
 func New(deps Deps) *Logic { return &Logic{deps: deps} }

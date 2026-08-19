@@ -53,6 +53,10 @@ func (r *memoryRepository) Project(_ context.Context, revision uint64, declarati
 		policy := current.Policy
 		if !exists || policy.Version == 0 {
 			policy = notifymodel.DefaultPolicy(declaration)
+			notifymodel.BindEmptyPolicyTemplates(&policy, declaration.AllowedChannels, func(code string) (notifymodel.LibraryTemplate, bool) {
+				item, ok := r.templates[code]
+				return item, ok
+			})
 			policy.UpdatedAt = now
 		}
 		r.events[declaration.EventKey] = notifymodel.Event{

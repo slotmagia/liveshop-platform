@@ -1,6 +1,7 @@
 {
-  "name": "@liveshop/host-sdk",
-  "version": "0.3.3",
+  "name": "@liveshops/host-sdk",
+  "version": "0.3.4",
+  "description": "LiveShop Host handshake, HTTP client, and iframe/remote contribution protocol.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,6 +14,10 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
